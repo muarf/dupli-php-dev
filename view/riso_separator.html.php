@@ -1,5 +1,7 @@
 <!-- JSZip pour export multiple -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<!-- Riso Tools - Fonctions avancées -->
+<script src="js/riso-tools.js"></script>
 
 <style>
 .riso-container {
@@ -86,7 +88,70 @@ canvas {
                 <h4><i class="fa fa-image"></i> Image originale</h4>
             </div>
             <div class="panel-body text-center">
-                <canvas id="originalCanvas"></canvas>
+                <canvas id="originalCanvas" style="cursor: crosshair;"></canvas>
+                <p class="text-muted" style="margin-top: 10px;">
+                    <i class="fa fa-info-circle"></i> Cliquez sur l'image pour isoler une couleur avec la pipette
+                </p>
+            </div>
+        </div>
+
+        <!-- Modes et Outils avancés -->
+        <div class="panel panel-warning">
+            <div class="panel-heading">
+                <h4><i class="fa fa-magic"></i> Modes et Outils</h4>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <!-- Mode de séparation -->
+                    <div class="col-md-4">
+                        <h5><i class="fa fa-cogs"></i> Mode de séparation</h5>
+                        <div class="btn-group-vertical btn-block">
+                            <button class="btn btn-default" id="modeRGB" onclick="switchMode('RGB')">
+                                <i class="fa fa-circle-o"></i> RGB (3 canaux)
+                            </button>
+                            <button class="btn btn-default" id="modeCMYK" onclick="switchMode('CMYK')">
+                                <i class="fa fa-circle-o"></i> CMYK (4 canaux)
+                            </button>
+                            <button class="btn btn-default" id="mode2Color" onclick="switchMode('2COLOR')">
+                                <i class="fa fa-circle-o"></i> 2 Tambours (N&B)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Outils -->
+                    <div class="col-md-4">
+                        <h5><i class="fa fa-wrench"></i> Outils</h5>
+                        <button class="btn btn-primary btn-block" id="pipetteBtn" onclick="togglePipette()">
+                            <i class="fa fa-eyedropper"></i> Pipette (Isoler couleur)
+                        </button>
+                        <div id="pipetteInfo" style="display: none; margin-top: 10px;">
+                            <div class="alert alert-info">
+                                <small>Couleur sélectionnée: <span id="pickedColor" style="display: inline-block; width: 30px; height: 30px; border: 1px solid #000; vertical-align: middle;"></span></small>
+                                <br>
+                                <label>Tolérance: <span id="toleranceValue">30</span></label>
+                                <input type="range" class="form-control" id="toleranceSlider" min="0" max="100" value="30">
+                                <button class="btn btn-sm btn-success btn-block" onclick="applyPipette()">
+                                    <i class="fa fa-check"></i> Créer couche
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Effets -->
+                    <div class="col-md-4">
+                        <h5><i class="fa fa-adjust"></i> Effets</h5>
+                        <button class="btn btn-info btn-block" onclick="applyPosterization()">
+                            <i class="fa fa-th"></i> Postériser
+                        </button>
+                        <div style="margin-top: 10px;">
+                            <label>Niveaux: <span id="posterLevels">4</span></label>
+                            <input type="range" class="form-control" id="posterSlider" min="2" max="10" value="4">
+                        </div>
+                        <button class="btn btn-info btn-block" style="margin-top: 10px;" onclick="applyHalftoneEffect()">
+                            <i class="fa fa-th-large"></i> Halftone (trames)
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -210,18 +275,36 @@ canvas {
             <h4><i class="fa fa-info-circle"></i> Guide d'utilisation</h4>
         </div>
         <div class="panel-body">
+            <h5><i class="fa fa-book"></i> Workflow de base</h5>
             <ol>
                 <li><strong>Uploadez</strong> une image couleur (PNG ou JPG)</li>
-                <li><strong>L'image est séparée</strong> automatiquement en 3 canaux RGB</li>
-                <li><strong>Assignez un tambour</strong> à chaque canal (Rouge, Bleu, Jaune, Noir, etc.)</li>
-                <li><strong>Ajustez l'opacité</strong> de chaque couche avec les sliders</li>
-                <li><strong>Prévisualisez</strong> le résultat final de superposition</li>
-                <li><strong>Exportez</strong> chaque couche individuellement pour impression</li>
+                <li><strong>Choisissez un mode</strong> : RGB (3 canaux), CMYK (4 canaux), ou 2 Tambours (N&B)</li>
+                <li><strong>Assignez un tambour</strong> à chaque canal</li>
+                <li><strong>Ajustez l'opacité</strong> de chaque couche</li>
+                <li><strong>Prévisualisez</strong> le résultat final</li>
+                <li><strong>Exportez</strong> les couches pour impression</li>
             </ol>
+            
+            <h5><i class="fa fa-magic"></i> Fonctionnalités avancées</h5>
+            <ul>
+                <li><strong>Mode RGB</strong> : Sépare en Rouge, Vert, Bleu (standard)</li>
+                <li><strong>Mode CMYK</strong> : Sépare en Cyan, Magenta, Jaune, Noir (imprimerie)</li>
+                <li><strong>Mode 2 Tambours</strong> : Pour images N&B, sépare tons clairs/foncés</li>
+                <li><strong>Pipette</strong> : Cliquez sur une couleur pour l'isoler avec tolérance réglable</li>
+                <li><strong>Postériser</strong> : Réduit les niveaux de gris (effet sérigraphie)</li>
+                <li><strong>Halftone</strong> : Applique des trames de points (effet Riso authentique)</li>
+            </ul>
+            
             <div class="alert alert-success">
                 <i class="fa fa-lightbulb-o"></i> <strong>Astuce:</strong> 
-                Chaque couche exportée est en niveaux de gris. Vous imprimez ensuite chaque couche 
-                avec le tambour de couleur correspondant sur votre Risographe.
+                Les couches sont exportées en niveaux de gris. Sur la Riso, imprimez chaque couche 
+                avec le tambour correspondant. La superposition créera l'image couleur finale !
+            </div>
+            
+            <div class="alert alert-warning">
+                <i class="fa fa-flask"></i> <strong>Expérimentez !</strong> 
+                Essayez différentes combinaisons de tambours, postérisation, et halftone pour créer 
+                des effets uniques. Le mode 2 tambours est parfait pour affiches bicolores impactantes.
             </div>
         </div>
     </div>
@@ -241,10 +324,21 @@ const RISO_COLORS = {
 
 // Variables globales
 let originalImage = null;
+let originalImageData = null;
+let currentMode = 'RGB'; // RGB, CMYK, 2COLOR
+let pipetteActive = false;
+let pickedColorRGB = null;
 let channels = {
     red: null,
     green: null,
-    blue: null
+    blue: null,
+    cyan: null,
+    magenta: null,
+    yellow: null,
+    black: null,
+    light: null,
+    dark: null,
+    isolated: null
 };
 
 // Initialisation
@@ -342,8 +436,16 @@ function processImage(img) {
     originalCanvas.height = img.height * scale;
     const ctx = originalCanvas.getContext('2d');
     ctx.drawImage(img, 0, 0, originalCanvas.width, originalCanvas.height);
+    
+    // Sauvegarder l'ImageData original (pleine taille pour traitement)
+    const fullCanvas = document.createElement('canvas');
+    fullCanvas.width = img.width;
+    fullCanvas.height = img.height;
+    const fullCtx = fullCanvas.getContext('2d');
+    fullCtx.drawImage(img, 0, 0);
+    originalImageData = fullCtx.getImageData(0, 0, img.width, img.height);
 
-    // Séparer les canaux RGB
+    // Séparer les canaux RGB par défaut
     separateChannels(img);
     
     // Mettre à jour la prévisualisation
@@ -558,12 +660,212 @@ async function exportAll() {
     URL.revokeObjectURL(url);
 }
 
+// ===== NOUVELLES FONCTIONS AVANCÉES =====
+
+// Basculer entre les modes RGB / CMYK / 2COLOR
+function switchMode(mode) {
+    currentMode = mode;
+    
+    // Mettre à jour les boutons
+    document.getElementById('modeRGB').className = mode === 'RGB' ? 'btn btn-primary' : 'btn btn-default';
+    document.getElementById('modeCMYK').className = mode === 'CMYK' ? 'btn btn-primary' : 'btn btn-default';
+    document.getElementById('mode2Color').className = mode === '2COLOR' ? 'btn btn-primary' : 'btn btn-default';
+    
+    if (!originalImage) return;
+    
+    if (mode === 'RGB') {
+        // Séparation RGB standard
+        separateChannels(originalImage);
+    } else if (mode === 'CMYK') {
+        // Séparation CMYK
+        separateChannelsCMYK(originalImage);
+    } else if (mode === '2COLOR') {
+        // Mode 2 tambours pour images N&B
+        separate2Color(originalImage);
+    }
+    
+    updatePreview();
+}
+
+// Séparer en CMYK
+function separateChannelsCMYK(img) {
+    const channelData = extractCMYKChannels(img);
+    
+    // Afficher les 4 canaux
+    displayChannel('redCanvas', channelData.cyan, img.width, img.height);
+    displayChannel('greenCanvas', channelData.magenta, img.width, img.height);
+    displayChannel('blueCanvas', channelData.yellow, img.width, img.height);
+    
+    // Stocker
+    channels.cyan = channelData.cyan;
+    channels.magenta = channelData.magenta;
+    channels.yellow = channelData.yellow;
+    channels.black = channelData.black;
+    
+    // Mettre à jour les labels
+    document.querySelectorAll('.channel-panel h5')[0].innerHTML = '<i class="fa fa-circle" style="color: #00FFFF;"></i> Canal Cyan';
+    document.querySelectorAll('.channel-panel h5')[1].innerHTML = '<i class="fa fa-circle" style="color: #FF00FF;"></i> Canal Magenta';
+    document.querySelectorAll('.channel-panel h5')[2].innerHTML = '<i class="fa fa-circle" style="color: #FFFF00;"></i> Canal Yellow';
+}
+
+// Mode 2 tambours (séparer tons clairs / tons foncés)
+function separate2Color(img) {
+    // Convertir en N&B d'abord
+    const grayscale = toGrayscale(originalImageData);
+    
+    // Séparer en 2 couches avec seuil
+    const threshold = 128;
+    const split = splitGrayscaleInTwo(grayscale, threshold);
+    
+    // Afficher
+    displayChannel('redCanvas', split.dark, img.width, img.height);
+    displayChannel('greenCanvas', split.light, img.width, img.height);
+    
+    // Stocker
+    channels.dark = split.dark;
+    channels.light = split.light;
+    
+    // Mettre à jour les labels
+    document.querySelectorAll('.channel-panel h5')[0].innerHTML = '<i class="fa fa-circle" style="color: #000;"></i> Tons Foncés';
+    document.querySelectorAll('.channel-panel h5')[1].innerHTML = '<i class="fa fa-circle" style="color: #fff; border: 1px solid #000;"></i> Tons Clairs';
+    document.querySelectorAll('.channel-panel')[2].style.display = 'none'; // Cacher le 3ème canal
+}
+
+// Toggle pipette
+function togglePipette() {
+    pipetteActive = !pipetteActive;
+    const btn = document.getElementById('pipetteBtn');
+    const info = document.getElementById('pipetteInfo');
+    
+    if (pipetteActive) {
+        btn.className = 'btn btn-success btn-block';
+        btn.innerHTML = '<i class="fa fa-eyedropper"></i> Pipette ACTIVE - Cliquez sur l\'image';
+        info.style.display = 'block';
+        
+        // Ajouter listener sur le canvas
+        document.getElementById('originalCanvas').addEventListener('click', handlePipetteClick);
+    } else {
+        btn.className = 'btn btn-primary btn-block';
+        btn.innerHTML = '<i class="fa fa-eyedropper"></i> Pipette (Isoler couleur)';
+        info.style.display = 'none';
+        document.getElementById('originalCanvas').removeEventListener('click', handlePipetteClick);
+    }
+}
+
+// Gérer le clic pipette
+function handlePipetteClick(e) {
+    if (!pipetteActive) return;
+    
+    const canvas = e.target;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = originalImage.width / rect.width;
+    const scaleY = originalImage.height / rect.height;
+    const x = Math.floor((e.clientX - rect.left) * scaleX);
+    const y = Math.floor((e.clientY - rect.top) * scaleY);
+    
+    // Obtenir la couleur du pixel
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.getImageData(x / (originalImage.width / canvas.width), y / (originalImage.height / canvas.height), 1, 1);
+    pickedColorRGB = {
+        r: imageData.data[0],
+        g: imageData.data[1],
+        b: imageData.data[2]
+    };
+    
+    // Afficher la couleur
+    const colorDisplay = document.getElementById('pickedColor');
+    colorDisplay.style.background = `rgb(${pickedColorRGB.r}, ${pickedColorRGB.g}, ${pickedColorRGB.b})`;
+    
+    // Mettre à jour la valeur de tolérance
+    document.getElementById('toleranceValue').textContent = document.getElementById('toleranceSlider').value;
+}
+
+// Appliquer l'isolation de couleur
+function applyPipette() {
+    if (!pickedColorRGB || !originalImageData) return;
+    
+    const tolerance = parseInt(document.getElementById('toleranceSlider').value);
+    const isolated = isolateColor(originalImageData, pickedColorRGB.r, pickedColorRGB.g, pickedColorRGB.b, tolerance);
+    
+    // Afficher dans le premier canal disponible
+    displayChannel('redCanvas', isolated, originalImage.width, originalImage.height);
+    channels.isolated = isolated;
+    channels.red = isolated;
+    
+    updatePreview();
+    
+    alert('Couche isolée créée ! Assignez-lui un tambour et exportez.');
+}
+
+// Appliquer postérisation
+function applyPosterization() {
+    if (!originalImageData) return;
+    
+    const levels = parseInt(document.getElementById('posterSlider').value);
+    const posterized = posterizeImage(originalImageData, levels);
+    
+    // Re-séparer les canaux avec l'image postérisée
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = originalImage.width;
+    tempCanvas.height = originalImage.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.putImageData(posterized, 0, 0);
+    
+    const tempImg = new Image();
+    tempImg.onload = function() {
+        separateChannels(tempImg);
+        updatePreview();
+    };
+    tempImg.src = tempCanvas.toDataURL();
+}
+
+// Appliquer effet halftone
+function applyHalftoneEffect() {
+    if (!originalImageData) return;
+    
+    const halftoned = applyHalftone(originalImageData, 4, 45);
+    
+    // Afficher dans le premier canal
+    displayChannel('redCanvas', halftoned, originalImage.width, originalImage.height);
+    channels.red = halftoned;
+    
+    updatePreview();
+    
+    alert('Effet halftone appliqué au canal rouge !');
+}
+
+// Mise à jour slider postérisation
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('posterSlider')) {
+        document.getElementById('posterSlider').addEventListener('input', function() {
+            document.getElementById('posterLevels').textContent = this.value;
+        });
+    }
+    
+    if (document.getElementById('toleranceSlider')) {
+        document.getElementById('toleranceSlider').addEventListener('input', function() {
+            document.getElementById('toleranceValue').textContent = this.value;
+        });
+    }
+    
+    // Activer mode RGB par défaut
+    document.getElementById('modeRGB').className = 'btn btn-primary';
+});
+
 // Réinitialiser le séparateur
 function resetSeparator() {
     document.getElementById('uploadSection').style.display = 'block';
     document.getElementById('separatorSection').style.display = 'none';
     document.getElementById('imageInput').value = '';
     originalImage = null;
-    channels = {red: null, green: null, blue: null};
+    originalImageData = null;
+    currentMode = 'RGB';
+    pipetteActive = false;
+    pickedColorRGB = null;
+    channels = {
+        red: null, green: null, blue: null,
+        cyan: null, magenta: null, yellow: null, black: null,
+        light: null, dark: null, isolated: null
+    };
 }
 </script>
