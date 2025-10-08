@@ -114,6 +114,21 @@ function Action($conf) {
                             $download_urls[] = "tmp/" . $dirname . "/" . $basename;
                         }
                         
+                        // Créer un fichier ZIP contenant toutes les images
+                        $zip_filename = 'pdf_pages_' . $timestamp . '.zip';
+                        $zip_path = $tmpDir . $zip_filename;
+                        
+                        $zip = new ZipArchive();
+                        if ($zip->open($zip_path, ZipArchive::CREATE) === TRUE) {
+                            foreach ($created_files as $file) {
+                                $zip->addFile($file, basename($file));
+                            }
+                            $zip->close();
+                            $zip_url = 'tmp/' . $zip_filename;
+                        } else {
+                            $zip_url = '';
+                        }
+                        
                         // Nettoyer le fichier PDF uploadé
                         unlink($uploadFile);
                     } else {
@@ -134,7 +149,8 @@ function Action($conf) {
         'errors' => $errors,
         'success' => $success,
         'result' => $result,
-        'download_urls' => $download_urls
+        'download_urls' => $download_urls,
+        'zip_url' => isset($zip_url) ? $zip_url : ''
     ));
 }
 

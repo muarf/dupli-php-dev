@@ -152,6 +152,11 @@
                         
                         <!-- Bouton pour tout télécharger -->
                         <div class="text-center" style="margin-top: 20px;">
+                            <?php if (!empty($zip_url)): ?>
+                                <a href="<?= htmlspecialchars($zip_url) ?>" class="btn btn-primary btn-lg" download>
+                                    <i class="fa fa-download"></i> Télécharger tout en ZIP
+                                </a>
+                            <?php endif; ?>
                             <a href="?pdf_to_png" class="btn btn-default btn-lg">
                                 <i class="fa fa-plus"></i> Convertir un autre PDF
                             </a>
