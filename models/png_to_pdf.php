@@ -80,8 +80,8 @@ function Action($conf) {
             $format = isset($_POST['format']) && $_POST['format'] === 'A3' ? 'A3' : 'A4';
             $orientation = isset($_POST['orientation']) && $_POST['orientation'] === 'L' ? 'L' : 'P';
             
-            // Créer le dossier tmp s'il n'existe pas
-            $tmpDir = __DIR__ . '/../tmp/';
+            // Créer le dossier tmp s'il n'existe pas (dans public pour accès web)
+            $tmpDir = __DIR__ . '/../public/tmp/';
             if (!is_dir($tmpDir)) {
                 mkdir($tmpDir, 0777, true);
             }
