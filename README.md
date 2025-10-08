@@ -26,12 +26,12 @@ Application web en PHP pour l'auto-gestion d'impression et de calculs de prix d'
 - [x] **Interface moderne avec drag & drop** - Upload de fichiers simplifié
 - [x] **Migration vers SQLite** - Base de données légère et portable
 
-## 🔜 À venir
+## ✅ Outils de conversion et séparation
 
-- [ ] Séparateur de couleur
-- [ ] Conversion PNG → PDF
-- [ ] Conversion PDF → PNG
-- [ ] Correction des émoticônes sur la page tirages multimachines
+- [x] **Conversion PNG/JPG → PDF** - Formats A3/A4, orientation Portrait/Paysage
+- [x] **Conversion PDF → PNG** - Extraction pages, choix DPI (72/150/300), export ZIP
+- [x] **Séparateur de couleur Riso** - RGB/CMYK/2 tambours, pipette, postérisation, halftone
+- [x] **Interface drag & drop** - Sur toutes les pages de conversion
 
 ## 🛠️ Technologies utilisées
 
@@ -40,6 +40,9 @@ Application web en PHP pour l'auto-gestion d'impression et de calculs de prix d'
 - **Bootstrap** - Framework CSS & JS
 - **TinyMCE** - Éditeur WYSIWYG
 - **Ghostscript** - Manipulation de PDFs
+- **TCPDF** - Génération PDF
+- **Canvas API** - Manipulation d'images (JavaScript)
+- **JSZip** - Création d'archives ZIP
 
 ## 📦 Installation
 
