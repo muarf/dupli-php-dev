@@ -63,6 +63,14 @@
                     <small class="text-muted d-block">Extraire les pages en PNG</small>
                   </a>
                 </li>
+                <li role="separator" class="divider"></li>
+                <li>
+                  <a href="?riso_separator">
+                    <i class="fa fa-adjust" style="color: #ff6b9d; margin-right: 8px;"></i>
+                    <strong>Séparateur Riso</strong>
+                    <small class="text-muted d-block">Séparer couleurs pour multi-tambours</small>
+                  </a>
+                </li>
               </ul>
             </li>
             <li>
