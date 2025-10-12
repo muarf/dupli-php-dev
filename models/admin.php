@@ -153,7 +153,7 @@ function Action($conf = null)
             if ($result && password_verify($_POST['password'], $result['password_hash'])) {
                 $_SESSION['user'] = "1";
             } else {
-                die('Le mot de passe est invalide.');
+                $array['login_error'] = 'Mot de passe incorrect. Veuillez réessayer.';
             }
         } catch (Exception $e) {
             // Fallback vers l'ancien système en cas d'erreur
@@ -161,7 +161,7 @@ function Action($conf = null)
             if (password_verify($_POST['password'], $hash)) {
                 $_SESSION['user'] = "1";
             } else {
-                die('Le mot de passe est invalide.');
+                $array['login_error'] = 'Mot de passe incorrect. Veuillez réessayer.';
             }
         }
     }
