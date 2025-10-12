@@ -28,8 +28,15 @@ set_error_handler(function($severity, $message, $file, $line) {
     ];
     
     // Afficher notre page d'erreur personnalisée élégante
-    session_start();
-    require_once __DIR__ . '/controler/func.php';
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    if (!function_exists('show_error_page')) {
+        require_once __DIR__ . '/controler/functions/error_handler.php';
+    }
+    if (!function_exists('template')) {
+        require_once __DIR__ . '/controler/func.php';
+    }
     
     // Mapper les types d'erreurs
     $error_types = [
@@ -49,9 +56,15 @@ set_error_handler(function($severity, $message, $file, $line) {
 
 // Gestionnaire d'exceptions
 set_exception_handler(function($exception) {
-    session_start();
-    require_once __DIR__ . '/controler/func.php';
-    require_once __DIR__ . '/controler/functions/error_handler.php';
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    if (!function_exists('show_error_page')) {
+        require_once __DIR__ . '/controler/functions/error_handler.php';
+    }
+    if (!function_exists('template')) {
+        require_once __DIR__ . '/controler/func.php';
+    }
     
     echo show_error_page(
         $exception->getMessage(), 
@@ -67,9 +80,15 @@ set_exception_handler(function($exception) {
 register_shutdown_function(function() {
     $error = error_get_last();
     if ($error !== null && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR])) {
-        session_start();
-        require_once __DIR__ . '/controler/func.php';
-        require_once __DIR__ . '/controler/functions/error_handler.php';
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        if (!function_exists('show_error_page')) {
+            require_once __DIR__ . '/controler/functions/error_handler.php';
+        }
+        if (!function_exists('template')) {
+            require_once __DIR__ . '/controler/func.php';
+        }
         
         echo show_error_page(
             $error['message'], 
@@ -248,7 +267,7 @@ ini_set('upload_tmp_dir', $temp_dir);
 
 session_start();
 
-include(__DIR__ . '/../controler/func.php');
+include(__DIR__ . '/controler/func.php');
 // conf.php sera inclus après l'exécution du modèle pour avoir la bonne base active
 
 
@@ -358,8 +377,8 @@ if(in_array($page, $page_secure,true)){
         echo $content;
     } else {
         // Pages normales avec header/footer
-        include(__DIR__ . '/../models/header.php');
-        include(__DIR__ . '/../models/footer.php');
+        include(__DIR__ . '/models/header.php');
+        include(__DIR__ . '/models/footer.php');
         $header = headerAction($page);
         $footer = footerAction($page);
         
