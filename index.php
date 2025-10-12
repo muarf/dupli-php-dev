@@ -321,11 +321,11 @@ if ($page === 'ajax_delete_machine') {
     
     try {
         // Inclure les fichiers nécessaires
-        require_once '../controler/func.php';
-        require_once '../models/admin/MachineManager.php';
+        require_once __DIR__ . '/controler/func.php';
+        require_once __DIR__ . '/models/admin/MachineManager.php';
         
         // Configuration de la base de données
-        require_once '../controler/conf.php';
+        require_once __DIR__ . '/controler/conf.php';
         
         // Créer l'instance du gestionnaire de machines
         $machineManager = new AdminMachineManager($conf);
@@ -367,9 +367,9 @@ if(in_array($page, $page_secure,true)){
     }
     
     // Inclure la configuration APRÈS l'exécution du modèle pour avoir la bonne base active
-    include(__DIR__ . '/../controler/conf.php');
+    include(__DIR__ . '/controler/conf.php');
     
-    include(__DIR__ . '/../models/'.$page.'.php');
+    include(__DIR__ . '/models/'.$page.'.php');
     
     // Pages spéciales qui n'utilisent pas le template standard
     if ($page == 'installation' || $page == 'setup') {
@@ -395,7 +395,7 @@ if(in_array($page, $page_secure,true)){
             $array = array_merge($GLOBALS['model_variables'], $array);
     }
         
-        echo template(__DIR__ . "/../view/base.html.php", $array);
+        echo template(__DIR__ . "/view/base.html.php", $array);
     }
 } 
 else {

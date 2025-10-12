@@ -15,13 +15,15 @@ function show_error_page($error_message, $error_type = 'Erreur', $error_file = n
         http_response_code(500);
     }
     
-    // Nettoyer le buffer de sortie si nécessaire
-    if (ob_get_level()) {
-        ob_clean();
+    // Nettoyer tous les buffers de sortie
+    while (ob_get_level()) {
+        ob_end_clean();
     }
     
-    // Charger le header
+    // Démarrer un nouveau buffer
     ob_start();
+    
+    // Charger le header
     if (file_exists(__DIR__ . '/../../view/header.html.php')) {
         include __DIR__ . '/../../view/header.html.php';
     }
@@ -34,7 +36,9 @@ function show_error_page($error_message, $error_type = 'Erreur', $error_file = n
         include __DIR__ . '/../../view/footer.html.php';
     }
     
-    return ob_get_clean();
+    $output = ob_get_clean();
+    echo $output;
+    return $output;
 }
 
 /**
