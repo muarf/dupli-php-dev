@@ -256,6 +256,10 @@ Les sauvegardes manuelles sont stockées dans `app/public/sauvegarde/` et peuven
 - **Séparateur Riso** : 
   - Corriger les trames (halftone)
   - Améliorer la navigation de la page
+- **Nettoyage automatique** : Améliorer le nettoyage des fichiers temporaires
+  - Nettoyer les vieux fichiers dans `app/public/tmp/`
+  - Nettoyer automatiquement au démarrage et à la fermeture
+  - Option manuelle dans l'admin
 - **FrankenPHP pour Linux** : Intégrer FrankenPHP pour simplifier le déploiement Linux AppImage (binaire statique)
 - **Support macOS** : Vérifier et tester le fonctionnement complet sous macOS
 - **Statistiques de remplissage** : Statistique de remplissage de la page
