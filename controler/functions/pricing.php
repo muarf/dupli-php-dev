@@ -197,13 +197,23 @@ function prix_du($machine)
     $db = pdo_connect();
     
     // Vérifier si c'est un duplicopieur - essayer plusieurs formats de nom
-    $query_check = $db->prepare('SELECT COUNT(*) FROM duplicopieurs WHERE actif = 1 AND (CONCAT(marque, " ", modele) = ? OR marque = ? OR modele = ?)');
+    // SQLite n'a pas CONCAT, on utilise l'opérateur ||
+    if (isset($GLOBALS['conf']['db_type']) && $GLOBALS['conf']['db_type'] === 'sqlite') {
+        $query_check = $db->prepare('SELECT COUNT(*) FROM duplicopieurs WHERE actif = 1 AND (marque || " " || modele = ? OR marque = ? OR modele = ?)');
+    } else {
+        $query_check = $db->prepare('SELECT COUNT(*) FROM duplicopieurs WHERE actif = 1 AND (CONCAT(marque, " ", modele) = ? OR marque = ? OR modele = ?)');
+    }
     $query_check->execute([$machine, $machine, $machine]);
     $is_duplicopieur = $query_check->fetchColumn() > 0;
     
     if ($is_duplicopieur) {
         // C'est un duplicopieur, utiliser la table dupli avec filtre par duplicopieur_id
-        $query_dup = $db->prepare('SELECT id FROM duplicopieurs WHERE actif = 1 AND (CONCAT(marque, " ", modele) = ? OR marque = ? OR modele = ?) LIMIT 1');
+        // SQLite n'a pas CONCAT, on utilise l'opérateur ||
+        if (isset($GLOBALS['conf']['db_type']) && $GLOBALS['conf']['db_type'] === 'sqlite') {
+            $query_dup = $db->prepare('SELECT id FROM duplicopieurs WHERE actif = 1 AND (marque || " " || modele = ? OR marque = ? OR modele = ?) LIMIT 1');
+        } else {
+            $query_dup = $db->prepare('SELECT id FROM duplicopieurs WHERE actif = 1 AND (CONCAT(marque, " ", modele) = ? OR marque = ? OR modele = ?) LIMIT 1');
+        }
         $query_dup->execute([$machine, $machine, $machine]);
         $duplicopieur_id = $query_dup->fetchColumn();
         
