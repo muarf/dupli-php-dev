@@ -283,29 +283,34 @@ function drawCropMarks($pdf, $x, $y, $width, $height, $bleed_size = 3) {
 }
 
 function drawCentralCropMarks($pdf, $x, $y, $width, $height) {
-    // Dessiner les traits de coupe centraux pour A3→A4 (au milieu)
+    // Dessiner les traits de coupe centraux pour A3→A4 (au milieu de la page A3)
     $pdf->SetLineWidth(0.5);
     $pdf->SetDrawColor(0, 0, 0); // Noir
     
     $mark_length = 15; // Plus longs pour être bien visibles
     
-    // Traits horizontaux au milieu (pour coupe A3→A4)
-    $center_y = $y + ($height / 2);
-    $pdf->Line($x + 5, $center_y, $x + 5 + $mark_length, $center_y); // Gauche
-    $pdf->Line($x + $width - 5 - $mark_length, $center_y, $x + $width - 5, $center_y); // Droite
+    // Dimensions A3 : 420mm x 297mm
+    $a3_width = 420;
+    $a3_height = 297;
     
-    // Traits verticaux au milieu (pour coupe A3→A4)
-    $center_x = $x + ($width / 2);
-    $pdf->Line($center_x, $y + 5, $center_x, $y + 5 + $mark_length); // Haut
-    $pdf->Line($center_x, $y + $height - 5 - $mark_length, $center_x, $y + $height - 5); // Bas
+    // Traits horizontaux au milieu de la page A3 (297/2 = 148.5mm)
+    $center_y = $a3_height / 2;
+    $pdf->Line(5, $center_y, 5 + $mark_length, $center_y); // Gauche
+    $pdf->Line($a3_width - 5 - $mark_length, $center_y, $a3_width - 5, $center_y); // Droite
+    
+    // Traits verticaux au milieu de la page A3 (420/2 = 210mm)
+    $center_x = $a3_width / 2;
+    $pdf->Line($center_x, 5, $center_x, 5 + $mark_length); // Haut
+    $pdf->Line($center_x, $a3_height - 5 - $mark_length, $center_x, $a3_height - 5); // Bas
 }
 
-function drawAllCropMarks($pdf, $x, $y, $width, $height, $bleed_size, $central_crop_marks) {
-    // Dessiner les traits de coupe normaux
-    drawCropMarks($pdf, $x, $y, $width, $height, $bleed_size);
+function drawAllCropMarks($pdf, $x, $y, $width, $height, $bleed_size, $crop_marks_type) {
+    // Dessiner selon le type sélectionné
+    if ($crop_marks_type === 'normal' || $crop_marks_type === 'both') {
+        drawCropMarks($pdf, $x, $y, $width, $height, $bleed_size);
+    }
     
-    // Ajouter les traits de coupe centraux si demandés
-    if ($central_crop_marks) {
+    if ($crop_marks_type === 'central' || $crop_marks_type === 'both') {
         drawCentralCropMarks($pdf, $x, $y, $width, $height);
     }
 }
@@ -369,7 +374,7 @@ function Action($conf)
             
             // Récupérer les options des traits de coupe
             $add_crop_marks = isset($_POST['add_crop_marks']);
-            $central_crop_marks = isset($_POST['central_crop_marks']);
+            $crop_marks_type = isset($_POST['crop_marks_type']) ? $_POST['crop_marks_type'] : 'normal';
             $imposition_mode = isset($_POST['imposition_mode']) ? $_POST['imposition_mode'] : 'brochure';
             $bleed_mode = isset($_POST['bleed_mode']) ? $_POST['bleed_mode'] : 'fullsize';
             $bleed_size = isset($_POST['bleed_size']) ? floatval($_POST['bleed_size']) : 3;
@@ -485,7 +490,7 @@ function Action($conf)
                         
                         // Dessiner les traits de coupe si activées (mode livre)
                         if ($add_crop_marks && $imposition_mode === 'livre') {
-                            drawAllCropMarks($pdfFinal, $x, $y, $new_width, $new_height, $bleed_size, $central_crop_marks);
+                            drawAllCropMarks($pdfFinal, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
                         }
                         
                         if ($previewMode) {
@@ -494,7 +499,7 @@ function Action($conf)
                             
                             // Dessiner les traits de coupe dans le preview aussi
                             if ($add_crop_marks && $imposition_mode === 'livre') {
-                                drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $central_crop_marks);
+                                drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
                             }
                             
                             addPageNumber($pdfPreview, $page_num, $x, $y, $new_width, $new_height, 0);
@@ -511,18 +516,18 @@ function Action($conf)
                         $a4_top_y = $global_y_offset + $crop_offset;
                         $a4_top_width = (4 * $page_width) - $crop_width_reduction;
                         $a4_top_height = $page_height - $crop_width_reduction;
-                        drawAllCropMarks($pdfFinal, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $central_crop_marks);
+                        drawAllCropMarks($pdfFinal, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $crop_marks_type);
                         
                         // A4 paysage du BAS (4 A6 côte à côte)
                         $a4_bottom_x = $global_x_offset + $crop_offset;
                         $a4_bottom_y = $global_y_offset + $page_height + $crop_offset;
                         $a4_bottom_width = (4 * $page_width) - $crop_width_reduction;
                         $a4_bottom_height = $page_height - $crop_width_reduction;
-                        drawAllCropMarks($pdfFinal, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $central_crop_marks);
+                        drawAllCropMarks($pdfFinal, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $crop_marks_type);
                         
                         if ($previewMode) {
-                            drawAllCropMarks($pdfPreview, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $central_crop_marks);
-                            drawAllCropMarks($pdfPreview, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $central_crop_marks);
+                            drawAllCropMarks($pdfPreview, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $crop_marks_type);
+                            drawAllCropMarks($pdfPreview, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $crop_marks_type);
                         }
                     }
                     
@@ -558,7 +563,7 @@ function Action($conf)
                         
                         // Dessiner les traits de coupe si activées (mode livre)
                         if ($add_crop_marks && $imposition_mode === 'livre') {
-                            drawAllCropMarks($pdfFinal, $x, $y, $new_width, $new_height, $bleed_size, $central_crop_marks);
+                            drawAllCropMarks($pdfFinal, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
                         }
                         
                         if ($previewMode) {
@@ -567,7 +572,7 @@ function Action($conf)
                             
                             // Dessiner les traits de coupe dans le preview aussi
                             if ($add_crop_marks && $imposition_mode === 'livre') {
-                                drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $central_crop_marks);
+                                drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
                             }
                             
                             addPageNumber($pdfPreview, $page_num, $x, $y, $new_width, $new_height, 0);
@@ -584,18 +589,18 @@ function Action($conf)
                         $a4_top_y = $global_y_offset + $crop_offset;
                         $a4_top_width = (4 * $page_width) - $crop_width_reduction;
                         $a4_top_height = $page_height - $crop_width_reduction;
-                        drawAllCropMarks($pdfFinal, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $central_crop_marks);
+                        drawAllCropMarks($pdfFinal, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $crop_marks_type);
                         
                         // A4 paysage du BAS (4 A6 côte à côte)
                         $a4_bottom_x = $global_x_offset + $crop_offset;
                         $a4_bottom_y = $global_y_offset + $page_height + $crop_offset;
                         $a4_bottom_width = (4 * $page_width) - $crop_width_reduction;
                         $a4_bottom_height = $page_height - $crop_width_reduction;
-                        drawAllCropMarks($pdfFinal, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $central_crop_marks);
+                        drawAllCropMarks($pdfFinal, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $crop_marks_type);
                         
                         if ($previewMode) {
-                            drawAllCropMarks($pdfPreview, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $central_crop_marks);
-                            drawAllCropMarks($pdfPreview, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $central_crop_marks);
+                            drawAllCropMarks($pdfPreview, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $crop_marks_type);
+                            drawAllCropMarks($pdfPreview, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $crop_marks_type);
                         }
                     }
                 }
@@ -638,7 +643,7 @@ function Action($conf)
                         
                         // Dessiner les traits de coupe si activées (mode livre)
                         if ($add_crop_marks && $imposition_mode === 'livre') {
-                            drawAllCropMarks($pdfFinal, $x, $y, $new_width, $new_height, $bleed_size, $central_crop_marks);
+                            drawAllCropMarks($pdfFinal, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
                         }
                         
                         if ($previewMode) {
@@ -647,7 +652,7 @@ function Action($conf)
                             
                             // Dessiner les traits de coupe dans le preview aussi
                             if ($add_crop_marks && $imposition_mode === 'livre') {
-                                drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $central_crop_marks);
+                                drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
                             }
                             
                             // Ajouter le numéro de page en surbrillance
@@ -671,18 +676,18 @@ function Action($conf)
                         $a4_top_y = $global_y_offset + $crop_offset;
                         $a4_top_width = (2 * $page_width) - $crop_width_reduction;
                         $a4_top_height = $page_height - $crop_width_reduction;
-                        drawAllCropMarks($pdfFinal, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $central_crop_marks);
+                        drawAllCropMarks($pdfFinal, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $crop_marks_type);
                         
                         // A4 paysage du BAS (2 A5 côte à côte)
                         $a4_bottom_x = $global_x_offset + $crop_offset;
                         $a4_bottom_y = $global_y_offset + $page_height + $crop_offset;
                         $a4_bottom_width = (2 * $page_width) - $crop_width_reduction;
                         $a4_bottom_height = $page_height - $crop_width_reduction;
-                        drawAllCropMarks($pdfFinal, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $central_crop_marks);
+                        drawAllCropMarks($pdfFinal, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $crop_marks_type);
                         
                         if ($previewMode) {
-                            drawAllCropMarks($pdfPreview, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $central_crop_marks);
-                            drawAllCropMarks($pdfPreview, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $central_crop_marks);
+                            drawAllCropMarks($pdfPreview, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $crop_marks_type);
+                            drawAllCropMarks($pdfPreview, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $crop_marks_type);
                         }
                     }
                     
@@ -718,7 +723,7 @@ function Action($conf)
                         
                         // Dessiner les traits de coupe si activées (mode livre)
                         if ($add_crop_marks && $imposition_mode === 'livre') {
-                            drawAllCropMarks($pdfFinal, $x, $y, $new_width, $new_height, $bleed_size, $central_crop_marks);
+                            drawAllCropMarks($pdfFinal, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
                         }
                         
                         if ($previewMode) {
@@ -727,7 +732,7 @@ function Action($conf)
                             
                             // Dessiner les traits de coupe dans le preview aussi
                             if ($add_crop_marks && $imposition_mode === 'livre') {
-                                drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $central_crop_marks);
+                                drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
                             }
                             
                             // Ajouter le numéro de page en surbrillance
@@ -751,18 +756,18 @@ function Action($conf)
                         $a4_top_y = $global_y_offset + $crop_offset;
                         $a4_top_width = (2 * $page_width) - $crop_width_reduction;
                         $a4_top_height = $page_height - $crop_width_reduction;
-                        drawAllCropMarks($pdfFinal, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $central_crop_marks);
+                        drawAllCropMarks($pdfFinal, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $crop_marks_type);
                         
                         // A4 paysage du BAS (2 A5 côte à côte)
                         $a4_bottom_x = $global_x_offset + $crop_offset;
                         $a4_bottom_y = $global_y_offset + $page_height + $crop_offset;
                         $a4_bottom_width = (2 * $page_width) - $crop_width_reduction;
                         $a4_bottom_height = $page_height - $crop_width_reduction;
-                        drawAllCropMarks($pdfFinal, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $central_crop_marks);
+                        drawAllCropMarks($pdfFinal, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $crop_marks_type);
                         
                         if ($previewMode) {
-                            drawAllCropMarks($pdfPreview, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $central_crop_marks);
-                            drawAllCropMarks($pdfPreview, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $central_crop_marks);
+                            drawAllCropMarks($pdfPreview, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $crop_marks_type);
+                            drawAllCropMarks($pdfPreview, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $crop_marks_type);
                         }
                     }
                 }
@@ -864,7 +869,7 @@ function Action($conf)
                 
                 // Récupérer les options des traits de coupe
                 $add_crop_marks = isset($_POST['add_crop_marks']);
-                $central_crop_marks = isset($_POST['central_crop_marks']);
+                $crop_marks_type = isset($_POST['crop_marks_type']) ? $_POST['crop_marks_type'] : 'normal';
                 $imposition_mode = isset($_POST['imposition_mode']) ? $_POST['imposition_mode'] : 'brochure';
                 $bleed_mode = isset($_POST['bleed_mode']) ? $_POST['bleed_mode'] : 'fullsize';
                 $bleed_size = isset($_POST['bleed_size']) ? floatval($_POST['bleed_size']) : 3;
@@ -1015,7 +1020,7 @@ function Action($conf)
                         
                         // Dessiner les traits de coupe si activées (mode livre)
                         if ($add_crop_marks && $imposition_mode === 'livre') {
-                            drawAllCropMarks($pdfFinal, $x, $y, $new_width, $new_height, $bleed_size, $central_crop_marks);
+                            drawAllCropMarks($pdfFinal, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
                         }
                         
                         if ($previewMode) {
@@ -1024,7 +1029,7 @@ function Action($conf)
                             
                             // Dessiner les traits de coupe dans le preview aussi
                             if ($add_crop_marks && $imposition_mode === 'livre') {
-                                drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $central_crop_marks);
+                                drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
                             }
                             
                             addPageNumber($pdfPreview, $page_num, $x, $y, $new_width, $new_height, 0);
@@ -1041,18 +1046,18 @@ function Action($conf)
                         $a4_top_y = $global_y_offset + $crop_offset;
                         $a4_top_width = (4 * $page_width) - $crop_width_reduction;
                         $a4_top_height = $page_height - $crop_width_reduction;
-                        drawAllCropMarks($pdfFinal, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $central_crop_marks);
+                        drawAllCropMarks($pdfFinal, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $crop_marks_type);
                         
                         // A4 paysage du BAS (4 A6 côte à côte)
                         $a4_bottom_x = $global_x_offset + $crop_offset;
                         $a4_bottom_y = $global_y_offset + $page_height + $crop_offset;
                         $a4_bottom_width = (4 * $page_width) - $crop_width_reduction;
                         $a4_bottom_height = $page_height - $crop_width_reduction;
-                        drawAllCropMarks($pdfFinal, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $central_crop_marks);
+                        drawAllCropMarks($pdfFinal, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $crop_marks_type);
                         
                         if ($previewMode) {
-                            drawAllCropMarks($pdfPreview, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $central_crop_marks);
-                            drawAllCropMarks($pdfPreview, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $central_crop_marks);
+                            drawAllCropMarks($pdfPreview, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $crop_marks_type);
+                            drawAllCropMarks($pdfPreview, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $crop_marks_type);
                         }
                     }
                 }
@@ -1095,7 +1100,7 @@ function Action($conf)
                             
                             // Dessiner les traits de coupe si activées (mode livre)
                             if ($add_crop_marks && $imposition_mode === 'livre') {
-                                drawAllCropMarks($pdfFinal, $x, $y, $new_width, $new_height, $bleed_size, $central_crop_marks);
+                                drawAllCropMarks($pdfFinal, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
                             }
                             
                             if ($previewMode) {
@@ -1104,7 +1109,7 @@ function Action($conf)
                                 
                                 // Dessiner les traits de coupe dans le preview aussi
                                 if ($add_crop_marks && $imposition_mode === 'livre') {
-                                    drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $central_crop_marks);
+                                    drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
                                 }
                                 
                                 // Ajouter le numéro de page en surbrillance
@@ -1128,18 +1133,18 @@ function Action($conf)
                             $a4_top_y = $global_y_offset + $crop_offset;
                             $a4_top_width = (2 * $page_width) - $crop_width_reduction;
                             $a4_top_height = $page_height - $crop_width_reduction;
-                            drawAllCropMarks($pdfFinal, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $central_crop_marks);
+                            drawAllCropMarks($pdfFinal, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $crop_marks_type);
                             
                             // A4 paysage du BAS (2 A5 côte à côte)
                             $a4_bottom_x = $global_x_offset + $crop_offset;
                             $a4_bottom_y = $global_y_offset + $page_height + $crop_offset;
                             $a4_bottom_width = (2 * $page_width) - $crop_width_reduction;
                             $a4_bottom_height = $page_height - $crop_width_reduction;
-                            drawAllCropMarks($pdfFinal, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $central_crop_marks);
+                            drawAllCropMarks($pdfFinal, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $crop_marks_type);
                             
                             if ($previewMode) {
-                                drawAllCropMarks($pdfPreview, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $central_crop_marks);
-                                drawAllCropMarks($pdfPreview, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $central_crop_marks);
+                                drawAllCropMarks($pdfPreview, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $crop_marks_type);
+                                drawAllCropMarks($pdfPreview, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $crop_marks_type);
                             }
                         }
                         
@@ -1175,7 +1180,7 @@ function Action($conf)
                             
                             // Dessiner les traits de coupe si activées (mode livre)
                             if ($add_crop_marks && $imposition_mode === 'livre') {
-                                drawAllCropMarks($pdfFinal, $x, $y, $new_width, $new_height, $bleed_size, $central_crop_marks);
+                                drawAllCropMarks($pdfFinal, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
                             }
                             
                             if ($previewMode) {
@@ -1184,7 +1189,7 @@ function Action($conf)
                                 
                                 // Dessiner les traits de coupe dans le preview aussi
                                 if ($add_crop_marks && $imposition_mode === 'livre') {
-                                    drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $central_crop_marks);
+                                    drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
                                 }
                                 
                                 // Ajouter le numéro de page en surbrillance
@@ -1208,18 +1213,18 @@ function Action($conf)
                             $a4_top_y = $global_y_offset + $crop_offset;
                             $a4_top_width = (2 * $page_width) - $crop_width_reduction;
                             $a4_top_height = $page_height - $crop_width_reduction;
-                            drawAllCropMarks($pdfFinal, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $central_crop_marks);
+                            drawAllCropMarks($pdfFinal, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $crop_marks_type);
                             
                             // A4 paysage du BAS (2 A5 côte à côte)
                             $a4_bottom_x = $global_x_offset + $crop_offset;
                             $a4_bottom_y = $global_y_offset + $page_height + $crop_offset;
                             $a4_bottom_width = (2 * $page_width) - $crop_width_reduction;
                             $a4_bottom_height = $page_height - $crop_width_reduction;
-                            drawAllCropMarks($pdfFinal, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $central_crop_marks);
+                            drawAllCropMarks($pdfFinal, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $crop_marks_type);
                             
                             if ($previewMode) {
-                                drawAllCropMarks($pdfPreview, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $central_crop_marks);
-                                drawAllCropMarks($pdfPreview, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $central_crop_marks);
+                                drawAllCropMarks($pdfPreview, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $crop_marks_type);
+                                drawAllCropMarks($pdfPreview, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $crop_marks_type);
                             }
                         }
                     }

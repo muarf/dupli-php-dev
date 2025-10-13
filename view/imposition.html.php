@@ -352,12 +352,16 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="central_crop_marks">
-                                    <input type="checkbox" name="central_crop_marks" id="central_crop_marks">
-                                    <i class="fa fa-arrows-h"></i> Traits de coupe centraux pour A3→A4
-                                </label>
+                                <label for="crop_marks_type"><i class="fa fa-scissors"></i> Type de traits de coupe :</label>
+                                <select name="crop_marks_type" id="crop_marks_type" class="form-control">
+                                    <option value="normal">Traits de coupe normaux (coins)</option>
+                                    <option value="central">Traits de coupe centraux (A3→A4)</option>
+                                    <option value="both">Les deux types</option>
+                                </select>
                                 <small class="help-block text-muted">
-                                    Ajoute uniquement des traits au milieu pour faciliter le calage sur riso
+                                    <strong>Normaux :</strong> Traits aux 4 coins<br>
+                                    <strong>Centraux :</strong> Traits au milieu pour coupe A3→A4<br>
+                                    <strong>Les deux :</strong> Combinaison des deux
                                 </small>
                             </div>
                         </div>
