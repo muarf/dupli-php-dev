@@ -130,7 +130,9 @@ function reordering_pages_a6($number_of_pages) {
             $sheet_seq = imposition_for_sheet($group, $total_pages);
             $result = array_merge($result, $sheet_seq);
         }
-        return $result;
+        
+        // CORRECTION: Inverser l'ordre pour que la page 1 soit à droite
+        return array_reverse($result);
     }
     
     // Logique générique pour les autres cas
@@ -183,7 +185,8 @@ function reordering_pages_a6($number_of_pages) {
         $result = array_merge($result, $sheet_seq);
     }
     
-    return $result;
+    // CORRECTION: Inverser l'ordre pour que la page 1 soit à droite
+    return array_reverse($result);
 }
 
 function resizeToA5($pdf, $template_id, $a5_width, $a5_height, $forceResize = false) {
