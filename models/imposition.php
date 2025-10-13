@@ -287,55 +287,30 @@ function drawCentralCropMarks($pdf, $x, $y, $width, $height) {
     $pdf->SetLineWidth(0.5);
     $pdf->SetDrawColor(0, 0, 0); // Noir
     
-    // Dimensions A3 : 420mm x 297mm
-    $a3_width = 420;
-    $a3_height = 297;
-    
     // Détecter l'orientation de la page
     $page_width = $pdf->getPageWidth();
     $page_height = $pdf->getPageHeight();
-    
-    // Debug
-    error_log("DEBUG drawCentralCropMarks: page_width=$page_width, page_height=$page_height");
-    error_log("DEBUG drawCentralCropMarks: orientation=" . ($page_width > $page_height ? 'paysage' : 'portrait'));
     
     if ($page_width > $page_height) {
         // Paysage : trait vertical à 21cm (210mm) - haut et bas
         $center_x = 210; // 21cm = 210mm
         $mark_length = 8; // Plus court
-        error_log("DEBUG: Dessin paysage - trait vertical haut et bas à x=$center_x");
         
-        // Trait haut : dans la zone visible
-        $pdf->Line($center_x, 5, $center_x, 5 + $mark_length); // Haut
+        // Trait haut
+        $pdf->Line($center_x, 5, $center_x, 5 + $mark_length);
         
-        // Trait bas : ajusté pour être dans la zone visible
-        $bottom_margin = 15; // Marge bas pour être sûr d'être visible
-        $bottom_y_start = $bottom_margin - $mark_length;
-        $bottom_y_end = $bottom_margin;
-        $pdf->Line($center_x, $bottom_y_start, $center_x, $bottom_y_end); // Bas
-        
-        // Debug : vérifier les coordonnées
-        error_log("DEBUG: Trait haut: x=$center_x, y1=5, y2=" . (5 + $mark_length));
-        error_log("DEBUG: Trait bas: x=$center_x, y1=$bottom_y_start, y2=$bottom_y_end");
+        // Trait bas - utiliser la hauteur de la page
+        $pdf->Line($center_x, $page_height - 5 - $mark_length, $center_x, $page_height - 5);
     } else {
         // Portrait : trait horizontal à 21cm (210mm) - gauche et droite
         $center_y = 210; // 21cm = 210mm
         $mark_length = 8; // Plus court
-        error_log("DEBUG: Dessin portrait - trait horizontal gauche et droite à y=$center_y");
         
-        // Trait gauche : dans la zone visible
-        $pdf->Line(5, $center_y, 5 + $mark_length, $center_y); // Gauche
+        // Trait gauche
+        $pdf->Line(5, $center_y, 5 + $mark_length, $center_y);
         
-        // Trait droite : ajusté pour être dans la zone visible
-        // Au lieu d'utiliser $a3_width, utiliser les dimensions de la zone de contenu
-        $right_margin = 15; // Marge droite pour être sûr d'être visible
-        $right_x_start = $right_margin - $mark_length;
-        $right_x_end = $right_margin;
-        $pdf->Line($right_x_start, $center_y, $right_x_end, $center_y); // Droite
-        
-        // Debug : vérifier les coordonnées
-        error_log("DEBUG: Trait gauche: x1=5, x2=" . (5 + $mark_length) . ", y=$center_y");
-        error_log("DEBUG: Trait droite: x1=$right_x_start, x2=$right_x_end, y=$center_y");
+        // Trait droite - utiliser la largeur de la page
+        $pdf->Line($page_width - 5 - $mark_length, $center_y, $page_width - 5, $center_y);
     }
 }
 
