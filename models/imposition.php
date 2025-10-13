@@ -298,13 +298,15 @@ function drawCentralCropMarks($pdf, $x, $y, $width, $height) {
     $page_height = $pdf->getPageHeight();
     
     if ($page_width > $page_height) {
-        // Paysage : trait vertical à 21cm (210mm)
+        // Paysage : trait vertical à 21cm (210mm) - haut et bas
         $center_x = 210; // 21cm = 210mm
+        $mark_length = 8; // Plus court
         $pdf->Line($center_x, 5, $center_x, 5 + $mark_length); // Haut
         $pdf->Line($center_x, $a3_height - 5 - $mark_length, $center_x, $a3_height - 5); // Bas
     } else {
-        // Portrait : trait horizontal à 21cm (210mm)
+        // Portrait : trait horizontal à 21cm (210mm) - gauche et droite
         $center_y = 210; // 21cm = 210mm
+        $mark_length = 8; // Plus court
         $pdf->Line(5, $center_y, 5 + $mark_length, $center_y); // Gauche
         $pdf->Line($a3_width - 5 - $mark_length, $center_y, $a3_width - 5, $center_y); // Droite
     }
