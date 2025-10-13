@@ -449,20 +449,22 @@ function Action($conf)
             
             $pdfPreview = null;
             $template_ids_preview = [];
-            if ($previewMode) {
-                $pdfPreview = new TCPDI();
-                $pdfPreview->setSourceFile($pdfFile);
-                $pdfPreview->setPrintHeader(false);
-                $pdfPreview->setPrintFooter(false);
-                
-                // Pré-importer tous les templates pour éviter les pages supplémentaires
-                for ($page_num = 1; $page_num <= $pageCount; $page_num++) {
-                    $template_ids_preview[$page_num] = $pdfPreview->importPage($page_num);
-                }
-            }
 
             // Traitement de l'imposition
             if ($imposition_type === 'a6') {
+                // Initialiser le preview pour A6 uniquement
+                if ($previewMode) {
+                    $pdfPreview = new TCPDI();
+                    $pdfPreview->setSourceFile($pdfFile);
+                    $pdfPreview->setPrintHeader(false);
+                    $pdfPreview->setPrintFooter(false);
+                    
+                    // Pré-importer tous les templates pour éviter les pages supplémentaires
+                    for ($page_num = 1; $page_num <= $pageCount; $page_num++) {
+                        $template_ids_preview[$page_num] = $pdfPreview->importPage($page_num);
+                    }
+                }
+                
                 // Pour A6 : créer recto et verso séparés
                 for ($i = 0; $i < count($ordered_pages_array); $i += $pages_per_sheet) {
                     $sheet_pages = array_slice($ordered_pages_array, $i, $pages_per_sheet);
@@ -622,6 +624,19 @@ function Action($conf)
                     }
                 }
             } else {
+                // Initialiser le preview pour A5 uniquement
+                if ($previewMode) {
+                    $pdfPreview = new TCPDI();
+                    $pdfPreview->setSourceFile($pdfFile);
+                    $pdfPreview->setPrintHeader(false);
+                    $pdfPreview->setPrintFooter(false);
+                    
+                    // Pré-importer tous les templates pour éviter les pages supplémentaires
+                    for ($page_num = 1; $page_num <= $pageCount; $page_num++) {
+                        $template_ids_preview[$page_num] = $pdfPreview->importPage($page_num);
+                    }
+                }
+                
                 // Pour A5 : créer recto et verso séparés (4 pages par côté)
                 for ($i = 0; $i < count($ordered_pages_array); $i += $pages_per_sheet) {
                     $sheet_pages = array_slice($ordered_pages_array, $i, $pages_per_sheet);
