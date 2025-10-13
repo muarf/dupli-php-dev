@@ -324,7 +324,7 @@
                             <div class="col-md-12">
                                 <label for="add_crop_marks">
                                     <input type="checkbox" name="add_crop_marks" id="add_crop_marks">
-                                    <i class="fa fa-scissors"></i> Ajouter les hirondelles de coupe
+                                    <i class="fa fa-scissors"></i> Ajouter les traits de coupe
                                 </label>
                             </div>
                         </div>
@@ -333,9 +333,13 @@
                             <div class="form-group">
                                 <label for="imposition_mode"><i class="fa fa-book"></i> Mode d'imposition :</label>
                                 <select name="imposition_mode" id="imposition_mode" class="form-control">
-                                    <option value="brochure">Brochure (sans gouttière + hirondelles globales)</option>
-                                    <option value="livre">Livre (gouttière + hirondelles individuelles)</option>
+                                    <option value="brochure">Brochure (sans marges intérieures + traits de coupe globaux)</option>
+                                    <option value="livre">Livre (marges intérieures + traits de coupe individuels)</option>
                                 </select>
+                                <small class="help-block text-muted">
+                                    <strong>Traits de coupe globaux :</strong> Traits autour de toute la feuille<br>
+                                    <strong>Traits de coupe individuels :</strong> Traits autour de chaque page
+                                </small>
                             </div>
 
                             <div class="form-group">
@@ -349,6 +353,16 @@
                             <div class="form-group">
                                 <label for="bleed_size"><i class="fa fa-ruler"></i> Taille marge de coupe (mm) :</label>
                                 <input type="number" name="bleed_size" id="bleed_size" class="form-control" value="3" min="1" max="10" step="0.5">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="central_crop_marks">
+                                    <input type="checkbox" name="central_crop_marks" id="central_crop_marks">
+                                    <i class="fa fa-arrows-h"></i> Traits de coupe centraux pour A3→A4
+                                </label>
+                                <small class="help-block text-muted">
+                                    Ajoute uniquement des traits au milieu pour faciliter le calage sur riso
+                                </small>
                             </div>
                         </div>
                     </div>
@@ -574,7 +588,7 @@
                 e.preventDefault();
             });
 
-            // Gestion de l'affichage des options hirondelles
+            // Gestion de l'affichage des options traits de coupe
             const addCropMarks = document.getElementById('add_crop_marks');
             const cropMarksOptions = document.getElementById('crop_marks_options');
 
