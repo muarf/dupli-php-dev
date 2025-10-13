@@ -1347,8 +1347,8 @@ function generateMachineHTML($index, $duplicopieurs, $duplicopieur_selectionne, 
                                 <span class="help-block">Ajustez le taux de remplissage des couleurs (0% = très léger, 100% = très foncé)</span>
                             </div>
                         </div>
-                    </div>
-                </div>
+                </div><!-- Fin brochure-item -->
+            </div><!-- Fin brochures-container -->
         </div><!-- Fin photocopieur-interface -->
         
         <!-- Prix de la machine -->
