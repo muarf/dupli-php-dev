@@ -1,4 +1,5 @@
 <?php
+error_log("DEBUG FICHIER: /root/dupli-php-dev/models/imposition.php VERSION NOUVELLE");
 require_once(__DIR__ . '/../vendor/autoload.php');
 require_once(__DIR__ . '/../controler/functions/utilities.php');
 use setasign\Fpdi\TcpdfFpdi as TCPDI;
@@ -242,20 +243,29 @@ function resizeToA6($pdf, $template_id, $a6_width, $a6_height, $forceResize = fa
 }
 
 function addPageNumber($pdf, $page_num, $x, $y, $new_width, $new_height, $rotation) {
-    // Ajouter le numéro de page en transparence
-    $pdf->SetFont('Helvetica', '', 150);
-    $pdf->SetTextColor(192, 192, 192); // Couleur gris clair
-    $pdf->SetAlpha(0.7 ); // Transparence
+    // Désactiver l'ajout automatique de pages
+    $pdf->setAutoPageBreak(false);
+    
+    // Ajouter le numéro de page en surbrillance (rouge sur fond jaune)
+    $pdf->SetFont('helvetica', 'B', 20);
+    $pdf->SetTextColor(255, 0, 0); // Rouge
+    $pdf->SetFillColor(255, 255, 0); // Jaune
+    
     if ($rotation == 180) {
         $pdf->StartTransform();
         $pdf->Rotate(180, $x + ($new_width / 2), $y + ($new_height / 2)); // Rotation centrée
     }
-    $pdf->SetXY($x, $y);
-    $pdf->Cell($new_width, $new_height, $page_num, 0, 0, 'C', false, '', 0, false, 'T', 'M');
+    
+    // Dessiner le fond jaune
+    $pdf->Rect($x + 2, $y + 2, 20, 15, 'F');
+    
+    // Ajouter le numéro en rouge avec Cell (qui n'ajoutera pas de page grâce à setAutoPageBreak)
+    $pdf->SetXY($x + 6, $y + 6);
+    $pdf->Cell(15, 8, $page_num, 0, 0, 'C', false, '', 0, false, 'T', 'M');
+    
     if ($rotation == 180) {
         $pdf->StopTransform();
     }
-    $pdf->SetAlpha(1); // Réinitialiser la transparence
 }
 
 function drawCropMarks($pdf, $x, $y, $width, $height, $bleed_size = 3) {
@@ -449,22 +459,21 @@ function Action($conf)
             
             $pdfPreview = null;
             $template_ids_preview = [];
+            
+            // Initialiser le preview pour A6 et A5
+            error_log("DEBUG: previewMode = " . ($previewMode ? "true" : "false") . ", imposition_type = " . $imposition_type);
+            if ($previewMode) {
+                $pdfPreview = new TCPDI();
+                $pdfPreview->setSourceFile($pdfFile);
+                $pdfPreview->setPrintHeader(false);
+                $pdfPreview->setPrintFooter(false);
+                
+                // NE PAS pré-importer pour A6, le faire au fur et à mesure
+                // Pour A5, on pré-importe dans le bloc else plus bas
+            }
 
             // Traitement de l'imposition
             if ($imposition_type === 'a6') {
-                // Initialiser le preview pour A6 uniquement
-                if ($previewMode) {
-                    $pdfPreview = new TCPDI();
-                    $pdfPreview->setSourceFile($pdfFile);
-                    $pdfPreview->setPrintHeader(false);
-                    $pdfPreview->setPrintFooter(false);
-                    
-                    // Pré-importer tous les templates pour éviter les pages supplémentaires
-                    for ($page_num = 1; $page_num <= $pageCount; $page_num++) {
-                        $template_ids_preview[$page_num] = $pdfPreview->importPage($page_num);
-                    }
-                }
-                
                 // Pour A6 : créer recto et verso séparés
                 for ($i = 0; $i < count($ordered_pages_array); $i += $pages_per_sheet) {
                     $sheet_pages = array_slice($ordered_pages_array, $i, $pages_per_sheet);
@@ -475,6 +484,7 @@ function Action($conf)
                     $pdfFinal->AddPage('L', [$a3_width, $a3_height]);
                     if ($previewMode) {
                         $pdfPreview->AddPage('L', [$a3_width, $a3_height]);
+                        error_log("DEBUG A6: Après AddPage RECTO, pages = " . $pdfPreview->getNumPages());
                     }
                     
                     // Calculer l'offset pour centrer la grille 2x4 sur la feuille A3
@@ -501,24 +511,25 @@ function Action($conf)
                         
                         $pdfFinal->useTemplate($template_id, $x, $y, $new_width, $new_height);
                         
+                        // Créer le preview en même temps
+                        if ($previewMode) {
+                            // Importer la page au moment de l'utiliser pour éviter les pages supplémentaires
+                            if (!isset($template_ids_preview[$page_num])) {
+                                $template_ids_preview[$page_num] = $pdfPreview->importPage($page_num);
+                            }
+                            $template_id_preview = $template_ids_preview[$page_num];
+                            $pdfPreview->useTemplate($template_id_preview, $x, $y, $new_width, $new_height);
+                            $pages_before = $pdfPreview->getNumPages();
+                            addPageNumber($pdfPreview, $page_num, $x, $y, $new_width, $new_height, 0);
+                            $pages_after = $pdfPreview->getNumPages();
+                            if ($pages_after != $pages_before) {
+                                error_log("DEBUG A6 RECTO: addPageNumber a ajouté " . ($pages_after - $pages_before) . " page(s)! (page $page_num)");
+                            }
+                        }
+                        
                         // Dessiner les traits de coupe si activées (mode livre)
                         if ($add_crop_marks && $imposition_mode === 'livre') {
                             drawAllCropMarks($pdfFinal, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
-                        }
-                        
-                        if ($previewMode) {
-                            $template_id_preview = $template_ids_preview[$page_num];
-                            
-                            
-                            // Réutiliser les mêmes dimensions et positions calculées pour pdfFinal
-                            $pdfPreview->useTemplate($template_id_preview, $x, $y, $new_width, $new_height);
-                            
-                            // Dessiner les traits de coupe dans le preview aussi
-                            if ($add_crop_marks && $imposition_mode === 'livre') {
-                                drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
-                            }
-                            
-                            addPageNumber($pdfPreview, $page_num, $x, $y, $new_width, $new_height, 0);
                         }
                     }
                     
@@ -541,16 +552,13 @@ function Action($conf)
                         $a4_bottom_height = $page_height - $crop_width_reduction;
                         drawAllCropMarks($pdfFinal, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $crop_marks_type);
                         
-                        if ($previewMode) {
-                            drawAllCropMarks($pdfPreview, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $crop_marks_type);
-                            drawAllCropMarks($pdfPreview, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $crop_marks_type);
-                        }
                     }
                     
                     // Créer la page verso
                     $pdfFinal->AddPage('L', [$a3_width, $a3_height]);
                     if ($previewMode) {
                         $pdfPreview->AddPage('L', [$a3_width, $a3_height]);
+                        error_log("DEBUG A6: Après AddPage VERSO, pages = " . $pdfPreview->getNumPages());
                     }
                     
                     // Calculer l'offset pour centrer la grille 2x4 sur la feuille A3
@@ -577,24 +585,25 @@ function Action($conf)
                         
                         $pdfFinal->useTemplate($template_id, $x, $y, $new_width, $new_height);
                         
+                        // Créer le preview en même temps
+                        if ($previewMode) {
+                            // Importer la page au moment de l'utiliser pour éviter les pages supplémentaires
+                            if (!isset($template_ids_preview[$page_num])) {
+                                $template_ids_preview[$page_num] = $pdfPreview->importPage($page_num);
+                            }
+                            $template_id_preview = $template_ids_preview[$page_num];
+                            $pdfPreview->useTemplate($template_id_preview, $x, $y, $new_width, $new_height);
+                            $pages_before = $pdfPreview->getNumPages();
+                            addPageNumber($pdfPreview, $page_num, $x, $y, $new_width, $new_height, 0);
+                            $pages_after = $pdfPreview->getNumPages();
+                            if ($pages_after != $pages_before) {
+                                error_log("DEBUG A6 RECTO: addPageNumber a ajouté " . ($pages_after - $pages_before) . " page(s)! (page $page_num)");
+                            }
+                        }
+                        
                         // Dessiner les traits de coupe si activées (mode livre)
                         if ($add_crop_marks && $imposition_mode === 'livre') {
                             drawAllCropMarks($pdfFinal, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
-                        }
-                        
-                        if ($previewMode) {
-                            $template_id_preview = $template_ids_preview[$page_num];
-                            
-                            
-                            // Réutiliser les mêmes dimensions et positions calculées pour pdfFinal
-                            $pdfPreview->useTemplate($template_id_preview, $x, $y, $new_width, $new_height);
-                            
-                            // Dessiner les traits de coupe dans le preview aussi
-                            if ($add_crop_marks && $imposition_mode === 'livre') {
-                                drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
-                            }
-                            
-                            addPageNumber($pdfPreview, $page_num, $x, $y, $new_width, $new_height, 0);
                         }
                     }
                     
@@ -617,10 +626,6 @@ function Action($conf)
                         $a4_bottom_height = $page_height - $crop_width_reduction;
                         drawAllCropMarks($pdfFinal, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $crop_marks_type);
                         
-                        if ($previewMode) {
-                            drawAllCropMarks($pdfPreview, $a4_top_x, $a4_top_y, $a4_top_width, $a4_top_height, $bleed_size, $crop_marks_type);
-                            drawAllCropMarks($pdfPreview, $a4_bottom_x, $a4_bottom_y, $a4_bottom_width, $a4_bottom_height, $bleed_size, $crop_marks_type);
-                        }
                     }
                 }
             } else {
@@ -826,11 +831,15 @@ function Action($conf)
             $array['download_url'] = 'download_pdf.php?file=' . $final_filename;
             
             if ($previewMode) {
-                // Sauvegarder la prévisualisation avec numéros
+                error_log("DEBUG: Sauvegarde du preview, pdfPreview existe = " . (isset($pdfPreview) && $pdfPreview !== null ? "OUI" : "NON"));
+                error_log("DEBUG: Nombre de pages dans pdfPreview = " . (isset($pdfPreview) && $pdfPreview !== null ? $pdfPreview->getNumPages() : "N/A"));
+                
+                // Sauvegarder le preview (créé en même temps que le final)
                 $preview_filename = $safe_filename . '_preview.pdf';
                 $output_pdf_path_preview = $tmp_dir . $preview_filename;
-                
                 $pdfPreview->Output($output_pdf_path_preview, 'F');
+                
+                error_log("DEBUG: Preview sauvegardé à " . $output_pdf_path_preview);
                 
                 // Utiliser l'endpoint d'affichage pour la prévisualisation avec timestamp pour éviter le cache
                 $array['preview_url'] = 'view_pdf.php?file=' . $preview_filename . '&t=' . time();
@@ -959,16 +968,24 @@ function Action($conf)
 
                 // Créer deux objets PDF
                 $pdfFinal = new TCPDI();
-                // Ne pas réinitialiser le preview ici pour éviter la duplication
-                // Le preview a déjà été initialisé dans la section principale
-
                 $pdfFinal->setSourceFile($pdfFile);
-
                 $pdfFinal->setPrintHeader(false);
                 $pdfFinal->setPrintFooter(false);
+                
+                // Initialiser le preview pour le bloc Ghostscript
+                $pdfPreview = null;
+                $template_ids_preview = [];
+                if ($previewMode) {
+                    $pdfPreview = new TCPDI();
+                    $pdfPreview->setSourceFile($pdfFile);
+                    $pdfPreview->setPrintHeader(false);
+                    $pdfPreview->setPrintFooter(false);
+                    // NE PAS pré-importer pour A6, le faire au fur et à mesure
+                }
 
                 // Traitement de l'imposition
                 if ($imposition_type === 'a6') {
+                    error_log("DEBUG GHOSTSCRIPT A6: Début du traitement A6");
                     // Pour A6 : créer recto et verso séparés (même logique que le bloc principal)
                     for ($i = 0; $i < count($ordered_pages_array); $i += $pages_per_sheet) {
                         $sheet_pages = array_slice($ordered_pages_array, $i, $pages_per_sheet);
@@ -1005,6 +1022,10 @@ function Action($conf)
                             
                             $pdfFinal->useTemplate($template_id, $x, $y, $new_width, $new_height);
                             if ($previewMode) {
+                                // Importer la page au moment de l'utiliser
+                                if (!isset($template_ids_preview[$page_num])) {
+                                    $template_ids_preview[$page_num] = $pdfPreview->importPage($page_num);
+                                }
                                 $template_id_preview = $template_ids_preview[$page_num];
                                 $pdfPreview->useTemplate($template_id_preview, $x, $y, $new_width, $new_height);
                                 addPageNumber($pdfPreview, $page_num, $x, $y, $new_width, $new_height, 0);
@@ -1015,6 +1036,7 @@ function Action($conf)
                         $pdfFinal->AddPage('L', [$a3_width, $a3_height]);
                         if ($previewMode) {
                             $pdfPreview->AddPage('L', [$a3_width, $a3_height]);
+                            error_log("DEBUG GHOSTSCRIPT A6: Après AddPage VERSO, pages = " . $pdfPreview->getNumPages());
                         }
                         
                     // Calculer l'offset pour centrer la grille 2x4 sur la feuille A3
@@ -1047,10 +1069,11 @@ function Action($conf)
                         }
                         
                         if ($previewMode) {
+                            // Importer la page au moment de l'utiliser
+                            if (!isset($template_ids_preview[$page_num])) {
+                                $template_ids_preview[$page_num] = $pdfPreview->importPage($page_num);
+                            }
                             $template_id_preview = $template_ids_preview[$page_num];
-                            
-                            
-                            // Réutiliser les mêmes dimensions et positions calculées pour pdfFinal
                             $pdfPreview->useTemplate($template_id_preview, $x, $y, $new_width, $new_height);
                             
                             // Dessiner les traits de coupe dans le preview aussi
