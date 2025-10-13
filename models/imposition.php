@@ -54,7 +54,7 @@ function imposition_for_sheet($group_index, $total_pages) {
     // Séquences exactes fournies par l'utilisateur
     $sequences = [
         16 => [
-            [1, 16, 13, 4, 8, 9, 12, 5, 3, 14, 15, 2, 6, 11, 10, 7]
+            [1, 16, 13, 4, 8, 9, 12, 5, 3, 14, 15, 2, 7, 10, 11, 6]
         ],
         32 => [
             [1, 32, 25, 8, 16, 17, 24, 9, 7, 26, 31, 2, 10, 23, 18, 15],
@@ -79,7 +79,7 @@ function imposition_for_sheet($group_index, $total_pages) {
     }
     
     // Sinon, utiliser une logique générique basée sur le pattern de base
-    $base_pattern = [1, 16, 13, 4, 8, 9, 12, 5, 3, 14, 15, 2, 6, 11, 10, 7];
+    $base_pattern = [1, 16, 13, 4, 8, 9, 12, 5, 3, 14, 15, 2, 7, 10, 11, 6];
     $seq = [];
     
     foreach ($base_pattern as $pos => $value) {
