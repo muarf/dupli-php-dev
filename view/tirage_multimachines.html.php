@@ -1237,7 +1237,7 @@ function toggleMachineType(machineIndex) {
         if (duplicopieurSelect) {
             duplicopieurSelect.required = true;
         }
-        duplicopieurInterface.style.display = '';
+        duplicopieurInterface.style.display = 'block';
         photocopieurInterface.style.display = 'none';
         
         // Activer les champs duplicopieur
@@ -1260,7 +1260,7 @@ function toggleMachineType(machineIndex) {
             duplicopieurSelect.value = ''; // Vider le champ
         }
         duplicopieurInterface.style.display = 'none';
-        photocopieurInterface.style.display = '';
+        photocopieurInterface.style.display = 'block';
         
         // Désactiver les champs duplicopieur
         var duplicopieurFields = duplicopieurInterface.querySelectorAll('input, select, textarea');

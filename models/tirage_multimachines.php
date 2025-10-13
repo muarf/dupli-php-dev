@@ -1240,6 +1240,7 @@ function generateMachineHTML($index, $duplicopieurs, $duplicopieur_selectionne, 
                     </div>
                 </div>
             </div>
+            </div><!-- Fin col-md-12 mode de saisie -->
         </div><!-- Fin duplicopieur-interface -->
         
             <!-- Interface photocopieur -->
