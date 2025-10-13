@@ -959,21 +959,10 @@ function Action($conf)
 
                 // Créer deux objets PDF
                 $pdfFinal = new TCPDI();
-                $pdfPreview = null;
-                $template_ids_preview = [];
+                // Ne pas réinitialiser le preview ici pour éviter la duplication
+                // Le preview a déjà été initialisé dans la section principale
 
                 $pdfFinal->setSourceFile($pdfFile);
-                if ($previewMode) {
-                    $pdfPreview = new TCPDI();
-                    $pdfPreview->setSourceFile($pdfFile);
-                    $pdfPreview->setPrintHeader(false);
-                    $pdfPreview->setPrintFooter(false);
-                    
-                    // Pré-importer tous les templates pour éviter les pages supplémentaires
-                    for ($page_num = 1; $page_num <= $pageCount; $page_num++) {
-                        $template_ids_preview[$page_num] = $pdfPreview->importPage($page_num);
-                    }
-                }
 
                 $pdfFinal->setPrintHeader(false);
                 $pdfFinal->setPrintFooter(false);
