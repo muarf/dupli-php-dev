@@ -374,6 +374,7 @@ function Action($conf)
             $bleed_mode = isset($_POST['bleed_mode']) ? $_POST['bleed_mode'] : 'fullsize';
             $bleed_size = isset($_POST['bleed_size']) ? floatval($_POST['bleed_size']) : 3;
             
+            
             // Réorganiser les pages selon le type d'imposition
             if ($imposition_type === 'a6') {
                 $ordered_pages = reordering_pages_a6($pageCount);
@@ -863,6 +864,7 @@ function Action($conf)
                 
                 // Récupérer les options des traits de coupe
                 $add_crop_marks = isset($_POST['add_crop_marks']);
+                $central_crop_marks = isset($_POST['central_crop_marks']);
                 $imposition_mode = isset($_POST['imposition_mode']) ? $_POST['imposition_mode'] : 'brochure';
                 $bleed_mode = isset($_POST['bleed_mode']) ? $_POST['bleed_mode'] : 'fullsize';
                 $bleed_size = isset($_POST['bleed_size']) ? floatval($_POST['bleed_size']) : 3;
