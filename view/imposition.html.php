@@ -360,7 +360,7 @@
                                 </select>
                                 <small class="help-block text-muted">
                                     <strong>Normaux :</strong> Traits aux 4 coins<br>
-                                    <strong>Centraux :</strong> Traits au milieu pour coupe A3→A4<br>
+                                    <strong>Centraux :</strong> Trait au milieu selon orientation (21cm)<br>
                                     <strong>Les deux :</strong> Combinaison des deux
                                 </small>
                             </div>

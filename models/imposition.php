@@ -283,7 +283,7 @@ function drawCropMarks($pdf, $x, $y, $width, $height, $bleed_size = 3) {
 }
 
 function drawCentralCropMarks($pdf, $x, $y, $width, $height) {
-    // Dessiner les traits de coupe centraux pour A3→A4 (au milieu de la page A3)
+    // Dessiner les traits de coupe centraux pour A3→A4 selon l'orientation
     $pdf->SetLineWidth(0.5);
     $pdf->SetDrawColor(0, 0, 0); // Noir
     
@@ -293,15 +293,21 @@ function drawCentralCropMarks($pdf, $x, $y, $width, $height) {
     $a3_width = 420;
     $a3_height = 297;
     
-    // Traits horizontaux au milieu de la page A3 (297/2 = 148.5mm)
-    $center_y = $a3_height / 2;
-    $pdf->Line(5, $center_y, 5 + $mark_length, $center_y); // Gauche
-    $pdf->Line($a3_width - 5 - $mark_length, $center_y, $a3_width - 5, $center_y); // Droite
+    // Détecter l'orientation de la page
+    $page_width = $pdf->getPageWidth();
+    $page_height = $pdf->getPageHeight();
     
-    // Traits verticaux au milieu de la page A3 (420/2 = 210mm)
-    $center_x = $a3_width / 2;
-    $pdf->Line($center_x, 5, $center_x, 5 + $mark_length); // Haut
-    $pdf->Line($center_x, $a3_height - 5 - $mark_length, $center_x, $a3_height - 5); // Bas
+    if ($page_width > $page_height) {
+        // Paysage : trait horizontal au milieu (297/2 = 148.5mm)
+        $center_y = $a3_height / 2;
+        $pdf->Line(5, $center_y, 5 + $mark_length, $center_y); // Gauche
+        $pdf->Line($a3_width - 5 - $mark_length, $center_y, $a3_width - 5, $center_y); // Droite
+    } else {
+        // Portrait : trait vertical au milieu (420/2 = 210mm = 21cm)
+        $center_x = $a3_width / 2;
+        $pdf->Line($center_x, 5, $center_x, 5 + $mark_length); // Haut
+        $pdf->Line($center_x, $a3_height - 5 - $mark_length, $center_x, $a3_height - 5); // Bas
+    }
 }
 
 function drawAllCropMarks($pdf, $x, $y, $width, $height, $bleed_size, $crop_marks_type) {
