@@ -676,7 +676,17 @@ function Action($conf)
                         $x = $global_x_offset + $page_col * ($page_width + $gutter_width) + $x_offset;
                         $y = $global_y_offset + $page_row * ($page_height + $gutter_width) + $y_offset;
                         
+                        // Rotation de 180° pour la deuxième ligne (tête-bêche)
+                        if ($page_row == 1) {
+                            $pdfFinal->StartTransform();
+                            $pdfFinal->Rotate(180, $x + ($new_width / 2), $y + ($new_height / 2));
+                        }
+                        
                         $pdfFinal->useTemplate($template_id, $x, $y, $new_width, $new_height);
+                        
+                        if ($page_row == 1) {
+                            $pdfFinal->StopTransform();
+                        }
                         
                         // Dessiner les traits de coupe si activées (mode livre)
                         if ($add_crop_marks && $imposition_mode === 'livre') {
@@ -684,21 +694,26 @@ function Action($conf)
                         }
                         
                         if ($previewMode) {
+                            // Rotation de 180° pour la deuxième ligne (tête-bêche)
+                            if ($page_row == 1) {
+                                $pdfPreview->StartTransform();
+                                $pdfPreview->Rotate(180, $x + ($new_width / 2), $y + ($new_height / 2));
+                            }
+                            
                             $template_id_preview = $template_ids_preview[$page_num];
                             $pdfPreview->useTemplate($template_id_preview, $x, $y, $new_width, $new_height);
+                            
+                            if ($page_row == 1) {
+                                $pdfPreview->StopTransform();
+                            }
                             
                             // Dessiner les traits de coupe dans le preview aussi
                             if ($add_crop_marks && $imposition_mode === 'livre') {
                                 drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
                             }
                             
-                            // Ajouter le numéro de page en surbrillance
-                            $pdfPreview->SetFont('helvetica', 'B', 20);
-                            $pdfPreview->SetTextColor(255, 0, 0); // Rouge
-                            $pdfPreview->SetFillColor(255, 255, 0); // Jaune
-                            $pdfPreview->Rect($x + 2, $y + 2, 20, 15, 'F'); // Fond jaune plus grand
-                            $pdfPreview->SetXY($x + 6, $y + 6);
-                            $pdfPreview->Cell(15, 8, $page_num, 0, 0, 'C', false, '', 0, false, 'T', 'M');
+                            // Ajouter le numéro de page (avec rotation si nécessaire)
+                            addPageNumber($pdfPreview, $page_num, $x, $y, $new_width, $new_height, $page_row == 1 ? 180 : 0);
                         }
                     }
                     
@@ -756,7 +771,17 @@ function Action($conf)
                         $x = $global_x_offset + $page_col * ($page_width + $gutter_width) + $x_offset;
                         $y = $global_y_offset + $page_row * ($page_height + $gutter_width) + $y_offset;
                         
+                        // Rotation de 180° pour la deuxième ligne (tête-bêche)
+                        if ($page_row == 1) {
+                            $pdfFinal->StartTransform();
+                            $pdfFinal->Rotate(180, $x + ($new_width / 2), $y + ($new_height / 2));
+                        }
+                        
                         $pdfFinal->useTemplate($template_id, $x, $y, $new_width, $new_height);
+                        
+                        if ($page_row == 1) {
+                            $pdfFinal->StopTransform();
+                        }
                         
                         // Dessiner les traits de coupe si activées (mode livre)
                         if ($add_crop_marks && $imposition_mode === 'livre') {
@@ -764,21 +789,26 @@ function Action($conf)
                         }
                         
                         if ($previewMode) {
+                            // Rotation de 180° pour la deuxième ligne (tête-bêche)
+                            if ($page_row == 1) {
+                                $pdfPreview->StartTransform();
+                                $pdfPreview->Rotate(180, $x + ($new_width / 2), $y + ($new_height / 2));
+                            }
+                            
                             $template_id_preview = $template_ids_preview[$page_num];
                             $pdfPreview->useTemplate($template_id_preview, $x, $y, $new_width, $new_height);
+                            
+                            if ($page_row == 1) {
+                                $pdfPreview->StopTransform();
+                            }
                             
                             // Dessiner les traits de coupe dans le preview aussi
                             if ($add_crop_marks && $imposition_mode === 'livre') {
                                 drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
                             }
                             
-                            // Ajouter le numéro de page en surbrillance
-                            $pdfPreview->SetFont('helvetica', 'B', 20);
-                            $pdfPreview->SetTextColor(255, 0, 0); // Rouge
-                            $pdfPreview->SetFillColor(255, 255, 0); // Jaune
-                            $pdfPreview->Rect($x + 2, $y + 2, 20, 15, 'F'); // Fond jaune plus grand
-                            $pdfPreview->SetXY($x + 6, $y + 6);
-                            $pdfPreview->Cell(15, 8, $page_num, 0, 0, 'C', false, '', 0, false, 'T', 'M');
+                            // Ajouter le numéro de page (avec rotation si nécessaire)
+                            addPageNumber($pdfPreview, $page_num, $x, $y, $new_width, $new_height, $page_row == 1 ? 180 : 0);
                         }
                     }
                     
@@ -905,6 +935,11 @@ function Action($conf)
                 
                 $usedGhostscript = true;
                 $pdfFile = $cleanedPdfFile; // Utiliser le fichier nettoyé
+                
+                // Récupérer le nom du fichier original pour le nom de sortie
+                $originalFileName = isset($_FILES["pdf"]["name"]) ? $_FILES["pdf"]["name"] : "document.pdf";
+                $originalFileNameWithoutExt = pathinfo($originalFileName, PATHINFO_FILENAME);
+                $safe_filename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $originalFileNameWithoutExt);
                 
                 // Récupérer le type d'imposition
                 $imposition_type = isset($_POST['imposition_type']) ? $_POST['imposition_type'] : 'a5';
@@ -1111,6 +1146,19 @@ function Action($conf)
                     }
                 }
             } else {
+                    // Initialiser le preview pour A5 dans le bloc Ghostscript
+                    if ($previewMode) {
+                        $pdfPreview = new TCPDI();
+                        $pdfPreview->setSourceFile($pdfFile);
+                        $pdfPreview->setPrintHeader(false);
+                        $pdfPreview->setPrintFooter(false);
+                        
+                        // Pré-importer tous les templates pour A5
+                        for ($page_num = 1; $page_num <= $pageCount; $page_num++) {
+                            $template_ids_preview[$page_num] = $pdfPreview->importPage($page_num);
+                        }
+                    }
+                    
                     // Pour A5 : créer recto et verso séparés (4 pages par côté)
                     for ($i = 0; $i < count($ordered_pages_array); $i += $pages_per_sheet) {
                         $sheet_pages = array_slice($ordered_pages_array, $i, $pages_per_sheet);
@@ -1145,7 +1193,17 @@ function Action($conf)
                             $x = $global_x_offset + $page_col * ($page_width + $gutter_width) + $x_offset;
                             $y = $global_y_offset + $page_row * ($page_height + $gutter_width) + $y_offset;
                             
+                            // Rotation de 180° pour la deuxième ligne (tête-bêche)
+                            if ($page_row == 1) {
+                                $pdfFinal->StartTransform();
+                                $pdfFinal->Rotate(180, $x + ($new_width / 2), $y + ($new_height / 2));
+                            }
+                            
                             $pdfFinal->useTemplate($template_id, $x, $y, $new_width, $new_height);
+                            
+                            if ($page_row == 1) {
+                                $pdfFinal->StopTransform();
+                            }
                             
                             // Dessiner les traits de coupe si activées (mode livre)
                             if ($add_crop_marks && $imposition_mode === 'livre') {
@@ -1153,21 +1211,26 @@ function Action($conf)
                             }
                             
                             if ($previewMode) {
+                                // Rotation de 180° pour la deuxième ligne (tête-bêche)
+                                if ($page_row == 1) {
+                                    $pdfPreview->StartTransform();
+                                    $pdfPreview->Rotate(180, $x + ($new_width / 2), $y + ($new_height / 2));
+                                }
+                                
                                 $template_id_preview = $template_ids_preview[$page_num];
                                 $pdfPreview->useTemplate($template_id_preview, $x, $y, $new_width, $new_height);
+                                
+                                if ($page_row == 1) {
+                                    $pdfPreview->StopTransform();
+                                }
                                 
                                 // Dessiner les traits de coupe dans le preview aussi
                                 if ($add_crop_marks && $imposition_mode === 'livre') {
                                     drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
                                 }
                                 
-                                // Ajouter le numéro de page en surbrillance
-                                $pdfPreview->SetFont('helvetica', 'B', 20);
-                                $pdfPreview->SetTextColor(255, 0, 0); // Rouge
-                                $pdfPreview->SetFillColor(255, 255, 0); // Jaune
-                                $pdfPreview->Rect($x + 2, $y + 2, 20, 15, 'F'); // Fond jaune plus grand
-                                $pdfPreview->SetXY($x + 6, $y + 6);
-                                $pdfPreview->Cell(15, 8, $page_num, 0, 0, 'C', false, '', 0, false, 'T', 'M');
+                                // Ajouter le numéro de page (avec rotation si nécessaire)
+                                addPageNumber($pdfPreview, $page_num, $x, $y, $new_width, $new_height, $page_row == 1 ? 180 : 0);
                             }
                         }
                         
@@ -1225,7 +1288,17 @@ function Action($conf)
                             $x = $global_x_offset + $page_col * ($page_width + $gutter_width) + $x_offset;
                             $y = $global_y_offset + $page_row * ($page_height + $gutter_width) + $y_offset;
                             
+                            // Rotation de 180° pour la deuxième ligne (tête-bêche)
+                            if ($page_row == 1) {
+                                $pdfFinal->StartTransform();
+                                $pdfFinal->Rotate(180, $x + ($new_width / 2), $y + ($new_height / 2));
+                            }
+                            
                             $pdfFinal->useTemplate($template_id, $x, $y, $new_width, $new_height);
+                            
+                            if ($page_row == 1) {
+                                $pdfFinal->StopTransform();
+                            }
                             
                             // Dessiner les traits de coupe si activées (mode livre)
                             if ($add_crop_marks && $imposition_mode === 'livre') {
@@ -1233,21 +1306,26 @@ function Action($conf)
                             }
                             
                             if ($previewMode) {
+                                // Rotation de 180° pour la deuxième ligne (tête-bêche)
+                                if ($page_row == 1) {
+                                    $pdfPreview->StartTransform();
+                                    $pdfPreview->Rotate(180, $x + ($new_width / 2), $y + ($new_height / 2));
+                                }
+                                
                                 $template_id_preview = $template_ids_preview[$page_num];
                                 $pdfPreview->useTemplate($template_id_preview, $x, $y, $new_width, $new_height);
+                                
+                                if ($page_row == 1) {
+                                    $pdfPreview->StopTransform();
+                                }
                                 
                                 // Dessiner les traits de coupe dans le preview aussi
                                 if ($add_crop_marks && $imposition_mode === 'livre') {
                                     drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
                                 }
                                 
-                                // Ajouter le numéro de page en surbrillance
-                                $pdfPreview->SetFont('helvetica', 'B', 20);
-                                $pdfPreview->SetTextColor(255, 0, 0); // Rouge
-                                $pdfPreview->SetFillColor(255, 255, 0); // Jaune
-                                $pdfPreview->Rect($x + 2, $y + 2, 20, 15, 'F'); // Fond jaune plus grand
-                                $pdfPreview->SetXY($x + 6, $y + 6);
-                                $pdfPreview->Cell(15, 8, $page_num, 0, 0, 'C', false, '', 0, false, 'T', 'M');
+                                // Ajouter le numéro de page (avec rotation si nécessaire)
+                                addPageNumber($pdfPreview, $page_num, $x, $y, $new_width, $new_height, $page_row == 1 ? 180 : 0);
                             }
                         }
                         
@@ -1289,18 +1367,21 @@ function Action($conf)
                 }
 
                 if ($previewMode) {
-                    $output_pdf_path_preview = $tmp_dir . 'imposition_preview_' . $timestamp . '.pdf';
+                    $preview_filename = $safe_filename . '_preview.pdf';
+                    $output_pdf_path_preview = $tmp_dir . $preview_filename;
                     $pdfPreview->Output($output_pdf_path_preview, 'F');
                     
-                // Utiliser l'endpoint d'affichage pour la prévisualisation
-                $array['preview_url'] = 'view_pdf.php?file=imposition_preview_' . $timestamp . '.pdf';
+                    // Utiliser l'endpoint d'affichage pour la prévisualisation avec timestamp pour éviter le cache
+                    $array['preview_url'] = 'view_pdf.php?file=' . $preview_filename . '&t=' . time();
                 }
 
-                $output_pdf_path_final = $tmp_dir . 'imposition_final_' . $timestamp . '.pdf';
+                // Utiliser le nom du fichier original avec suffixe
+                $final_filename = $safe_filename . '_imposed.pdf';
+                $output_pdf_path_final = $tmp_dir . $final_filename;
                 $pdfFinal->Output($output_pdf_path_final, 'F');
                 
                 // Utiliser l'endpoint de téléchargement pour les fichiers temporaires
-                $array['download_url'] = 'download_pdf.php?file=imposition_final_' . $timestamp . '.pdf';
+                $array['download_url'] = 'download_pdf.php?file=' . $final_filename;
                 
                 $array['success'] = true;
                 $array['result'] = "PDF imposé généré avec succès ! Le PDF contient $pageCount pages. (Nettoyé avec Ghostscript)";
