@@ -333,13 +333,9 @@
                             <div class="form-group">
                                 <label for="imposition_mode"><i class="fa fa-book"></i> Mode d'imposition :</label>
                                 <select name="imposition_mode" id="imposition_mode" class="form-control">
-                                    <option value="brochure">Brochure (sans marges intérieures + traits de coupe globaux)</option>
-                                    <option value="livre">Livre (marges intérieures + traits de coupe individuels)</option>
+                                    <option value="brochure">Mode brochure (sans marges intérieures)</option>
+                                    <option value="livre">Mode livre (avec marges intérieures)</option>
                                 </select>
-                                <small class="help-block text-muted">
-                                    <strong>Traits de coupe globaux :</strong> Traits autour de toute la feuille<br>
-                                    <strong>Traits de coupe individuels :</strong> Traits autour de chaque page
-                                </small>
                             </div>
 
                             <div class="form-group">
