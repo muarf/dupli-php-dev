@@ -1,5 +1,6 @@
 <?php
 require_once(__DIR__ . '/../vendor/autoload.php');
+require_once(__DIR__ . '/../controler/functions/utilities.php');
 use setasign\Fpdi\TcpdfFpdi as TCPDI;
 
 function reordering_pages_a5($number_of_pages) {
@@ -506,7 +507,6 @@ function Action($conf)
                         if ($previewMode) {
                             $template_id_preview = $template_ids_preview[$page_num];
                             
-                            error_log("DEBUG PREVIEW A6: Page $page_num à position ($x, $y) avec dimensions ($new_width x $new_height)");
                             
                             // Réutiliser les mêmes dimensions et positions calculées pour pdfFinal
                             $pdfPreview->useTemplate($template_id_preview, $x, $y, $new_width, $new_height);
@@ -583,7 +583,6 @@ function Action($conf)
                         if ($previewMode) {
                             $template_id_preview = $template_ids_preview[$page_num];
                             
-                            error_log("DEBUG PREVIEW A6: Page $page_num à position ($x, $y) avec dimensions ($new_width x $new_height)");
                             
                             // Réutiliser les mêmes dimensions et positions calculées pour pdfFinal
                             $pdfPreview->useTemplate($template_id_preview, $x, $y, $new_width, $new_height);
@@ -816,18 +815,7 @@ function Action($conf)
                 $preview_filename = $safe_filename . '_preview.pdf';
                 $output_pdf_path_preview = $tmp_dir . $preview_filename;
                 
-                // Log pour debug
-                error_log("DEBUG PREVIEW A6: Sauvegarde du preview dans $output_pdf_path_preview");
-                error_log("DEBUG PREVIEW A6: Nombre de pages preview: " . $pdfPreview->getNumPages());
-                
                 $pdfPreview->Output($output_pdf_path_preview, 'F');
-                
-                // Vérifier que le fichier a bien été créé
-                if (file_exists($output_pdf_path_preview)) {
-                    error_log("DEBUG PREVIEW A6: Fichier preview créé avec succès, taille: " . filesize($output_pdf_path_preview) . " bytes");
-                } else {
-                    error_log("DEBUG PREVIEW A6: ERREUR - Fichier preview non créé !");
-                }
                 
                 // Utiliser l'endpoint d'affichage pour la prévisualisation avec timestamp pour éviter le cache
                 $array['preview_url'] = 'view_pdf.php?file=' . $preview_filename . '&t=' . time();
@@ -1056,7 +1044,6 @@ function Action($conf)
                         if ($previewMode) {
                             $template_id_preview = $template_ids_preview[$page_num];
                             
-                            error_log("DEBUG PREVIEW A6: Page $page_num à position ($x, $y) avec dimensions ($new_width x $new_height)");
                             
                             // Réutiliser les mêmes dimensions et positions calculées pour pdfFinal
                             $pdfPreview->useTemplate($template_id_preview, $x, $y, $new_width, $new_height);
