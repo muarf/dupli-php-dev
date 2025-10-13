@@ -505,14 +505,20 @@ function Action($conf)
                         
                         if ($previewMode) {
                             $template_id_preview = $template_ids_preview[$page_num];
-                            $pdfPreview->useTemplate($template_id_preview, $x, $y, $new_width, $new_height);
+                            list($x_offset_preview, $y_offset_preview, $new_width_preview, $new_height_preview) = resizeToA6($pdfPreview, $template_id_preview, $page_width, $page_height, $forceResize);
+                            
+                            // Recalculer les positions pour le preview
+                            $x_preview = $global_x_offset + $page_col * ($page_width + $gutter_width) + $x_offset_preview;
+                            $y_preview = $global_y_offset + $page_row * ($page_height + $gutter_width) + $y_offset_preview;
+                            
+                            $pdfPreview->useTemplate($template_id_preview, $x_preview, $y_preview, $new_width_preview, $new_height_preview);
                             
                             // Dessiner les traits de coupe dans le preview aussi
                             if ($add_crop_marks && $imposition_mode === 'livre') {
-                                drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
+                                drawAllCropMarks($pdfPreview, $x_preview, $y_preview, $new_width_preview, $new_height_preview, $bleed_size, $crop_marks_type);
                             }
                             
-                            addPageNumber($pdfPreview, $page_num, $x, $y, $new_width, $new_height, 0);
+                            addPageNumber($pdfPreview, $page_num, $x_preview, $y_preview, $new_width_preview, $new_height_preview, 0);
                         }
                     }
                     
@@ -578,14 +584,20 @@ function Action($conf)
                         
                         if ($previewMode) {
                             $template_id_preview = $template_ids_preview[$page_num];
-                            $pdfPreview->useTemplate($template_id_preview, $x, $y, $new_width, $new_height);
+                            list($x_offset_preview, $y_offset_preview, $new_width_preview, $new_height_preview) = resizeToA6($pdfPreview, $template_id_preview, $page_width, $page_height, $forceResize);
+                            
+                            // Recalculer les positions pour le preview
+                            $x_preview = $global_x_offset + $page_col * ($page_width + $gutter_width) + $x_offset_preview;
+                            $y_preview = $global_y_offset + $page_row * ($page_height + $gutter_width) + $y_offset_preview;
+                            
+                            $pdfPreview->useTemplate($template_id_preview, $x_preview, $y_preview, $new_width_preview, $new_height_preview);
                             
                             // Dessiner les traits de coupe dans le preview aussi
                             if ($add_crop_marks && $imposition_mode === 'livre') {
-                                drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
+                                drawAllCropMarks($pdfPreview, $x_preview, $y_preview, $new_width_preview, $new_height_preview, $bleed_size, $crop_marks_type);
                             }
                             
-                            addPageNumber($pdfPreview, $page_num, $x, $y, $new_width, $new_height, 0);
+                            addPageNumber($pdfPreview, $page_num, $x_preview, $y_preview, $new_width_preview, $new_height_preview, 0);
                         }
                     }
                     
@@ -1035,14 +1047,20 @@ function Action($conf)
                         
                         if ($previewMode) {
                             $template_id_preview = $template_ids_preview[$page_num];
-                            $pdfPreview->useTemplate($template_id_preview, $x, $y, $new_width, $new_height);
+                            list($x_offset_preview, $y_offset_preview, $new_width_preview, $new_height_preview) = resizeToA6($pdfPreview, $template_id_preview, $page_width, $page_height, $forceResize);
+                            
+                            // Recalculer les positions pour le preview
+                            $x_preview = $global_x_offset + $page_col * ($page_width + $gutter_width) + $x_offset_preview;
+                            $y_preview = $global_y_offset + $page_row * ($page_height + $gutter_width) + $y_offset_preview;
+                            
+                            $pdfPreview->useTemplate($template_id_preview, $x_preview, $y_preview, $new_width_preview, $new_height_preview);
                             
                             // Dessiner les traits de coupe dans le preview aussi
                             if ($add_crop_marks && $imposition_mode === 'livre') {
-                                drawAllCropMarks($pdfPreview, $x, $y, $new_width, $new_height, $bleed_size, $crop_marks_type);
+                                drawAllCropMarks($pdfPreview, $x_preview, $y_preview, $new_width_preview, $new_height_preview, $bleed_size, $crop_marks_type);
                             }
                             
-                            addPageNumber($pdfPreview, $page_num, $x, $y, $new_width, $new_height, 0);
+                            addPageNumber($pdfPreview, $page_num, $x_preview, $y_preview, $new_width_preview, $new_height_preview, 0);
                         }
                     }
                     
