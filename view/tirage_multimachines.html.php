@@ -271,11 +271,13 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="machine-card">
                         <h5 class="text-center"><i class="fa fa-print"></i> Tirage #<?= ($index + 1) ?></h5>
-                        <p><strong><?= ucfirst($machine['type']) ?></strong></p>
-                        <div class="text-center">
-                            <span class="badge bg-primary fs-6"><?= number_format($machine['prix'], 2) ?>€</span>
-            </div>
-        </div>
+                        <p class="text-center"><strong><?= ucfirst($machine['type']) ?></strong></p>
+                        <div class="text-center" style="margin-top: 15px;">
+                            <h3 style="color: #337ab7; margin: 0;">
+                                <strong><?= number_format($machine['prix'], 2) ?>€</strong>
+                            </h3>
+                        </div>
+                    </div>
                 </div>
             <?php endforeach; ?>
         <?php endif; ?>
@@ -1058,13 +1060,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                             </div>
                         </div>
                     </div>
-                </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                    </div>
-                </div>
+                </div><!-- Fin photocopieur-interface -->
                 
                 <!-- Prix de la machine -->
                 <div class="form-group" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #28a745;">
@@ -1758,8 +1754,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Ajouter la machine au container
-            // Trouver le div qui contient le bouton "Ajouter un tirage"
-            const addButtonContainer = container.querySelector('.text-center');
+            // Trouver le div qui contient le bouton "Ajouter un tirage" (le dernier .text-center)
+            const addButtonContainer = container.querySelector('div.text-center:last-child');
             
             console.log('🔍 container:', container);
             console.log('🔍 addButtonContainer:', addButtonContainer);

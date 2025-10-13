@@ -204,3 +204,9 @@ Fill rate récupéré pour photocopieur: 1.0 ( 100 %) - Multiplicateur: 2.00
 
 
 
+
+
+
+
+
+

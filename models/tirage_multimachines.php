@@ -1240,7 +1240,7 @@ function generateMachineHTML($index, $duplicopieurs, $duplicopieur_selectionne, 
                     </div>
                 </div>
             </div>
-        </div>
+        </div><!-- Fin duplicopieur-interface -->
         
             <!-- Interface photocopieur -->
             <div id="photocopieur-interface-' . $index . '" class="machine-interface" style="display:none; background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #e83e8c;">
@@ -1349,7 +1349,7 @@ function generateMachineHTML($index, $duplicopieurs, $duplicopieur_selectionne, 
                         </div>
                     </div>
                 </div>
-        </div>
+        </div><!-- Fin photocopieur-interface -->
         
         <!-- Prix de la machine -->
         <div class="form-group" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #28a745;">

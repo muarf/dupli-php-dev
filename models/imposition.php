@@ -751,7 +751,7 @@ function Action($conf)
             $safe_filename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $originalFileNameWithoutExt);
 
             // Sauvegarder le PDF final
-            $final_filename = $safe_filename . '_imposed_' . $timestamp . '.pdf';
+            $final_filename = $safe_filename . '_imposed.pdf';
             $output_pdf_path_final = $tmp_dir . $final_filename;
             $pdfFinal->Output($output_pdf_path_final, 'F');
             
@@ -760,7 +760,7 @@ function Action($conf)
             
             if ($previewMode) {
                 // Sauvegarder la prévisualisation avec numéros
-                $preview_filename = $safe_filename . '_preview_' . $timestamp . '.pdf';
+                $preview_filename = $safe_filename . '_preview.pdf';
                 $output_pdf_path_preview = $tmp_dir . $preview_filename;
                 $pdfPreview->Output($output_pdf_path_preview, 'F');
                 

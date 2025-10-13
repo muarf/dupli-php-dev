@@ -71,6 +71,14 @@
                     <small class="text-muted d-block">Séparer couleurs pour multi-tambours</small>
                   </a>
                 </li>
+                <li role="separator" class="divider"></li>
+                <li>
+                  <a href="?taux_remplissage">
+                    <i class="fa fa-bar-chart" style="color: #84fab0; margin-right: 8px;"></i>
+                    <strong>Taux de Remplissage</strong>
+                    <small class="text-muted d-block">Calculer le % d'encre utilisé</small>
+                  </a>
+                </li>
               </ul>
             </li>
             <li>
