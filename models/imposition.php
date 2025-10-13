@@ -978,8 +978,8 @@ function Action($conf)
                         }
                         
                         // Calculer l'offset pour centrer la grille 2x4 sur la feuille A3
-                        $grid_width = 4 * $page_width;   // Largeur totale de la grille
-                        $grid_height = 2 * $page_height; // Hauteur totale de la grille
+                        $grid_width = 4 * $page_width + (3 * $gutter_width);   // Largeur totale + 3 gouttières
+                        $grid_height = 2 * $page_height + $gutter_width; // Hauteur totale + 1 gouttière
                         $global_x_offset = ($a3_width - $grid_width) / 2;
                         $global_y_offset = ($a3_height - $grid_height) / 2;
                         
@@ -995,8 +995,9 @@ function Action($conf)
                             $page_row = intval($j / 4);  // 0, 1 (2 rangées)
                             $page_col = $j % 4;          // 0, 1, 2, 3 (4 colonnes)
                             
-                            $x = $global_x_offset + $page_col * $page_width + $x_offset;
-                            $y = $global_y_offset + $page_row * $page_height + $y_offset;
+                            // Ajouter la gouttière dans le calcul
+                            $x = $global_x_offset + $page_col * ($page_width + $gutter_width) + $x_offset;
+                            $y = $global_y_offset + $page_row * ($page_height + $gutter_width) + $y_offset;
                             
                             $pdfFinal->useTemplate($template_id, $x, $y, $new_width, $new_height);
                             if ($previewMode) {
