@@ -191,14 +191,25 @@ class AideManager {
             $db = pdo_connect();
             $machines = array();
             
+            // Vérifier le type de base de données
+            $db_type = $db->getAttribute(PDO::ATTR_DRIVER_NAME);
+            
+            if ($db_type === 'sqlite') {
+                // SQLite : utiliser || pour la concaténation
+                $sql_dupli = "SELECT DISTINCT TRIM(marque) || ' ' || TRIM(modele) as nom FROM duplicopieurs WHERE actif = 1 ORDER BY marque, modele";
+                $sql_photo = "SELECT DISTINCT TRIM(marque) || ' ' || TRIM(modele) as nom FROM photocopieurs WHERE actif = 1 ORDER BY marque, modele";
+            } else {
+                // MySQL : utiliser CONCAT
+                $sql_dupli = "SELECT DISTINCT CONCAT(TRIM(marque), ' ', TRIM(modele)) as nom FROM duplicopieurs WHERE actif = 1 ORDER BY marque, modele";
+                $sql_photo = "SELECT DISTINCT CONCAT(TRIM(marque), ' ', TRIM(modele)) as nom FROM photocopieurs WHERE actif = 1 ORDER BY marque, modele";
+            }
+            
             // Récupérer les duplicopieurs
-            $sql_dupli = "SELECT CONCAT(marque, ' ', modele) as nom FROM duplicopieurs WHERE actif = 1 ORDER BY marque, modele";
             $stmt_dupli = $db->prepare($sql_dupli);
             $stmt_dupli->execute();
             $duplicopieurs = $stmt_dupli->fetchAll(PDO::FETCH_COLUMN);
             
             // Récupérer les photocopieurs
-            $sql_photo = "SELECT CONCAT(marque, ' ', modele) as nom FROM photocopieurs WHERE actif = 1 ORDER BY marque, modele";
             $stmt_photo = $db->prepare($sql_photo);
             $stmt_photo->execute();
             $photocopieurs = $stmt_photo->fetchAll(PDO::FETCH_COLUMN);
