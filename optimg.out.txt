@@ -1,0 +1,18 @@
+🚀 OPTIMISATION DES IMAGES EXTERNES
+====================================
+
+🖼️ Traitement de image1.png
+URL : https://www.kreyoly.com/uploads/allimg/20230306/1-23030611253G51.jpg
+--------------------------------------------------
+❌ Erreur : Image non trouvée : image1.png
+
+🖼️ Traitement de image2.png
+URL : https://www.kreyoly.com/uploads/allimg/20230306/1-23030611253T59.jpg
+--------------------------------------------------
+❌ Erreur : Image non trouvée : image2.png
+
+
+🧹 NETTOYAGE
+============
+
+✅ Optimisation terminée !
