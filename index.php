@@ -274,6 +274,22 @@ session_start();
 include(__DIR__ . '/controler/func.php');
 // conf.php sera inclus après l'exécution du modèle pour avoir la bonne base active
 
+// Initialiser le système d'internationalisation
+require_once __DIR__ . '/controler/functions/i18n.php';
+
+// Gérer le changement de langue
+if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en', 'es', 'de'])) {
+    setLanguage($_GET['lang']);
+    // Rediriger vers la même page sans le paramètre lang
+    $currentUrl = strtok($_SERVER["REQUEST_URI"], '?');
+    $params = $_GET;
+    unset($params['lang']);
+    if (!empty($params)) {
+        $currentUrl .= '?' . http_build_query($params);
+    }
+    header('Location: ' . $currentUrl);
+    exit;
+}
 
 $page = key($_GET) ?? 'accueil';
 
