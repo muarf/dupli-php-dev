@@ -9,11 +9,7 @@ require_once __DIR__ . '/../controler/func.php';
 
 function Action($conf = null)
 {
-    // Initialiser le tableau de retour
     $array = [];
-    
-    // S'assurer que login_error n'est pas défini au début
-    unset($array['login_error']);
     
     // Gestion AJAX pour récupérer un changement (AVANT la connexion à la base)
     if(isset($_GET['ajax']) && $_GET['ajax'] === 'get_change' && isset($_GET['id'])) {
@@ -29,6 +25,29 @@ function Action($conf = null)
             } else {
                 header('Content-Type: application/json');
                 echo json_encode(['success' => false, 'error' => 'Changement non trouvé']);
+            }
+            exit;
+        } catch (Exception $e) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+            exit;
+        }
+    }
+    
+    // Gestion AJAX pour récupérer une aide (AVANT la connexion à la base)
+    if(isset($_GET['ajax']) && $_GET['ajax'] === 'get_aide' && isset($_GET['id'])) {
+        try {
+            require_once __DIR__ . '/admin/AideManager.php';
+            $aideManager = new AideManager();
+            $aide_id = intval($_GET['id']);
+            $aide = $aideManager->getAide($aide_id);
+            
+            if ($aide) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => true, 'aide' => $aide]);
+            } else {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'error' => 'Aide non trouvée']);
             }
             exit;
         } catch (Exception $e) {
@@ -156,22 +175,16 @@ function Action($conf = null)
             
             if ($result && password_verify($_POST['password'], $result['password_hash'])) {
                 $_SESSION['user'] = "1";
-                // Rediriger pour éviter d'afficher la page de connexion
-                header('Location: ?admin');
-                exit;
             } else {
-                $array['login_error'] = 'Le mot de passe est invalide.';
+                $array['login_error'] = 'Mot de passe incorrect. Veuillez réessayer.';
             }
         } catch (Exception $e) {
             // Fallback vers l'ancien système en cas d'erreur
             $hash = '$2y$10$WVQNZ603f.6GpQSmITk1wOMztCPwzHXZyGKANw1q3dwVSuMVch7B.';
             if (password_verify($_POST['password'], $hash)) {
                 $_SESSION['user'] = "1";
-                // Rediriger pour éviter d'afficher la page de connexion
-                header('Location: ?admin');
-                exit;
             } else {
-                $array['login_error'] = 'Le mot de passe est invalide.';
+                $array['login_error'] = 'Mot de passe incorrect. Veuillez réessayer.';
             }
         }
     }
@@ -193,13 +206,27 @@ function Action($conf = null)
         require_once __DIR__ . '/admin/EditManager.php';
         require_once __DIR__ . '/admin/MachineManager.php';
         require_once __DIR__ . '/admin/ChangesManager.php';
+        require_once __DIR__ . '/admin/AideManager.php';
 require_once __DIR__ . '/../controler/func.php';
 require_once __DIR__ . '/../controler/conf.php';
         
         // Initialiser les managers
         if ($conf === null) {
-            return "Erreur: Configuration non définie";
+            error_log("ERREUR ADMIN: Configuration est NULL!");
+            require_once __DIR__ . '/../controler/functions/error_handler.php';
+            $result = show_error_page(
+                "La configuration de la base de données n'a pas été chargée correctement. Cela peut arriver si les fichiers de configuration sont manquants ou corrompus.",
+                "Configuration non définie",
+                __FILE__,
+                __LINE__,
+                null,
+                "Vérifiez que le fichier controler/conf.php existe et contient les bonnes informations de connexion à la base de données."
+            );
+            error_log("ERREUR ADMIN: Page d'erreur générée, longueur: " . strlen($result));
+            return $result;
         }
+        
+        error_log("ADMIN: Configuration chargée, type = " . ($conf['db_type'] ?? 'non défini'));
         
         // Initialiser le tableau de données
         $array = array();
@@ -218,6 +245,7 @@ require_once __DIR__ . '/../controler/conf.php';
         $editManager = new EditManager($conf);
         $machineManager = new AdminMachineManager($conf);
         $changesManager = new ChangesManager($conf);
+        $aideManager = new AideManager($conf);
         
         // Récupérer la base de données actuelle
         $array['current_db'] = $dbManager->getCurrentDatabase();
@@ -229,12 +257,14 @@ require_once __DIR__ . '/../controler/conf.php';
         if(array_key_exists('admin', $_GET)) {
             // Gestion des actions POST
             if($_SERVER['REQUEST_METHOD'] === 'POST') {
-                $array = handlePostActions($array, $dbManager, $backupManager, $siteManager, $priceManager, $tirageManager, $newsManager, $statsManager, $editManager, $machineManager, $changesManager);
+                $array = handlePostActions($array, $dbManager, $backupManager, $siteManager, $priceManager, $tirageManager, $newsManager, $statsManager, $editManager, $machineManager, $changesManager, $aideManager);
             }
             
             // Retourner la vue appropriée selon la section
             if(isset($_GET['changes'])) {
                 return handleChangesSection($array);
+            } elseif(isset($_GET['aide_machines'])) {
+                return handleAideMachinesSection($array);
             } elseif(isset($_GET['aide'])) {
                 return handleAideSection($array);
             } elseif(isset($_GET['bdd'])) {
@@ -302,7 +332,7 @@ require_once __DIR__ . '/../controler/conf.php';
 /**
  * Gérer les actions POST
  */
-function handlePostActions($array, $dbManager, $backupManager, $siteManager, $priceManager, $tirageManager, $newsManager, $statsManager, $editManager, $machineManager, $changesManager) {
+function handlePostActions($array, $dbManager, $backupManager, $siteManager, $priceManager, $tirageManager, $newsManager, $statsManager, $editManager, $machineManager, $changesManager, $aideManager) {
     // Création d'une nouvelle base de données
     if(isset($_POST['create_db']) && isset($_POST['db_name'])) {
         $result = $dbManager->createDatabase(
@@ -521,6 +551,34 @@ function handlePostActions($array, $dbManager, $backupManager, $siteManager, $pr
         }
     }
     
+    // Gestion des aides machines
+    if(isset($_POST['action']) && $_POST['action'] === 'add_aide') {
+        $result = $aideManager->addAide($_POST['machine'], $_POST['contenu_aide']);
+        if (isset($result['error'])) {
+            $array['aide_error'] = $result['error'];
+        } else {
+            $array['aide_success'] = $result['success'];
+        }
+    }
+    
+    if(isset($_POST['action']) && $_POST['action'] === 'edit_aide') {
+        $result = $aideManager->updateAide($_POST['id'], $_POST['machine'], $_POST['contenu_aide']);
+        if (isset($result['error'])) {
+            $array['aide_error'] = $result['error'];
+        } else {
+            $array['aide_success'] = $result['success'];
+        }
+    }
+    
+    if(isset($_POST['action']) && $_POST['action'] === 'delete_aide') {
+        $result = $aideManager->deleteAide($_POST['id']);
+        if (isset($result['error'])) {
+            $array['aide_error'] = $result['error'];
+        } else {
+            $array['aide_success'] = $result['success'];
+        }
+    }
+    
     // Gestion des tirages (marquer comme payé)
     if(isset($_POST['ids']) && isset($_POST['table'])) {
         $table = $_POST['table'];
@@ -597,10 +655,73 @@ function handlePostActions($array, $dbManager, $backupManager, $siteManager, $pr
     if(isset($_POST['delete'])) {
         $machine = $_GET['table'];
         $id = $_GET['edit'];
-        $editManager->deleteTirage($id, $machine);
-        // Rediriger vers la liste des tirages après suppression
-        $array['redirect_url'] = 'index.php?admin&tirages';
-        $array['tirage_deleted'] = true;
+        
+        try {
+            $editManager->deleteTirage($id, $machine);
+            // Rediriger vers la liste des tirages après suppression
+            $array['redirect_url'] = 'index.php?admin&tirages';
+            $array['tirage_deleted'] = true;
+        } catch (Throwable $e) {
+            // Afficher une page d'erreur simple au lieu d'une page blanche
+            ?>
+            <!DOCTYPE html>
+            <html lang="fr">
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <title>Erreur - Duplicator</title>
+                <link href="css/bootstrap.css" rel="stylesheet" type="text/css">
+                <!-- Preload des polices Font Awesome pour améliorer les performances -->
+                <link rel="preload" href="fonts/fontawesome-webfont.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+                
+                <!-- CSS Font Awesome avec font-display: swap -->
+                <link href="css/font-awesome.min.css" rel="stylesheet" type="text/css">
+            </head>
+            <body style="padding-bottom: 60px;">
+                <div class="navbar navbar-default navbar-static-top">
+                    <div class="container">
+                        <div class="navbar-header">
+                            <a class="navbar-brand" href="?accueil">
+                                <span><big>Duplicator.</big></span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="container" style="margin-top: 50px;">
+                    <div class="row">
+                        <div class="col-md-8 col-md-offset-2">
+                            <div class="alert alert-danger">
+                                <h2><i class="fa fa-exclamation-triangle"></i> Une erreur s'est produite</h2>
+                                <p><strong>Message d'erreur :</strong> <?= htmlspecialchars($e->getMessage()) ?></p>
+                                <p><strong>Fichier :</strong> <?= htmlspecialchars($e->getFile()) ?></p>
+                                <p><strong>Ligne :</strong> <?= htmlspecialchars($e->getLine()) ?></p>
+                                <p><strong>Heure :</strong> <?= date('Y-m-d H:i:s') ?></p>
+                                
+                                <hr>
+                                <p>
+                                    <a href="?accueil" class="btn btn-primary">
+                                        <i class="fa fa-home"></i> Retour à l'accueil
+                                    </a>
+                                    <button onclick="history.back()" class="btn btn-default">
+                                        <i class="fa fa-arrow-left"></i> Page précédente
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="navbar navbar-default navbar-fixed-bottom">
+                    <div class="container">
+                        <p class="navbar-text text-center">Codé avec ❤️ pour Duplicator</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            <?php
+            exit;
+        }
     }
     
     if(isset($_POST['save']) && !isset($_POST['titre'])) {
@@ -1356,6 +1477,34 @@ function changePassword($current_password, $new_password, $confirm_password) {
         
     } catch (Exception $e) {
         return ['error' => 'Erreur lors du changement de mot de passe : ' . $e->getMessage()];
+    }
+}
+
+/**
+ * Gérer la section des aides machines
+ */
+function handleAideMachinesSection($array) {
+    try {
+        // Récupérer les données d'aide
+        $aideManager = new AideManager($GLOBALS['model_variables']['current_db'] ?? null);
+        $aideData = $aideManager->getAllAidesData();
+        $array = array_merge($array, $aideData);
+        
+        // Obtenir toutes les machines
+        $array['all_machines'] = $aideManager->getAllMachines();
+        
+        // Gérer les messages
+        if (isset($array['aide_success'])) {
+            $array['message'] = ['type' => 'success', 'text' => $array['aide_success']];
+        } elseif (isset($array['aide_error'])) {
+            $array['message'] = ['type' => 'danger', 'text' => $array['aide_error']];
+        }
+        
+        return template("../view/admin_aide_machines.html.php", $array);
+        
+    } catch (Exception $e) {
+        $array['message'] = ['type' => 'danger', 'text' => 'Erreur : ' . $e->getMessage()];
+        return template("../view/admin_aide_machines.html.php", $array);
     }
 }
 
