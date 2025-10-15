@@ -5,7 +5,7 @@
   <div class="container">
     <div class="row">
       <div class="col-md-12">
-        <h1 class="text-center">Gestion des aides machines</h1>
+        <h1 class="text-center">Gestion des Questions-Réponses des Machines</h1>
         <hr>
         
         <!-- Messages d'erreur/succès -->
@@ -21,19 +21,19 @@
           </div>
         <?php endif; ?>
         
-        <!-- Section Ajouter une aide -->
+        <!-- Section Ajouter une Q&A -->
         <div class="row">
           <div class="col-md-12">
             <div class="panel panel-primary">
               <div class="panel-heading">
-                <h3 class="panel-title"><i class="fa fa-plus"></i> Ajouter une aide</h3>
+                <h3 class="panel-title"><i class="fa fa-plus"></i> Ajouter une Question-Réponse</h3>
               </div>
               <div class="panel-body">
-                <form method="POST" id="add-aide-form">
-                  <input type="hidden" name="action" value="add_aide">
+                <form method="POST" id="add-qa-form">
+                  <input type="hidden" name="action" value="add_qa">
                   
                   <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                       <div class="form-group">
                         <label for="machine">Machine :</label>
                         <select class="form-control" id="machine" name="machine" required>
@@ -46,13 +46,40 @@
                         </select>
                       </div>
                     </div>
+                    <div class="col-md-4">
+                      <div class="form-group">
+                        <label for="categorie">Catégorie :</label>
+                        <select class="form-control" id="categorie" name="categorie" required>
+                          <option value="general">Aide générale (page publique)</option>
+                          <option value="changement">Aide changement de consommables</option>
+                        </select>
+                        <small class="text-muted">Type d'aide à créer</small>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="form-group">
+                        <label for="ordre">Ordre d'affichage :</label>
+                        <input type="number" class="form-control" id="ordre" name="ordre" value="0" min="0">
+                        <small class="text-muted">Ordre d'affichage des questions (0 = premier)</small>
+                      </div>
+                    </div>
                   </div>
                   
                   <div class="row">
                     <div class="col-md-12">
                       <div class="form-group">
-                        <label for="contenu_aide">Contenu de l'aide :</label>
-                        <textarea class="form-control" id="contenu_aide" name="contenu_aide" rows="10" required></textarea>
+                        <label for="question">Question :</label>
+                        <input type="text" class="form-control" id="question" name="question" required>
+                        <small class="text-muted">Titre de la question qui apparaîtra dans l'accordéon</small>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="form-group">
+                        <label for="reponse">Réponse :</label>
+                        <textarea class="form-control" id="reponse" name="reponse" rows="10" required></textarea>
                         <small class="text-muted">Vous pouvez utiliser du HTML pour formater le contenu (titres, listes, images, etc.)</small>
                       </div>
                     </div>
@@ -61,7 +88,7 @@
                   <div class="row">
                     <div class="col-md-12 text-center">
                       <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="fa fa-plus"></i> Ajouter l'aide
+                        <i class="fa fa-plus"></i> Ajouter la Q&A
                       </button>
                     </div>
                   </div>
@@ -71,44 +98,56 @@
           </div>
         </div>
         
-        <!-- Section Liste des aides -->
+        <!-- Section Liste des Q&A -->
         <div class="row">
           <div class="col-md-12">
             <div class="panel panel-default">
               <div class="panel-heading">
-                <h3 class="panel-title"><i class="fa fa-list"></i> Aides existantes</h3>
+                <h3 class="panel-title"><i class="fa fa-list"></i> Questions-Réponses existantes</h3>
               </div>
               <div class="panel-body">
-                <?php if(isset($aides) && !empty($aides)): ?>
+                <?php if(isset($qa_list) && !empty($qa_list)): ?>
                   <div class="table-responsive">
                     <table class="table table-striped table-hover">
                       <thead>
                         <tr>
                           <th>Machine</th>
-                          <th>Contenu (aperçu)</th>
+                          <th>Question</th>
+                          <th>Catégorie</th>
+                          <th>Ordre</th>
                           <th>Date création</th>
                           <th>Dernière modification</th>
                           <th>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <?php foreach($aides as $aide): ?>
+                        <?php foreach($qa_list as $qa): ?>
                           <tr>
                             <td>
-                              <strong><?= htmlspecialchars($aide['machine']) ?></strong>
+                              <strong><?= htmlspecialchars($qa['machine']) ?></strong>
                             </td>
                             <td>
-                              <div class="aide-preview">
-                                <?= htmlspecialchars(substr(strip_tags($aide['contenu_aide']), 0, 100)) ?>...
+                              <div class="qa-preview">
+                                <?= htmlspecialchars($qa['question']) ?>
                               </div>
                             </td>
-                            <td><?= date('d/m/Y à H:i', strtotime($aide['date_creation'])) ?></td>
-                            <td><?= date('d/m/Y à H:i', strtotime($aide['date_modification'])) ?></td>
                             <td>
-                              <button class="btn btn-sm btn-info edit-aide" data-id="<?= $aide['id'] ?>">
+                              <?php if($qa['categorie'] === 'changement'): ?>
+                                <span class="badge badge-warning">Changement</span>
+                              <?php else: ?>
+                                <span class="badge badge-primary">Générale</span>
+                              <?php endif; ?>
+                            </td>
+                            <td>
+                              <span class="badge badge-info"><?= $qa['ordre'] ?></span>
+                            </td>
+                            <td><?= date('d/m/Y à H:i', strtotime($qa['date_creation'])) ?></td>
+                            <td><?= date('d/m/Y à H:i', strtotime($qa['date_modification'])) ?></td>
+                            <td>
+                              <button class="btn btn-sm btn-info edit-qa" data-id="<?= $qa['id'] ?>">
                                 <i class="fa fa-edit"></i> Modifier
                               </button>
-                              <button class="btn btn-sm btn-danger delete-aide" data-id="<?= $aide['id'] ?>">
+                              <button class="btn btn-sm btn-danger delete-qa" data-id="<?= $qa['id'] ?>">
                                 <i class="fa fa-trash"></i> Supprimer
                               </button>
                             </td>
@@ -119,7 +158,7 @@
                   </div>
                 <?php else: ?>
                   <div class="alert alert-info text-center">
-                    <i class="fa fa-info-circle"></i> Aucune aide enregistrée pour le moment.
+                    <i class="fa fa-info-circle"></i> Aucune question-réponse enregistrée pour le moment.
                   </div>
                 <?php endif; ?>
               </div>
@@ -156,27 +195,51 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">Modifier l'aide</h4>
+        <h4 class="modal-title">Modifier la Question-Réponse</h4>
       </div>
       <div class="modal-body">
         <form id="edit-form">
           <input type="hidden" id="edit_id" name="id">
           
-          <div class="form-group">
-            <label for="edit_machine">Machine :</label>
-            <select class="form-control" id="edit_machine" name="machine" required>
-              <option value="">Sélectionner une machine</option>
-              <?php if(isset($all_machines) && !empty($all_machines)): ?>
-                <?php foreach($all_machines as $machine): ?>
-                  <option value="<?= htmlspecialchars($machine) ?>"><?= htmlspecialchars($machine) ?></option>
-                <?php endforeach; ?>
-              <?php endif; ?>
-            </select>
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="edit_machine">Machine :</label>
+                <select class="form-control" id="edit_machine" name="machine" required>
+                  <option value="">Sélectionner une machine</option>
+                  <?php if(isset($all_machines) && !empty($all_machines)): ?>
+                    <?php foreach($all_machines as $machine): ?>
+                      <option value="<?= htmlspecialchars($machine) ?>"><?= htmlspecialchars($machine) ?></option>
+                    <?php endforeach; ?>
+                  <?php endif; ?>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="edit_categorie">Catégorie :</label>
+                <select class="form-control" id="edit_categorie" name="categorie" required>
+                  <option value="general">Aide générale (page publique)</option>
+                  <option value="changement">Aide changement de consommables</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="edit_ordre">Ordre d'affichage :</label>
+                <input type="number" class="form-control" id="edit_ordre" name="ordre" min="0">
+              </div>
+            </div>
           </div>
           
           <div class="form-group">
-            <label for="edit_contenu_aide">Contenu de l'aide :</label>
-            <textarea class="form-control" id="edit_contenu_aide" name="contenu_aide" rows="10" required></textarea>
+            <label for="edit_question">Question :</label>
+            <input type="text" class="form-control" id="edit_question" name="question" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="edit_reponse">Réponse :</label>
+            <textarea class="form-control" id="edit_reponse" name="reponse" rows="10" required></textarea>
             <small class="text-muted">Vous pouvez utiliser du HTML pour formater le contenu</small>
           </div>
         </form>
@@ -196,7 +259,7 @@
 <script>
 $(document).ready(function() {
     // Initialiser l'éditeur WYSIWYG
-    $('#contenu_aide, #edit_contenu_aide').summernote({
+    $('#reponse, #edit_reponse').summernote({
         height: 300,
         lang: 'fr-FR',
         toolbar: [
@@ -213,26 +276,29 @@ $(document).ready(function() {
     });
     
     // Gestion de l'édition
-    $('.edit-aide').click(function() {
+    $('.edit-qa').click(function() {
         var id = $(this).data('id');
         
-        $.get('?admin_aide_machines&ajax=get_aide&id=' + id)
+        $.get('?admin_aide_machines&ajax=get_qa&id=' + id)
             .done(function(response) {
                 if (response.success) {
-                    var aide = response.aide;
-                    $('#edit_id').val(aide.id);
-                    $('#edit_machine').val(aide.machine);
+                    var qa = response.qa;
+                    $('#edit_id').val(qa.id);
+                    $('#edit_machine').val(qa.machine);
+                    $('#edit_question').val(qa.question);
+                    $('#edit_ordre').val(qa.ordre);
+                    $('#edit_categorie').val(qa.categorie);
                     
                     // Mettre à jour le contenu de l'éditeur
-                    $('#edit_contenu_aide').summernote('code', aide.contenu_aide);
+                    $('#edit_reponse').summernote('code', qa.reponse);
                     
                     $('#editModal').modal('show');
                 } else {
-                    alert('Erreur lors du chargement de l\'aide: ' + (response.error || 'Erreur inconnue'));
+                    alert('Erreur lors du chargement de la Q&A: ' + (response.error || 'Erreur inconnue'));
                 }
             })
             .fail(function(xhr, status, error) {
-                alert('Erreur lors du chargement de l\'aide: ' + error);
+                alert('Erreur lors du chargement de la Q&A: ' + error);
             });
     });
     
@@ -240,10 +306,13 @@ $(document).ready(function() {
     $('#save-edit').click(function() {
         var id = $('#edit_id').val();
         var formData = {
-            action: 'edit_aide',
+            action: 'edit_qa',
             id: id,
             machine: $('#edit_machine').val(),
-            contenu_aide: $('#edit_contenu_aide').summernote('code')
+            question: $('#edit_question').val(),
+            reponse: $('#edit_reponse').summernote('code'),
+            ordre: $('#edit_ordre').val(),
+            categorie: $('#edit_categorie').val()
         };
         
         $.post('?admin_aide_machines', formData)
@@ -256,12 +325,12 @@ $(document).ready(function() {
     });
     
     // Gestion de la suppression
-    $('.delete-aide').click(function() {
-        if (confirm('Êtes-vous sûr de vouloir supprimer cette aide ?')) {
+    $('.delete-qa').click(function() {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette Q&A ?')) {
             var id = $(this).data('id');
             
             $.post('?admin_aide_machines', {
-                action: 'delete_aide',
+                action: 'delete_qa',
                 id: id
             }).done(function(response) {
                 location.reload();
@@ -270,16 +339,19 @@ $(document).ready(function() {
     });
     
     // Soumission du formulaire d'ajout
-    $('#add-aide-form').submit(function(e) {
+    $('#add-qa-form').submit(function(e) {
         e.preventDefault();
         
         // Récupérer le contenu de l'éditeur
-        var contenu_aide = $('#contenu_aide').summernote('code');
+        var reponse = $('#reponse').summernote('code');
         
         var formData = {
-            action: 'add_aide',
+            action: 'add_qa',
             machine: $('#machine').val(),
-            contenu_aide: contenu_aide
+            question: $('#question').val(),
+            reponse: reponse,
+            ordre: $('#ordre').val(),
+            categorie: $('#categorie').val()
         };
         
         $.post('?admin_aide_machines', formData)
@@ -293,7 +365,7 @@ $(document).ready(function() {
     
     // Fermer le modal et réinitialiser l'éditeur
     $('#editModal').on('hidden.bs.modal', function () {
-        $('#edit_contenu_aide').summernote('reset');
+        $('#edit_reponse').summernote('reset');
     });
 });
 </script>

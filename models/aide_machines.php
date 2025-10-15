@@ -10,7 +10,7 @@ function Action($conf) {
     // Créer l'instance du gestionnaire d'aides
     $aideManager = new AideManager($conf);
     
-    // Obtenir toutes les données d'aide
+    // Obtenir toutes les données Q&A
     $data = $aideManager->getAllAidesData();
     
     // Obtenir la liste de toutes les machines pour le sélecteur
@@ -19,13 +19,11 @@ function Action($conf) {
     // Si une machine spécifique est demandée via GET
     if (isset($_GET['machine']) && !empty($_GET['machine'])) {
         $machine_demandee = htmlspecialchars($_GET['machine']);
-        $data['aide_selectionnee'] = $aideManager->getAideByMachine($machine_demandee);
+        $data['qa_selectionnees'] = $aideManager->getQAByMachine($machine_demandee);
         $data['machine_selectionnee'] = $machine_demandee;
     }
     
-    // Variables pour la vue
-    $array = $data;
-    
-    return $array;
+    // Retourner le template avec les données
+    return template("../view/aide_machines.html.php", $data);
 }
 ?>

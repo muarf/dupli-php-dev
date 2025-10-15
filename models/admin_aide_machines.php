@@ -18,11 +18,14 @@ function Action($conf) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['action'])) {
             switch ($_POST['action']) {
-                case 'add_aide':
-                    if (!empty($_POST['machine']) && !empty($_POST['contenu_aide'])) {
-                        $result = $aideManager->addAide(
+                case 'add_qa':
+                    if (!empty($_POST['machine']) && !empty($_POST['question']) && !empty($_POST['reponse'])) {
+                        $result = $aideManager->addQA(
                             htmlspecialchars($_POST['machine']),
-                            $_POST['contenu_aide'] // Ne pas échapper le HTML pour permettre le formatage
+                            htmlspecialchars($_POST['question']),
+                            $_POST['reponse'], // Ne pas échapper le HTML pour permettre le formatage
+                            intval($_POST['ordre'] ?? 0),
+                            htmlspecialchars($_POST['categorie'] ?? 'general')
                         );
                         
                         if (isset($result['success'])) {
@@ -35,12 +38,15 @@ function Action($conf) {
                     }
                     break;
                     
-                case 'edit_aide':
-                    if (!empty($_POST['id']) && !empty($_POST['machine']) && !empty($_POST['contenu_aide'])) {
-                        $result = $aideManager->updateAide(
+                case 'edit_qa':
+                    if (!empty($_POST['id']) && !empty($_POST['machine']) && !empty($_POST['question']) && !empty($_POST['reponse'])) {
+                        $result = $aideManager->updateQA(
                             $_POST['id'],
                             htmlspecialchars($_POST['machine']),
-                            $_POST['contenu_aide']
+                            htmlspecialchars($_POST['question']),
+                            $_POST['reponse'],
+                            intval($_POST['ordre'] ?? 0),
+                            htmlspecialchars($_POST['categorie'] ?? 'general')
                         );
                         
                         if (isset($result['success'])) {
@@ -53,9 +59,9 @@ function Action($conf) {
                     }
                     break;
                     
-                case 'delete_aide':
+                case 'delete_qa':
                     if (!empty($_POST['id'])) {
-                        $result = $aideManager->deleteAide($_POST['id']);
+                        $result = $aideManager->deleteQA($_POST['id']);
                         
                         if (isset($result['success'])) {
                             $aide_success = $result['success'];
@@ -75,13 +81,13 @@ function Action($conf) {
         header('Content-Type: application/json');
         
         switch ($_GET['ajax']) {
-            case 'get_aide':
+            case 'get_qa':
                 if (isset($_GET['id'])) {
-                    $aide = $aideManager->getAide($_GET['id']);
-                    if ($aide) {
-                        echo json_encode(['success' => true, 'aide' => $aide]);
+                    $qa = $aideManager->getQA($_GET['id']);
+                    if ($qa) {
+                        echo json_encode(['success' => true, 'qa' => $qa]);
                     } else {
-                        echo json_encode(['success' => false, 'error' => 'Aide non trouvée']);
+                        echo json_encode(['success' => false, 'error' => 'Q&A non trouvée']);
                     }
                 } else {
                     echo json_encode(['success' => false, 'error' => 'ID manquant']);
