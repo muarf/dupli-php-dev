@@ -37,6 +37,11 @@
           <p class="lead">Visualisez les prix calculés automatiquement et modifiez les prix unitaires et d'achat pour chaque consommable.</p>
         </div>
         
+        <!-- DEBUG SIMPLE -->
+        <div style="background: yellow; padding: 10px; margin: 10px 0;">
+            <strong>DEBUG: Cette ligne doit apparaître si le code fonctionne</strong>
+        </div>
+        
         <?php 
         // Afficher un tableau pour chaque machine (duplicopieur ou photocopieuse)
         foreach ($machines as $key => $val) 
