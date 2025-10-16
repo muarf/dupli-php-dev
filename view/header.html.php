@@ -108,6 +108,26 @@
             <li>
               <a href="?admin"><?= _('nav.administration') ?></a>
             </li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                <span class="glyphicon glyphicon-globe" aria-hidden="true"></span>
+                <?= _('language.selector') ?> <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="<?= get_language_url('fr') ?>">
+                    <i class="fa fa-flag" style="color: #007bff; margin-right: 8px;"></i>
+                    <?= _('language.french') ?>
+                  </a>
+                </li>
+                <li>
+                  <a href="<?= get_language_url('en') ?>">
+                    <i class="fa fa-flag" style="color: #dc3545; margin-right: 8px;"></i>
+                    <?= _('language.english') ?>
+                  </a>
+                </li>
+              </ul>
+            </li>
           </ul>
         </div>
       </div>
