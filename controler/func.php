@@ -21,6 +21,7 @@ require_once __DIR__ . '/functions/machines.php';
 require_once __DIR__ . '/functions/tirage.php';
 require_once __DIR__ . '/functions/consommation.php';
 require_once __DIR__ . '/functions/utilities.php';
+require_once __DIR__ . '/functions/translation.php';
 
 // Définir le mode développement
 define('DEVELOPMENT_MODE', true);
