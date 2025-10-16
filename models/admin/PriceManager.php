@@ -92,13 +92,26 @@ class PriceManager {
         file_put_contents('/tmp/debug_dupli.log', "duplicopieur trouvé: " . print_r($duplicopieur, true) . "\n", FILE_APPEND);
         
         if ($duplicopieur) {
-            // C'est un duplicopieur - essayer plusieurs variantes de noms pour l'ancienne méthode
+            // C'est un duplicopieur - FORCER l'utilisation de "dupli" pour la compatibilité
+            // Les données historiques sont stockées sous "dupli" pas "Duplicopieur"
+            file_put_contents('/tmp/debug_dupli.log', "DUPLICOPIEUR DÉTECTÉ: Force utilisation dupli\n", FILE_APPEND);
+            $old_result = get_cons('dupli');
+            file_put_contents('/tmp/debug_dupli.log', "Résultat get_cons('dupli'): " . (empty($old_result) ? 'VIDE' : 'DONNÉES TROUVÉES') . "\n", FILE_APPEND);
+            
+            if (!empty($old_result) && (
+                (isset($old_result['master']) && isset($old_result['master']['moyenne_totale']['nb_m']) && $old_result['master']['moyenne_totale']['nb_m'] > 0) ||
+                (isset($old_result['encre']) && isset($old_result['encre']['moyenne_totale']['nb_p']) && $old_result['encre']['moyenne_totale']['nb_p'] > 0)
+            )) {
+                file_put_contents('/tmp/debug_dupli.log', "SUCCÈS: Utilisation données dupli\n", FILE_APPEND);
+                return $old_result;
+            }
+            
+            // Si pas de données avec "dupli", essayer d'autres variantes
             $machine_variants_for_cons = [
-                $machine,                    // Nom exact
+                'a3',                        // Ancien nom A3  
+                'a4',                        // Ancien nom A4
                 strtolower($machine),        // Nom en minuscules
-                'dupli',                     // Nom générique
-                'a3',                        // Ancien nom A3
-                'a4'                         // Ancien nom A4
+                $machine                     // Nom exact (en dernier recours)
             ];
             
             foreach ($machine_variants_for_cons as $variant) {
