@@ -37,9 +37,23 @@
           <p class="lead">Visualisez les prix calculés automatiquement et modifiez les prix unitaires et d'achat pour chaque consommable.</p>
         </div>
         
-        <!-- DEBUG SIMPLE -->
-        <div style="background: yellow; padding: 10px; margin: 10px 0;">
-            <strong>DEBUG: Cette ligne doit apparaître si le code fonctionne</strong>
+        <div class="alert alert-warning">
+            <strong>🔍 DEBUG:</strong> 
+            La machine "Duplicopieur" existe mais affiche des zéros. 
+            <?php
+            $db = pdo_connect();
+            $query = $db->prepare('SELECT COUNT(*) as count FROM cons WHERE machine = ?');
+            $query->execute(['Duplicopieur']);
+            $count_exact = $query->fetchColumn();
+            
+            $query->execute(['duplicopieur']);
+            $count_lower = $query->fetchColumn();
+            
+            $query->execute(['dupli']);
+            $count_dupli = $query->fetchColumn();
+            
+            echo "Données dans cons : 'Duplicopieur' = $count_exact, 'duplicopieur' = $count_lower, 'dupli' = $count_dupli";
+            ?>
         </div>
         
         <?php 
