@@ -205,14 +205,14 @@
                                 <i class="fa fa-file-image-o"></i>
                             </div>
                             <div id="uploadText">
-                                <h3 style="color: #333; margin-bottom: 10px;">Glissez votre PDF ou image ici</h3>
-                                <p style="color: #666; margin-bottom: 20px;">ou cliquez pour sélectionner un fichier</p>
+                                <h3 style="color: #333; margin-bottom: 10px;"><?php _e('taux_remplissage.drag_drop'); ?></h3>
+                                <p style="color: #666; margin-bottom: 20px;"><?php _e('taux_remplissage.click_select'); ?></p>
                                 <input type="file" name="file" id="file" accept="application/pdf,.pdf,image/jpeg,image/jpg,image/png,image/gif" style="display: none;" required>
                                 <button type="button" class="btn btn-lg" style="background: #84fab0; border: none; color: white; padding: 12px 30px; border-radius: 25px;">
-                                    <i class="fa fa-upload"></i> Sélectionner un fichier
+                                    <i class="fa fa-upload"></i> <?php _e('taux_remplissage.select_file'); ?>
                                 </button>
                                 <p class="text-muted" style="margin-top: 10px; font-size: 12px;">
-                                    <i class="fa fa-info-circle"></i> PDF, JPEG, PNG ou GIF - Maximum 50MB
+                                    <i class="fa fa-info-circle"></i> <?php _e('taux_remplissage.file_info'); ?>
                                 </p>
                             </div>
                             <div id="fileInfo" style="display: none;">

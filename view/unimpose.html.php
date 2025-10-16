@@ -1,6 +1,6 @@
 <?php
+require_once __DIR__ . '/../controler/functions/i18n.php';
 $title = __("unimpose.title");
-ob_start();
 ?>
 
 <div class="container">
@@ -74,11 +74,11 @@ ob_start();
                                 <i class="fa fa-file-pdf-o"></i>
                             </div>
                             <div id="uploadText">
-                                <h3 style="color: #333; margin-bottom: 10px;">Glissez votre PDF ici</h3>
-                                <p style="color: #666; margin-bottom: 20px;">ou cliquez pour sélectionner un fichier</p>
+                                <h3 style="color: #333; margin-bottom: 10px;"><?php _e('unimpose.drag_drop'); ?></h3>
+                                <p style="color: #666; margin-bottom: 20px;"><?php _e('unimpose.click_select'); ?></p>
                                 <input type="file" name="pdf" id="pdf" accept=".pdf" style="display: none;" required>
                                 <button type="button" class="btn btn-lg" style="background: #ffb3ba; border: none; color: white; padding: 12px 30px; border-radius: 25px;">
-                                    <i class="fa fa-upload"></i> Sélectionner un PDF
+                                    <i class="fa fa-upload"></i> <?php _e('unimpose.select_pdf'); ?>
                                 </button>
                             </div>
                             <div id="fileInfo" style="display: none;">
@@ -88,10 +88,10 @@ ob_start();
                                 </h4>
                                 <p id="fileName" style="color: #666; margin-bottom: 15px;"></p>
                                 <button type="submit" class="btn btn-success btn-lg">
-                                    <i class="fa fa-magic"></i> Désimposer le PDF
+                                    <i class="fa fa-magic"></i> <?php _e('unimpose.unimpose_pdf'); ?>
                                 </button>
                                 <button type="button" class="btn btn-default btn-lg" onclick="resetForm()" style="margin-left: 10px;">
-                                    <i class="fa fa-times"></i> Annuler
+                                    <i class="fa fa-times"></i> <?php _e('unimpose.cancel'); ?>
                                 </button>
                             </div>
                         </div>
@@ -214,7 +214,3 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 });
 </script>
-
-<?php
-$content = ob_get_clean();
-?>

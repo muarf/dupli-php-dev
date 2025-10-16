@@ -1,7 +1,14 @@
 <?php
 require_once __DIR__ . '/admin/TranslationManager.php';
+require_once __DIR__ . '/../controler/functions/i18n.php';
 
 function Action($conf) {
+    // Vérification de l'authentification admin
+    if(!isset($_SESSION['user'])) {
+        header('Location: ?admin');
+        exit;
+    }
+    
     $array = array();
     $translationManager = new TranslationManager($conf);
     

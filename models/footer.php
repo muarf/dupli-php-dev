@@ -1,6 +1,6 @@
 <?php
-// Inclure le système de traduction
-require_once __DIR__ . '/../controler/functions/simple_i18n.php';
+// Inclure le système de traduction principal
+require_once __DIR__ . '/../controler/functions/i18n.php';
 
 function footerAction($page){ 
 	$page = array('page' => $page );

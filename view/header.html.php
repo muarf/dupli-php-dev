@@ -1,5 +1,63 @@
 
-        
+<style>
+.navbar-brand {
+    white-space: nowrap !important;
+    overflow: visible !important;
+    font-size: 14px !important;
+}
+.navbar-nav {
+    white-space: nowrap !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+}
+.navbar-nav > li {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+}
+.navbar-nav > li > a {
+    white-space: nowrap !important;
+    padding: 8px 4px !important;
+    font-size: 12px !important;
+}
+.navbar {
+    min-height: 32px !important;
+}
+.navbar-header {
+    float: left !important;
+}
+.navbar-collapse {
+    overflow: visible !important;
+    max-height: none !important;
+}
+.navbar-nav {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+.btn-sm {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+}
+.navbar-brand big {
+    font-size: 16px !important;
+}
+.dropdown-menu {
+    font-size: 12px !important;
+}
+.language-selector .btn {
+    padding: 2px 4px !important;
+    font-size: 9px !important;
+    vertical-align: middle !important;
+    margin-top: 0px !important;
+    line-height: 1.2 !important;
+}
+.language-selector .btn i {
+    font-size: 8px !important;
+}
+.language-selector {
+    vertical-align: middle !important;
+    margin-top: -2px !important;
+}
+</style>
 
     <div class="navbar navbar-default navbar-static-top">
       <div class="container">
@@ -10,10 +68,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="?accueil" style="display: flex; align-items: center;">
-            <button type="button" class="btn btn-default btn-sm" onclick="history.back()" style="margin-right: 10px; vertical-align: middle;">
-              <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> <?php _e('header.previous'); ?>
-            </button>
+          <a class="navbar-brand" href="?accueil" style="white-space: nowrap;">
             <span><big><?php _e('header.brand'); ?></big></span>
           </a>
         </div>

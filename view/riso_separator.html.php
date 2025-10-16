@@ -71,11 +71,11 @@ canvas {
             <div style="font-size: 64px; color: #ff6b9d; margin-bottom: 20px;">
                 <i class="fa fa-cloud-upload"></i>
             </div>
-            <h3>Glissez votre image ici</h3>
-            <p class="text-muted">ou cliquez pour sélectionner</p>
+            <h3><?php _e('riso_separator.drag_drop'); ?></h3>
+            <p class="text-muted"><?php _e('riso_separator.click_select'); ?></p>
             <input type="file" id="imageInput" accept="image/png,image/jpeg,image/jpg" style="display: none;">
             <button type="button" class="btn btn-lg" style="background: #ff6b9d; color: white; border: none; padding: 12px 30px; border-radius: 25px; margin-top: 15px;">
-                <i class="fa fa-upload"></i> Sélectionner une image
+                <i class="fa fa-upload"></i> <?php _e('riso_separator.select_image'); ?>
             </button>
         </div>
     </div>

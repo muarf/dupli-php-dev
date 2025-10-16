@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../controler/functions/simple_i18n.php';
+require_once __DIR__ . '/../controler/functions/i18n.php';
 
 function Action($conf = null){
     try {

@@ -89,11 +89,11 @@ ob_start();
                             <div class="file-upload-icon" style="font-size: 48px; color: #ffd93d; margin-bottom: 20px;">
                                 <i class="fa fa-file-pdf-o"></i>
                             </div>
-                            <h4 style="color: #333; margin-bottom: 15px;">Glissez-déposez votre tract PDF ici</h4>
-                            <p style="color: #666; margin-bottom: 20px;">ou cliquez pour sélectionner un fichier</p>
+                            <h4 style="color: #333; margin-bottom: 15px;"><?php _e('imposition_tracts.drag_drop'); ?></h4>
+                            <p style="color: #666; margin-bottom: 20px;"><?php _e('imposition_tracts.click_select'); ?></p>
                             <input type="file" name="pdf_file" id="pdfFile" accept=".pdf" style="display: none;" required>
                             <button type="button" class="btn btn-warning btn-lg" id="selectFileBtn">
-                                <i class="fa fa-folder-open"></i> Choisir un tract PDF
+                                <i class="fa fa-folder-open"></i> <?php _e('imposition_tracts.select_tract'); ?>
                             </button>
                         </div>
                         

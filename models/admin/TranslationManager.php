@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../controler/functions/database.php';
-require_once __DIR__ . '/../../controler/functions/simple_i18n.php';
+require_once __DIR__ . '/../../controler/functions/i18n.php';
 
 /**
  * Gestionnaire de traductions pour l'administration
@@ -27,10 +27,30 @@ class TranslationManager {
         $file = $this->translationsPath . $language . '.json';
         if (file_exists($file)) {
             $content = file_get_contents($file);
-            return json_decode($content, true) ?: [];
+            $translations = json_decode($content, true) ?: [];
+            
+            // Convertir en structure plate pour le template
+            $flatTranslations = [];
+            $this->flattenTranslations($translations, '', $flatTranslations);
+            return $flatTranslations;
         }
         
         return [];
+    }
+    
+    /**
+     * Convertir les traductions imbriquées en structure plate
+     */
+    private function flattenTranslations($array, $prefix, &$flatTranslations) {
+        foreach ($array as $key => $value) {
+            $fullKey = $prefix ? $prefix . '.' . $key : $key;
+            
+            if (is_array($value)) {
+                $this->flattenTranslations($value, $fullKey, $flatTranslations);
+            } else {
+                $flatTranslations[$fullKey] = $value;
+            }
+        }
     }
     
     /**

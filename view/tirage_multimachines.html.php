@@ -1,4 +1,7 @@
 <?php
+// Inclure le système de traduction
+require_once __DIR__ . '/../controler/functions/i18n.php';
+
 // Extraire les variables du tableau $array si elles existent
 if (isset($array['duplicopieurs'])) {
     $duplicopieurs = $array['duplicopieurs'];
@@ -260,7 +263,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
     <!-- Récapitulatif après soumission -->
     <?php if (isset($contact) && isset($machines) && ($contact != "")): ?>
     <div class="summary-card">
-        <h3 class="text-center"><i class="fa fa-calculator"></i> Récapitulatif du tirage</h3>
+        <h3 class="text-center"><i class="fa fa-calculator"></i> <?php _e('tirage_multimachines.summary'); ?></h3>
         <div class="total-price text-center"><?= number_format($prix_total, 2) ?>€</div>
         <p class="mb-0 text-center">Contact: <strong><?= htmlspecialchars($contact) ?></strong></p>
     </div>
@@ -723,20 +726,20 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
 
 <form class="form-horizontal" action="#after" method="post" id="multimachines-form">
     <fieldset>
-        <legend class="text-center">Formulaire Multi-Tirages</legend>
+        <legend class="text-center"><?php _e('tirage_multimachines.form_title'); ?></legend>
         
         <!-- Contact -->
         <div class="form-group">
-            <label class="col-md-4 control-label" for="contact">Contact</label>  
+            <label class="col-md-4 control-label" for="contact"><?php _e('tirage_multimachines.contact'); ?></label>  
             <div class="col-md-4">
                 <input id="contact" name="contact" <?= !empty($contact) ? 'value="'.$contact.'"' : 'placeholder="me@example.com"';?> class="form-control input-md" required type="text">
-                <span class="help-block">Un mail, pseudo explicite</span>
+                <span class="help-block"><?php _e('tirage_multimachines.contact_help'); ?></span>
             </div>
         </div>
         
         <!-- Machines -->
         <div id="machines-container">
-            <h4 class="text-center">Tirages</h4>
+            <h4 class="text-center"><?php _e('tirage_multimachines.tirages'); ?></h4>
             
             <!-- Machine par défaut -->
             <div class="machine-item panel panel-primary" data-index="0">
@@ -746,8 +749,8 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                         <div class="col-xs-8 col-sm-9">
                             <h4 class="panel-title" style="margin: 0;">
                                 <i class="fa fa-chevron-down toggle-icon" id="toggle-icon-0"></i>
-                                <strong>Tirage #1</strong>
-                                <span class="machine-type-badge badge" id="type-badge-0">Duplicopieur</span>
+                                <strong><?php _e('tirage_multimachines.tirage_number'); ?>1</strong>
+                                <span class="machine-type-badge badge" id="type-badge-0"><?php _e('tirage_multimachines.duplicopieur'); ?></span>
                             </h4>
                         </div>
                         <div class="col-xs-4 col-sm-3 text-right">
@@ -765,12 +768,12 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                         <ul class="nav nav-tabs" role="tablist" style="margin-bottom: 20px;">
                             <li role="presentation" class="active" id="tab-duplicopieur-0">
                                 <a href="#" onclick="selectMachineTypeTab(0, 'duplicopieur'); return false;" style="font-size: 16px;">
-                                    <i class="fa fa-print" style="margin-right: 5px;"></i> Duplicopieur
+                                    <i class="fa fa-print" style="margin-right: 5px;"></i> <?php _e('tirage_multimachines.duplicopieur'); ?>
                                 </a>
                             </li>
                             <li role="presentation" id="tab-photocopieur-0">
                                 <a href="#" onclick="selectMachineTypeTab(0, 'photocopieur'); return false;" style="font-size: 16px;">
-                                    <i class="fa fa-copy" style="margin-right: 5px;"></i> Photocopieur
+                                    <i class="fa fa-copy" style="margin-right: 5px;"></i> <?php _e('tirage_multimachines.photocopieur'); ?>
                                 </a>
                             </li>
                         </ul>
@@ -792,7 +795,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                 <input type="hidden" name="machines[0][duplicopieur_id]" value="<?= $duplicopieur_selectionne['id'] ?>">
                                 <p class="form-control-static">
                                     <strong><?= htmlspecialchars($duplicopieur_selectionne['marque']) ?> <?= htmlspecialchars($duplicopieur_selectionne['modele']) ?></strong>
-                                    <br><small class="text-muted">Supporte A3 et A4</small>
+                                    <br><small class="text-muted"><?php _e('tirage_multimachines.supports_a3_a4'); ?></small>
                                 </p>
                             <?php elseif(isset($duplicopieurs) && count($duplicopieurs) > 1): ?>
                                 <select name="machines[0][duplicopieur_id]" class="form-control" required onchange="updateDuplicopieurCounters(this.value, 0)">
@@ -819,20 +822,20 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                     <!-- Sélection du tambour -->
                     <div class="form-group" id="tambour-group-0" style="display: none;">
                         <label class="col-md-3 control-label">
-                            <i class="fa fa-circle" style="margin-right: 5px;"></i> Tambour utilisé
+                            <i class="fa fa-circle" style="margin-right: 5px;"></i> <?php _e('tirage_multimachines.tambour_used'); ?>
                         </label>
                         <div class="col-md-9">
                             <select name="machines[0][tambour]" class="form-control" id="tambour-select-0">
                                 
                             </select>
-                            <span class="help-block">Choisissez le tambour utilisé pour ce tirage</span>
+                            <span class="help-block"><?php _e('tirage_multimachines.choose_tambour'); ?></span>
                         </div>
                     </div>
                     
                     <!-- Options duplicopieur -->
                     <div class="form-group" style="padding: 10px; margin: 10px 0;">
                         <label class="col-md-2 control-label">
-                            <i class="fa fa-sliders" style="margin-right: 5px;"></i> Options
+                            <i class="fa fa-sliders" style="margin-right: 5px;"></i> <?php _e('tirage_multimachines.options'); ?>
                         </label>
                         <div class="col-md-10">
                             <div class="row">
@@ -848,7 +851,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                     <div class="checkbox">
                                         <label for="rv_0">
                                             <input name="machines[0][rv]" value="oui" type="checkbox" onchange="calculateTotalPrice()" id="rv_0">
-                                            <i class="fa fa-files-o"></i> Recto/verso
+                                            <i class="fa fa-files-o"></i> <?php _e('tirage_multimachines.recto_verso'); ?>
                                         </label>
                                     </div>
                                 </div>
@@ -867,21 +870,21 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                     <!-- Mode de saisie -->
                     <div class="col-md-12" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #28a745;">
                         <legend style="border-bottom: 2px solid #dee2e6; padding-bottom: 10px; margin-bottom: 15px; font-size: 18px;">
-                            <i class="fa fa-keyboard-o" style="margin-right: 8px; color: #28a745;"></i> Mode de saisie
+                            <i class="fa fa-keyboard-o" style="margin-right: 8px; color: #28a745;"></i> <?php _e('tirage_multimachines.input_mode'); ?>
                         </legend>
                         <div class="form-group">
-                            <label class="col-md-3 control-label">Type de saisie</label>
+                            <label class="col-md-3 control-label"><?php _e('tirage_multimachines.input_type'); ?></label>
                             <div class="col-md-4">
                                 <div class="radio">
                                     <label>
                                         <input type="radio" name="machines[0][mode_saisie]" value="compteurs" checked onchange="toggleSaisieMode(0)">
-                                        Compteurs (avant/après)
+                                        <?php _e('tirage_multimachines.counters_before_after'); ?>
                                     </label>
                                 </div>
                                 <div class="radio">
                                     <label>
                                         <input type="radio" name="machines[0][mode_saisie]" value="manuel" onchange="toggleSaisieMode(0)">
-                                        Masters et passages
+                                        <?php _e('tirage_multimachines.masters_and_passes'); ?>
                                     </label>
                                 </div>
                             </div>
@@ -892,15 +895,15 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                             <div class="row">
                                 <div class="col-md-6">
                                     <fieldset style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
-                                        <legend style="width: auto; padding: 0 10px; font-size: 16px; margin-bottom: 10px;">Compteurs AVANT</legend>
+                                        <legend style="width: auto; padding: 0 10px; font-size: 16px; margin-bottom: 10px;"><?php _e('tirage_multimachines.counters_before'); ?></legend>
                                         <div class="form-group">
-                                            <label class="col-xs-4 control-label" for="master_av_0">Masters</label>  
+                                            <label class="col-xs-4 control-label" for="master_av_0"><?php _e('tirage_multimachines.masters'); ?></label>  
                                             <div class="col-xs-8">
                                                 <input id="master_av_0" name="machines[0][master_av]" class="form-control input-sm" type="number" min="0" value="<?= isset($master_av) ? $master_av : '0' ?>" onchange="calculateTotalPrice()" style="max-width: 120px;">
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label class="col-xs-4 control-label" for="passage_av_0">Passages</label>  
+                                            <label class="col-xs-4 control-label" for="passage_av_0"><?php _e('tirage_multimachines.passes'); ?></label>  
                                             <div class="col-xs-8">
                                                 <input id="passage_av_0" name="machines[0][passage_av]" class="form-control input-sm" type="number" min="0" value="<?= isset($passage_av) ? $passage_av : '0' ?>" onchange="calculateTotalPrice()" style="max-width: 120px;">
                                             </div>
@@ -909,7 +912,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                 </div>
                                 <div class="col-md-6">
                                     <fieldset style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
-                                        <legend style="width: auto; padding: 0 10px; font-size: 16px; margin-bottom: 10px;">Compteurs APRÈS</legend>
+                                        <legend style="width: auto; padding: 0 10px; font-size: 16px; margin-bottom: 10px;"><?php _e('tirage_multimachines.counters_after'); ?></legend>
                                         <div class="form-group">
                                             <label class="col-xs-4 control-label" for="master_ap_0">Masters</label>  
                                             <div class="col-xs-8">
@@ -917,7 +920,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label class="col-xs-4 control-label" for="passage_ap_0">Passages</label>  
+                                            <label class="col-xs-4 control-label" for="passage_ap_0"><?php _e('tirage_multimachines.passes'); ?></label>  
                                             <div class="col-xs-8">
                                                 <input id="passage_ap_0" name="machines[0][passage_ap]" class="form-control input-sm" type="number" min="0" value="<?= $passage_av ?>" onchange="calculateTotalPrice()" style="max-width: 120px;">
                                             </div>
@@ -983,42 +986,42 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                     <!-- Section pour les brochures/tracts -->
                     <div class="brochures-container" data-machine="0">
                         <h5 style="background: #f8f9fa; padding: 12px; border-radius: 5px; margin-bottom: 15px; border-left: 3px solid #9c27b0;">
-                            <i class="fa fa-book" style="margin-right: 8px; color: #9c27b0;"></i> Brochures/Tracts à imprimer
+                            <i class="fa fa-book" style="margin-right: 8px; color: #9c27b0;"></i> <?php _e('tirage_multimachines.brochures_tracts'); ?>
                         </h5>
                         <div class="brochure-item" data-brochure="0" style="padding: 15px; background: #ffffff; border: 1px solid #dee2e6; border-radius: 5px; margin-bottom: 10px;">
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label class="control-label" for="nb_exemplaires_0_0">
-                                            <i class="fa fa-copy"></i> Nombre d'exemplaires
+                                            <i class="fa fa-copy"></i> <?php _e('tirage_multimachines.number_copies'); ?>
                                         </label>  
                                         <input id="nb_exemplaires_0_0" name="machines[0][brochures][0][nb_exemplaires]" class="form-control input-sm" type="number" min="1" value="1" onchange="calculateTotalPrice()" style="max-width: 100px;" placeholder="Ex: 10">
-                                        <small class="text-muted">Combien de copies identiques ?</small>
+                                        <small class="text-muted"><?php _e('tirage_multimachines.copies_question'); ?></small>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label class="control-label" for="nb_feuilles_0_0">
-                                            <i class="fa fa-file-text-o"></i> Feuilles par exemplaire
+                                            <i class="fa fa-file-text-o"></i> <?php _e('tirage_multimachines.sheets_per_copy'); ?>
                                         </label>  
                                         <input id="nb_feuilles_0_0" name="machines[0][brochures][0][nb_feuilles]" class="form-control input-sm" type="number" min="1" onchange="calculateTotalPrice()" style="max-width: 100px;" placeholder="Ex: 5">
-                                        <small class="text-muted">Pages par copie</small>
+                                        <small class="text-muted"><?php _e('tirage_multimachines.pages_per_copy'); ?></small>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="control-label">
-                                            <i class="fa fa-calculator"></i> Total feuilles
+                                            <i class="fa fa-calculator"></i> <?php _e('tirage_multimachines.total_sheets'); ?>
                                         </label>
                                         <div class="well well-sm" style="margin: 0; padding: 8px; background: #f8f9fa; border: 1px solid #ddd;">
                                             <span id="total-feuilles-0-0" style="font-weight: bold; color: #007bff;">1 feuille</span>
-                                            <small class="text-muted">(exemplaires × feuilles/ex.)</small>
+                                            <small class="text-muted">(<?php _e('tirage_multimachines.sheets_calculation'); ?>)</small>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="control-label" for="radios_0_0">Taille</label>
+                                        <label class="control-label" for="radios_0_0"><?php _e('tirage_multimachines.size'); ?></label>
                                         <div> 
                                             <label class="radio-inline" for="radios-0-0-0">
                                                 <input name="machines[0][brochures][0][taille]" id="radios-0-0-0" value="A4" checked="checked" type="radio" onchange="calculateTotalPrice()">
@@ -1034,11 +1037,11 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                             </div>
                             <div class="row">
                                 <div class="col-md-12">
-                                    <label class="control-label"><i class="fa fa-cogs"></i> Options</label>
+                                    <label class="control-label"><i class="fa fa-cogs"></i> <?php _e('tirage_multimachines.options'); ?></label>
                                     <div class="checkbox-inline" style="margin-right: 20px;">
                                         <label for="rv_0_0">
                                             <input name="machines[0][brochures][0][rv]" value="oui" type="checkbox" onchange="calculateTotalPrice()" id="rv_0_0">
-                                            <i class="fa fa-files-o"></i> Recto/verso
+                                            <i class="fa fa-files-o"></i> <?php _e('tirage_multimachines.recto_verso'); ?>
                                         </label>
                                     </div>
                                     <div class="checkbox-inline" style="margin-right: 20px;">
@@ -1095,15 +1098,15 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
             <!-- Bouton pour ajouter une machine (à l'intérieur du container) -->
             <div class="text-center" style="margin: 20px 0;">
                 <button type="button" id="add-machine" class="btn btn-success btn-lg">
-                    <i class="fa fa-plus-circle"></i> Ajouter un tirage
+                    <i class="fa fa-plus-circle"></i> <?php _e('tirage_multimachines.add_tirage'); ?>
                 </button>
             </div>
         </div><!-- Fin machines-container -->
         
         <!-- Récapitulatif total -->
         <div class="alert alert-info">
-            <h4 class="text-center">Récapitulatif du tirage</h4>
-            <p class="text-center"><strong>Prix total : <span id="prix-total">0.00€</span></strong></p>
+            <h4 class="text-center"><?php _e('tirage_multimachines.summary'); ?></h4>
+            <p class="text-center"><strong><?php _e('tirage_multimachines.total_price'); ?> <span id="prix-total">0.00€</span></strong></p>
         </div>
         
         <!-- Bouton suivant -->

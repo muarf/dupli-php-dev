@@ -397,10 +397,10 @@
                             <i class="fa fa-cloud-upload"></i>
                         </div>
                         <div class="file-upload-text" id="uploadText">
-                            Glissez-déposez votre PDF ici
+                            <?php _e('imposition.drag_drop'); ?>
                         </div>
                         <div class="file-upload-subtext" id="uploadSubtext">
-                            ou cliquez pour sélectionner un fichier
+                            <?php _e('imposition.click_select'); ?>
                         </div>
                         <input type="file" name="pdf" id="pdf" accept="application/pdf" required style="display: none;">
                     </div>
