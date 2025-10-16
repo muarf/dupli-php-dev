@@ -73,7 +73,10 @@
     "translation_management_desc": "Modifiez toutes les traductions de l'interface utilisateur",
     "email_management": "Gestion des Emails",
     "email_management_btn": "Gestion des Emails",
-    "email_management_desc": "Liste de diffusion et paramètres email"
+    "email_management_desc": "Liste de diffusion et paramètres email",
+    "security": "Sécurité",
+    "password_management_btn": "Gestion des mots de passe",
+    "password_management_desc": "Sécurité et accès"
   },
   "admin_aide": {
     "title": "Gestion des aides par machine",
@@ -391,7 +394,9 @@
     "price": "Prix",
     "price_paid": "Prix payé",
     "difference": "Différence",
-    "user_paid": "Combien l'utilisateur a payé"
+    "user_paid": "Combien l'utilisateur a payé",
+    "no_data_available": "Aucune donnée disponible",
+    "no_duplicator_installed": "Aucun duplicopieur installé"
   },
   "changement": {
     "title": "Signalement de changement de consommable",
@@ -409,7 +414,15 @@
     "change_date": "Date du changement",
     "notes": "Notes (optionnel)",
     "notes_placeholder": "Ajoutez des notes sur le changement...",
-    "submit_change": "Enregistrer le changement"
+    "submit_change": "Enregistrer le changement",
+    "machine_selection": "Sélection de la machine",
+    "passage_count": "Nombre de passages",
+    "passage_count_help": "Nombre total de copies depuis le dernier changement",
+    "master_count": "Nombre de masters",
+    "master_count_help": "Nombre de masters actuels",
+    "drum_selection": "Sélection du tambour",
+    "select_drum": "Sélectionnez un tambour",
+    "drum_help": "encre qui a été changé"
   },
   "imposition": {
     "title": "Imposition de PDF",
@@ -551,6 +564,8 @@
     "edit": "Modifier",
     "close": "Fermer",
     "back": "Retour",
+    "back_to_home": "Retour à l'accueil",
+    "view_stats": "Voir les statistiques",
     "next": "Suivant",
     "previous": "Précédent",
     "search": "Rechercher",

@@ -41,13 +41,13 @@
           <table class="table table-striped table-hover table-bordered">
         <thead class="thead-dark">
           <tr>
-            <th><i class="fa fa-calendar"></i> Date</th>
-            <th><i class="fa fa-file-o"></i> Feuilles</th>
-            <th><i class="fa fa-print"></i> Tirages</th>
-            <th><i class="fa fa-calculator"></i> Moyenne</th>
-            <th><i class="fa fa-euro"></i> Prix</th>
-            <th><i class="fa fa-money"></i> Prix payé</th>
-            <th><i class="fa fa-chart-line"></i> Différence</th>
+            <th><i class="fa fa-calendar"></i> <?php _e('stats.date'); ?></th>
+            <th><i class="fa fa-file-o"></i> <?php _e('stats.sheets'); ?></th>
+            <th><i class="fa fa-print"></i> <?php _e('stats.prints'); ?></th>
+            <th><i class="fa fa-calculator"></i> <?php _e('stats.average'); ?></th>
+            <th><i class="fa fa-euro"></i> <?php _e('stats.price'); ?></th>
+            <th><i class="fa fa-money"></i> <?php _e('stats.price_paid'); ?></th>
+            <th><i class="fa fa-chart-line"></i> <?php _e('stats.difference'); ?></th>
           </tr>
         </thead>
         <tbody>
@@ -71,7 +71,7 @@
             <?php
             }
           else:
-            echo '<tr><td colspan="7" class="text-center">Aucune donnée disponible</td></tr>';
+            echo '<tr><td colspan="7" class="text-center">' . __('stats.no_data_available') . '</td></tr>';
           endif;
           $iii = 1; ?>
             <ul class="pagination">
@@ -105,17 +105,17 @@
         <table class="table table-striped table-bordered">
           <thead class="thead-dark">
             <tr>
-              <th><i class="fa fa-calendar"></i> Date</th>
-              <th><i class="fa fa-file-o"></i> Feuilles</th>
-              <th><i class="fa fa-print"></i> Tirages</th>
-              <th><i class="fa fa-calculator"></i> Moyenne</th>
-              <th><i class="fa fa-euro"></i> Prix</th>
-              <th><i class="fa fa-money"></i> Prix payé</th>
-              <th><i class="fa fa-chart-line"></i> Différence</th>
+              <th><i class="fa fa-calendar"></i> <?php _e('stats.date'); ?></th>
+              <th><i class="fa fa-file-o"></i> <?php _e('stats.sheets'); ?></th>
+              <th><i class="fa fa-print"></i> <?php _e('stats.prints'); ?></th>
+              <th><i class="fa fa-calculator"></i> <?php _e('stats.average'); ?></th>
+              <th><i class="fa fa-euro"></i> <?php _e('stats.price'); ?></th>
+              <th><i class="fa fa-money"></i> <?php _e('stats.price_paid'); ?></th>
+              <th><i class="fa fa-chart-line"></i> <?php _e('stats.difference'); ?></th>
             </tr>
           </thead>
           <tbody>
-            <tr class="warning"><td colspan="7" class="text-center"><i class="fa fa-info-circle"></i> Aucun duplicopieur installé</td></tr>
+            <tr class="warning"><td colspan="7" class="text-center"><i class="fa fa-info-circle"></i> <?php _e('stats.no_duplicator_installed'); ?></td></tr>
           </tbody>
         </table>
       </div>
@@ -129,20 +129,20 @@
       <div class="panel panel-success">
         <div class="panel-heading">
           <h3 class="panel-title text-center">
-            <i class="fa fa-print"></i> Statistiques par mois <?= htmlspecialchars($photocop_name) ?>
+            <i class="fa fa-print"></i> <?php _e('stats.monthly_stats_for'); ?> <?= htmlspecialchars($photocop_name) ?>
           </h3>
         </div>
         <div class="panel-body">
           <table class="table table-striped table-hover table-bordered">
         <thead class="thead-dark">
           <tr>
-            <th><i class="fa fa-calendar"></i> Date</th>
-            <th><i class="fa fa-file-o"></i> Feuilles</th>
-            <th><i class="fa fa-print"></i> Tirages</th>
-            <th><i class="fa fa-calculator"></i> Moyenne</th>
-            <th><i class="fa fa-euro"></i> Prix</th>
-            <th><i class="fa fa-money"></i> Prix payé</th>
-            <th><i class="fa fa-chart-line"></i> Différence</th>
+            <th><i class="fa fa-calendar"></i> <?php _e('stats.date'); ?></th>
+            <th><i class="fa fa-file-o"></i> <?php _e('stats.sheets'); ?></th>
+            <th><i class="fa fa-print"></i> <?php _e('stats.prints'); ?></th>
+            <th><i class="fa fa-calculator"></i> <?php _e('stats.average'); ?></th>
+            <th><i class="fa fa-euro"></i> <?php _e('stats.price'); ?></th>
+            <th><i class="fa fa-money"></i> <?php _e('stats.price_paid'); ?></th>
+            <th><i class="fa fa-chart-line"></i> <?php _e('stats.difference'); ?></th>
           </tr>
         </thead>
         <tbody>
@@ -166,7 +166,7 @@
             <?php
             }
           else:
-            echo '<tr><td colspan="7" class="text-center">Aucune donnée disponible</td></tr>';
+            echo '<tr><td colspan="7" class="text-center">' . __('stats.no_data_available') . '</td></tr>';
           endif;
           $iii = 1; ?>
             <ul class="pagination">
