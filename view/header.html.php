@@ -12,9 +12,9 @@
           </button>
           <a class="navbar-brand" href="?accueil" style="display: flex; align-items: center;">
             <button type="button" class="btn btn-default btn-sm" onclick="history.back()" style="margin-right: 10px; vertical-align: middle;">
-              <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> Précédent
+              <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> <?= _('nav.previous') ?>
             </button>
-            <span><big>Duplicator.</big></span>
+            <span><big><?= _('nav.duplicator') ?></big></span>
           </a>
         </div>
         <div class="collapse navbar-collapse" id="navbar-ex-collapse">
@@ -22,61 +22,61 @@
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                 <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-                Outils PDF <span class="caret"></span>
+                <?= _('nav.pdf_tools') ?> <span class="caret"></span>
               </a>
               <ul class="dropdown-menu">
                 <li>
                   <a href="?imposition">
                     <i class="fa fa-magic" style="color: #a8e6cf; margin-right: 8px;"></i>
-                    <strong>Imposer</strong>
-                    <small class="text-muted d-block">Créer un livret A3</small>
+                    <strong><?= _('tools.impose') ?></strong>
+                    <small class="text-muted d-block"><?= _('tools.impose.description') ?></small>
                   </a>
                 </li>
                 <li role="separator" class="divider"></li>
                 <li>
                   <a href="?unimpose">
                     <i class="fa fa-undo" style="color: #ffb3ba; margin-right: 8px;"></i>
-                    <strong>Désimposer</strong>
-                    <small class="text-muted d-block">Transformer un livret en pages normales</small>
+                    <strong><?= _('tools.unimpose') ?></strong>
+                    <small class="text-muted d-block"><?= _('tools.unimpose.description') ?></small>
                   </a>
                 </li>
                 <li role="separator" class="divider"></li>
                 <li>
                   <a href="?imposition_tracts">
                     <i class="fa fa-copy" style="color: #ffd93d; margin-right: 8px;"></i>
-                    <strong>Imposition Tracts</strong>
-                    <small class="text-muted d-block">Dupliquer et optimiser vos tracts</small>
+                    <strong><?= _('tools.impose_tracts') ?></strong>
+                    <small class="text-muted d-block"><?= _('tools.impose_tracts.description') ?></small>
                   </a>
                 </li>
                 <li role="separator" class="divider"></li>
                 <li>
                   <a href="?png_to_pdf">
                     <i class="fa fa-file-image-o" style="color: #a8e6cf; margin-right: 8px;"></i>
-                    <strong>Images → PDF</strong>
-                    <small class="text-muted d-block">Convertir PNG/JPG en PDF A3/A4</small>
+                    <strong><?= _('tools.images_to_pdf') ?></strong>
+                    <small class="text-muted d-block"><?= _('tools.images_to_pdf.description') ?></small>
                   </a>
                 </li>
                 <li>
                   <a href="?pdf_to_png">
                     <i class="fa fa-picture-o" style="color: #c3aed6; margin-right: 8px;"></i>
-                    <strong>PDF → Images</strong>
-                    <small class="text-muted d-block">Extraire les pages en PNG</small>
+                    <strong><?= _('tools.pdf_to_images') ?></strong>
+                    <small class="text-muted d-block"><?= _('tools.pdf_to_images.description') ?></small>
                   </a>
                 </li>
                 <li role="separator" class="divider"></li>
                 <li>
                   <a href="?riso_separator">
                     <i class="fa fa-adjust" style="color: #ff6b9d; margin-right: 8px;"></i>
-                    <strong>Séparateur Riso</strong>
-                    <small class="text-muted d-block">Séparer couleurs pour multi-tambours</small>
+                    <strong><?= _('tools.riso_separator') ?></strong>
+                    <small class="text-muted d-block"><?= _('tools.riso_separator.description') ?></small>
                   </a>
                 </li>
                 <li role="separator" class="divider"></li>
                 <li>
                   <a href="?taux_remplissage">
                     <i class="fa fa-bar-chart" style="color: #84fab0; margin-right: 8px;"></i>
-                    <strong>Taux de Remplissage</strong>
-                    <small class="text-muted d-block">Calculer le % d'encre utilisé</small>
+                    <strong><?= _('tools.fill_rate') ?></strong>
+                    <small class="text-muted d-block"><?= _('tools.fill_rate.description') ?></small>
                   </a>
                 </li>
               </ul>
@@ -84,29 +84,29 @@
             <li>
               <a href="?tirage_multimachines">
                 <span class="glyphicon glyphicon-print" aria-hidden="true"></span>
-                Nouveau Tirage
+                <?= _('nav.new_print') ?>
               </a>
             </li>
             <li>
               <a href="?changement">
                 <span class="glyphicon glyphicon-tint" aria-hidden="true"></span>
-                Signalement de changement
+                <?= _('nav.change_report') ?>
               </a>
             </li>
             <li>
               <a href="?aide_machines">
                 <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
-                Aide & Tutoriels
+                <?= _('nav.help_tutorials') ?>
               </a>
             </li>
             <li>
               <a href="?stats">
                 <span class="glyphicon glyphicon-stats" aria-hidden="true"></span>
-                Statistiques
+                <?= _('nav.statistics') ?>
               </a>
             </li>
             <li>
-              <a href="?admin">Administration</a>
+              <a href="?admin"><?= _('nav.administration') ?></a>
             </li>
           </ul>
         </div>
