@@ -859,10 +859,40 @@ function handleMainAdminSection($array, $siteManager) {
     $settings = $siteManager->getCurrentSettings();
     $array = array_merge($array, $settings);
     
-    // Obtenir les emails
-    $array['emails'] = $siteManager->getEmails();
-    
-    return template("../view/admin.html.php", $array);
+        // Obtenir les emails
+        $array['emails'] = $siteManager->getEmails();
+        
+        // DEBUG TEMPORAIRE - Diagnostiquer les duplicopieurs
+        if (isset($_GET['debug_dupli'])) {
+            $db = pdo_connect();
+            
+            $debug_info = "<h2>🔍 Debug Duplicopieurs</h2>";
+            
+            $debug_info .= "<h3>1. Duplicopieurs actifs :</h3>";
+            $query = $db->query('SELECT id, marque, modele FROM duplicopieurs WHERE actif = 1');
+            while ($result = $query->fetch(PDO::FETCH_ASSOC)) {
+                $nom_complet = $result['marque'];
+                if ($result['marque'] !== $result['modele']) {
+                    $nom_complet = $result['marque'] . ' ' . $result['modele'];
+                }
+                $debug_info .= "- ID: " . $result['id'] . " | Nom: " . $nom_complet . " | strtolower: " . strtolower($nom_complet) . "<br>";
+            }
+            
+            $debug_info .= "<h3>2. Machines dans cons :</h3>";
+            $query = $db->query('SELECT DISTINCT machine, COUNT(*) as count FROM cons GROUP BY machine ORDER BY machine');
+            while ($result = $query->fetch(PDO::FETCH_ASSOC)) {
+                $debug_info .= "- '" . $result['machine'] . "' (" . $result['count'] . " entrées)<br>";
+            }
+            
+            $debug_info .= "<h3>3. Test get_cons('dupli') :</h3>";
+            require_once __DIR__ . '/../controler/functions/consommation.php';
+            $old_result = get_cons('dupli');
+            $debug_info .= "<pre>" . print_r($old_result, true) . "</pre>";
+            
+            $array['debug_dupli'] = $debug_info;
+        }
+        
+        return template("../view/admin.html.php", $array);
 }
 
 /**

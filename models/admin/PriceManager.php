@@ -76,6 +76,9 @@ class PriceManager {
     public function getConsommables($machine) {
         $db = pdo_connect();
         
+        // DEBUG TEMPORAIRE - écrire dans un fichier
+        file_put_contents('/tmp/debug_dupli.log', date('Y-m-d H:i:s') . " - getConsommables appelé avec machine: " . $machine . "\n", FILE_APPEND);
+        
         // Vérifier si c'est un duplicopieur
         if (isset($GLOBALS['conf']['db_type']) && $GLOBALS['conf']['db_type'] === 'sqlite') {
             $query = $db->prepare('SELECT id, tambours FROM duplicopieurs WHERE (marque || " " || modele = ? OR marque = ?) AND actif = 1 LIMIT 1');
@@ -84,6 +87,9 @@ class PriceManager {
         }
         $query->execute([$machine, $machine]);
         $duplicopieur = $query->fetch(PDO::FETCH_ASSOC);
+        
+        // DEBUG TEMPORAIRE
+        file_put_contents('/tmp/debug_dupli.log', "duplicopieur trouvé: " . print_r($duplicopieur, true) . "\n", FILE_APPEND);
         
         if ($duplicopieur) {
             // C'est un duplicopieur - essayer plusieurs variantes de noms pour l'ancienne méthode
@@ -96,13 +102,16 @@ class PriceManager {
             ];
             
             foreach ($machine_variants_for_cons as $variant) {
+                file_put_contents('/tmp/debug_dupli.log', "test variant: " . $variant . "\n", FILE_APPEND);
                 $old_result = get_cons($variant);
+                file_put_contents('/tmp/debug_dupli.log', "résultat pour $variant: " . substr(print_r($old_result, true), 0, 500) . "\n", FILE_APPEND);
                 
                 // Si l'ancienne méthode a des données, les utiliser
                 if (!empty($old_result) && (
                     (isset($old_result['master']) && isset($old_result['master']['moyenne_totale']['nb_m']) && $old_result['master']['moyenne_totale']['nb_m'] > 0) ||
                     (isset($old_result['encre']) && isset($old_result['encre']['moyenne_totale']['nb_p']) && $old_result['encre']['moyenne_totale']['nb_p'] > 0)
                 )) {
+                    file_put_contents('/tmp/debug_dupli.log', "SUCCÈS: trouvé des données avec variant: " . $variant . "\n", FILE_APPEND);
                     return $old_result;
                 }
             }
