@@ -5,17 +5,6 @@
         <h1 class="text-center">Administration</h1>
         <hr>
         
-        <?php if (isset($debug_dupli)): ?>
-        <div class="panel panel-danger">
-          <div class="panel-heading">
-            <h3 class="panel-title">🔍 Debug Duplicopieurs</h3>
-          </div>
-          <div class="panel-body">
-            <?= $debug_dupli ?>
-          </div>
-        </div>
-        <?php endif; ?>
-        
         
         <!-- Gestion des machines -->
         <div class="panel panel-success">

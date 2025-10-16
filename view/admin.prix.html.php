@@ -37,18 +37,6 @@
           <p class="lead">Visualisez les prix calculés automatiquement et modifiez les prix unitaires et d'achat pour chaque consommable.</p>
         </div>
         
-        <?php if (isset($_GET['debug'])): ?>
-        <div class="alert alert-info">
-            <strong>🔍 DEBUG:</strong> 
-            <?php
-            $db = pdo_connect();
-            $query = $db->prepare('SELECT COUNT(*) as count FROM cons WHERE machine = ?');
-            $query->execute(['dupli']);
-            $count_dupli = $query->fetchColumn();
-            echo "Données 'dupli' dans cons : $count_dupli entrées";
-            ?>
-        </div>
-        <?php endif; ?>
         
         <?php 
         // Afficher un tableau pour chaque machine (duplicopieur ou photocopieuse)

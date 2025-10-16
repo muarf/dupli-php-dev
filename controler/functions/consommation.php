@@ -100,7 +100,13 @@ function get_cons($machine)
     	$table_name = ($machine === 'dx4545' || $machine === 'A3' || $machine === 'dupli') ? 'dupli' : $machine;
     	$nb = get_last_number($table_name);
     }
-    $query =$db->query('SELECT * FROM cons where machine = "'.$machine.'"');
+    // Cas spécial : "Duplicopieur" doit utiliser les données "dupli"
+    $machine_for_cons = $machine;
+    if ($machine === 'Duplicopieur') {
+        $machine_for_cons = 'dupli';
+    }
+    
+    $query =$db->query('SELECT * FROM cons where machine = "'.$machine_for_cons.'"');
     $i=0;
     while ($result = $query->fetch(PDO::FETCH_OBJ))
     {

@@ -76,8 +76,10 @@ class PriceManager {
     public function getConsommables($machine) {
         $db = pdo_connect();
         
-        // DEBUG TEMPORAIRE - écrire dans un fichier
-        file_put_contents('/tmp/debug_dupli.log', date('Y-m-d H:i:s') . " - getConsommables appelé avec machine: " . $machine . "\n", FILE_APPEND);
+        // Cas spécial : Duplicopieur utilise toujours les données "dupli" pour compatibilité
+        if ($machine === 'Duplicopieur') {
+            $machine = 'dupli';
+        }
         
         // Vérifier si c'est un duplicopieur
         if (isset($GLOBALS['conf']['db_type']) && $GLOBALS['conf']['db_type'] === 'sqlite') {
@@ -88,72 +90,9 @@ class PriceManager {
         $query->execute([$machine, $machine]);
         $duplicopieur = $query->fetch(PDO::FETCH_ASSOC);
         
-        // DEBUG TEMPORAIRE
-        file_put_contents('/tmp/debug_dupli.log', "duplicopieur trouvé: " . print_r($duplicopieur, true) . "\n", FILE_APPEND);
-        
         if ($duplicopieur) {
-            // C'est un duplicopieur - FORCER l'utilisation de "dupli" pour la compatibilité
-            // Les données historiques sont stockées sous "dupli" pas "Duplicopieur"
-            file_put_contents('/tmp/debug_dupli.log', "DUPLICOPIEUR DÉTECTÉ: Force utilisation dupli\n", FILE_APPEND);
-            $old_result = get_cons('dupli');
-            file_put_contents('/tmp/debug_dupli.log', "Résultat get_cons('dupli'): " . (empty($old_result) ? 'VIDE' : 'DONNÉES TROUVÉES') . "\n", FILE_APPEND);
-            
-            if (!empty($old_result) && (
-                (isset($old_result['master']) && isset($old_result['master']['moyenne_totale']['nb_m']) && $old_result['master']['moyenne_totale']['nb_m'] > 0) ||
-                (isset($old_result['encre']) && isset($old_result['encre']['moyenne_totale']['nb_p']) && $old_result['encre']['moyenne_totale']['nb_p'] > 0)
-            )) {
-                file_put_contents('/tmp/debug_dupli.log', "SUCCÈS: Utilisation données dupli\n", FILE_APPEND);
-                return $old_result;
-            }
-            
-            // Si pas de données avec "dupli", essayer d'autres variantes
-            $machine_variants_for_cons = [
-                'a3',                        // Ancien nom A3  
-                'a4',                        // Ancien nom A4
-                strtolower($machine),        // Nom en minuscules
-                $machine                     // Nom exact (en dernier recours)
-            ];
-            
-            foreach ($machine_variants_for_cons as $variant) {
-                file_put_contents('/tmp/debug_dupli.log', "test variant: " . $variant . "\n", FILE_APPEND);
-                $old_result = get_cons($variant);
-                file_put_contents('/tmp/debug_dupli.log', "résultat pour $variant: " . substr(print_r($old_result, true), 0, 500) . "\n", FILE_APPEND);
-                
-                // Si l'ancienne méthode a des données, les utiliser
-                if (!empty($old_result) && (
-                    (isset($old_result['master']) && isset($old_result['master']['moyenne_totale']['nb_m']) && $old_result['master']['moyenne_totale']['nb_m'] > 0) ||
-                    (isset($old_result['encre']) && isset($old_result['encre']['moyenne_totale']['nb_p']) && $old_result['encre']['moyenne_totale']['nb_p'] > 0)
-                )) {
-                    file_put_contents('/tmp/debug_dupli.log', "SUCCÈS: trouvé des données avec variant: " . $variant . "\n", FILE_APPEND);
-                    return $old_result;
-                }
-            }
-            
-            // Si aucune variante ne fonctionne, utiliser les nouvelles méthodes
-            $result = array();
-            
-            // Parser les tambours
-            $tambours = ['tambour_noir']; // Fallback par défaut
-            if (!empty($duplicopieur['tambours'])) {
-                try {
-                    $tambours_parsed = json_decode($duplicopieur['tambours'], true);
-                    if (is_array($tambours_parsed)) {
-                        $tambours = $tambours_parsed;
-                    }
-                } catch (Exception $e) {
-                    // Utiliser le fallback
-                }
-            }
-            
-            // Récupérer les données pour chaque tambour
-            foreach ($tambours as $tambour) {
-                $result[$tambour] = $this->getPrixTambourDuplicop($machine, $tambour, $duplicopieur['id']);
-            }
-            
-            // Récupérer les données pour le master
-            $result['master'] = $this->getPrixEncreDuplicop($machine, 'master');
-            
-            return $result;
+            // C'est un duplicopieur - utiliser toujours l'ancienne fonction avec les bons noms
+            return get_cons($machine);
         } else {
             // Ce n'est pas un duplicopieur, utiliser l'ancienne fonction
             return get_cons($machine);
