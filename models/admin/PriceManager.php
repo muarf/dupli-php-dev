@@ -74,7 +74,47 @@ class PriceManager {
      * Obtenir les consommables pour une machine
      */
     public function getConsommables($machine) {
-        return get_cons($machine);
+        $db = pdo_connect();
+        
+        // Vérifier si c'est un duplicopieur
+        if (isset($GLOBALS['conf']['db_type']) && $GLOBALS['conf']['db_type'] === 'sqlite') {
+            $query = $db->prepare('SELECT id, tambours FROM duplicopieurs WHERE (marque || " " || modele = ? OR marque = ?) AND actif = 1 LIMIT 1');
+        } else {
+            $query = $db->prepare('SELECT id, tambours FROM duplicopieurs WHERE (CONCAT(marque, " ", modele) = ? OR marque = ?) AND actif = 1 LIMIT 1');
+        }
+        $query->execute([$machine, $machine]);
+        $duplicopieur = $query->fetch(PDO::FETCH_ASSOC);
+        
+        if ($duplicopieur) {
+            // C'est un duplicopieur - utiliser les nouvelles méthodes
+            $result = array();
+            
+            // Parser les tambours
+            $tambours = ['tambour_noir']; // Fallback par défaut
+            if (!empty($duplicopieur['tambours'])) {
+                try {
+                    $tambours_parsed = json_decode($duplicopieur['tambours'], true);
+                    if (is_array($tambours_parsed)) {
+                        $tambours = $tambours_parsed;
+                    }
+                } catch (Exception $e) {
+                    // Utiliser le fallback
+                }
+            }
+            
+            // Récupérer les données pour chaque tambour
+            foreach ($tambours as $tambour) {
+                $result[$tambour] = $this->getPrixTambourDuplicop($machine, $tambour, $duplicopieur['id']);
+            }
+            
+            // Récupérer les données pour le master
+            $result['master'] = $this->getPrixEncreDuplicop($machine, 'master');
+            
+            return $result;
+        } else {
+            // Ce n'est pas un duplicopieur, utiliser l'ancienne fonction
+            return get_cons($machine);
+        }
     }
     
     /**
