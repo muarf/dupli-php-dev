@@ -73,7 +73,10 @@
     "translation_management_desc": "Edit all user interface translations",
     "email_management": "Email Management",
     "email_management_btn": "Email Management",
-    "email_management_desc": "Mailing list and email settings"
+    "email_management_desc": "Mailing list and email settings",
+    "security": "Security",
+    "password_management_btn": "Password Management",
+    "password_management_desc": "Security and access"
   },
   "admin_aide": {
     "title": "Machine Help Management",
@@ -139,7 +142,9 @@
     "price": "Price",
     "price_paid": "Price paid",
     "difference": "Difference",
-    "user_paid": "How much the user paid"
+    "user_paid": "How much the user paid",
+    "no_data_available": "No data available",
+    "no_duplicator_installed": "No duplicator installed"
   },
   "changement": {
     "title": "Consumable change report",
@@ -157,7 +162,15 @@
     "change_date": "Change date",
     "notes": "Notes (optional)",
     "notes_placeholder": "Add notes about the change...",
-    "submit_change": "Record change"
+    "submit_change": "Record change",
+    "machine_selection": "Machine selection",
+    "passage_count": "Number of passages",
+    "passage_count_help": "Total number of copies since last change",
+    "master_count": "Number of masters",
+    "master_count_help": "Current number of masters",
+    "drum_selection": "Drum selection",
+    "select_drum": "Select a drum",
+    "drum_help": "ink that was changed"
   },
   "imposition": {
     "title": "PDF Imposition",
@@ -315,6 +328,8 @@
     "edit": "Edit",
     "close": "Close",
     "back": "Back",
+    "back_to_home": "Back to home",
+    "view_stats": "View statistics",
     "next": "Next",
     "previous": "Previous",
     "search": "Search",

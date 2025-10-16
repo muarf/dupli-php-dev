@@ -48,14 +48,14 @@ if(isset($success_message)): ?>
                         
                         <!-- Sélection de la machine -->
                         <div class="form-group">
-                            <label class="col-md-4 control-label" for="machine">Machine :</label>
+                            <label class="col-md-4 control-label" for="machine"><?php _e('changement.machine_selection'); ?> :</label>
                             <div class="col-md-4">
                                 <select name="machine" id="machine" class="form-control" required>
-                                    <option value="">Sélectionnez une machine</option>
+                                    <option value=""><?php _e('changement.select_machine'); ?></option>
                                     
                                     <!-- Duplicopieurs -->
                                     <?php if(isset($duplicopieurs) && count($duplicopieurs) > 0): ?>
-                                        <optgroup label="Duplicopieurs">
+                                        <optgroup label="<?php _e('common.duplicopieur'); ?>s">
                                             <?php foreach($duplicopieurs as $dup): ?>
                                                 <option value="<?= htmlspecialchars($dup['name']) ?>"><?= htmlspecialchars($dup['name']) ?></option>
                                             <?php endforeach; ?>
@@ -64,7 +64,7 @@ if(isset($success_message)): ?>
                                     
                                     <!-- Photocopieurs -->
                                     <?php if(isset($photocopiers) && count($photocopiers) > 0): ?>
-                                        <optgroup label="Photocopieurs">
+                                        <optgroup label="<?php _e('common.photocopieur'); ?>s">
                                             <?php foreach($photocopiers as $photocop): ?>
                                                 <option value="<?= htmlspecialchars($photocop) ?>"><?= htmlspecialchars($photocop) ?></option>
                                             <?php endforeach; ?>
@@ -76,40 +76,40 @@ if(isset($success_message)): ?>
                         
                         <!-- Type de consommable -->
                         <div class="form-group">
-                            <label class="col-md-4 control-label" for="type">Type de consommable :</label>
+                            <label class="col-md-4 control-label" for="type"><?php _e('changement.change_type'); ?> :</label>
                             <div class="col-md-4">
                                 <select name="type" id="type" class="form-control" required>
-                                    <option value="">Sélectionnez un type</option>
+                                    <option value=""><?php _e('common.select'); ?> un type</option>
                                 </select>
                             </div>
                         </div>
                         
                         <!-- Nombre de passages -->
                         <div class="form-group">
-                            <label class="col-md-4 control-label" for="nb_p">Nombre de passages :</label>
+                            <label class="col-md-4 control-label" for="nb_p"><?php _e('changement.passage_count'); ?> :</label>
                             <div class="col-md-4">
                                 <input id="nb_p" name="nb_p" class="form-control input-md" required type="number" placeholder="Ex: 12345">
-                                <span class="help-block">Nombre total de copies depuis le dernier changement</span>
+                                <span class="help-block"><?php _e('changement.passage_count_help'); ?></span>
                             </div>
                         </div>
                         
                         <!-- Nombre de masters (pour duplicopieurs) -->
                         <div class="form-group" id="masters-group" style="display: none;">
-                            <label class="col-md-4 control-label" for="nb_m">Nombre de masters :</label>
+                            <label class="col-md-4 control-label" for="nb_m"><?php _e('changement.master_count'); ?> :</label>
                             <div class="col-md-4">
                                 <input id="nb_m" name="nb_m" class="form-control input-md" type="number" placeholder="Ex: 67890">
-                                <span class="help-block">Nombre de masters actuels</span>
+                                <span class="help-block"><?php _e('changement.master_count_help'); ?></span>
                             </div>
                         </div>
                         
                         <!-- Sélection du tambour (pour duplicopieurs) -->
                         <div class="form-group" id="tambour-group" style="display: none;">
-                            <label class="col-md-4 control-label" for="tambour">Tambour :</label>
+                            <label class="col-md-4 control-label" for="tambour"><?php _e('changement.drum_selection'); ?> :</label>
                             <div class="col-md-4">
                                 <select name="tambour" id="tambour" class="form-control">
-                                    <option value="">Sélectionnez un tambour</option>
+                                    <option value=""><?php _e('changement.select_drum'); ?></option>
                                 </select>
-                                <span class="help-block">encre qui a été changé</span>
+                                <span class="help-block"><?php _e('changement.drum_help'); ?></span>
                             </div>
                         </div>
                         
@@ -117,7 +117,7 @@ if(isset($success_message)): ?>
                         <div class="form-group">
                             <div class="col-md-4 col-md-offset-4">
                                 <button type="submit" class="btn btn-success btn-block btn-lg">
-                                    <i class="fa fa-save"></i> Enregistrer le changement
+                                    <i class="fa fa-save"></i> <?php _e('changement.submit_change'); ?>
                                 </button>
                             </div>
                         </div>
@@ -140,10 +140,10 @@ if(isset($success_message)): ?>
                 <div class="row">
                     <div class="col-md-12 text-center">
                         <a href="?accueil" class="btn btn-default">
-                            <i class="fa fa-arrow-left"></i> Retour à l'accueil
+                            <i class="fa fa-arrow-left"></i> <?php _e('common.back_to_home'); ?>
                         </a>
                         <a href="?stats" class="btn btn-info">
-                            <i class="fa fa-bar-chart"></i> Voir les statistiques
+                            <i class="fa fa-bar-chart"></i> <?php _e('common.view_stats'); ?>
                         </a>
                     </div>
                 </div>
