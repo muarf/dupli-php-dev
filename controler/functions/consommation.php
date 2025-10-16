@@ -247,7 +247,8 @@ function get_cons($machine)
       
       // Éviter la division par zéro - utiliser la bonne clé pour les prix
       $machine_key = '';
-      if (strtolower($machine) === 'dx4545' || strtolower($machine) === 'a3' || strtolower($machine) === 'dupli') {
+      $machine_lower = strtolower($machine);
+      if ($machine_lower === 'dx4545' || $machine_lower === 'a3' || $machine_lower === 'dupli' || $machine_lower === 'duplicopieur') {
           $machine_key = 'dupli_1';
       } else {
           $machine_key = strtoupper($machine);
