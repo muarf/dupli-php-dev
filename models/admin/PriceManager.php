@@ -252,17 +252,31 @@ class PriceManager {
         $prix_pack = isset($prix[$machine_key][$type]['pack']) ? $prix[$machine_key][$type]['pack'] : 0;
         
         // Récupérer les données de consommables
-        $query_cons = $db->prepare('SELECT * FROM cons WHERE machine = ? AND type = ? ORDER BY date ASC');
-        $query_cons->execute([strtolower($machine_name), $type]);
+        // Tenter plusieurs variantes du nom de machine
+        $machine_variants = [
+            strtolower($machine_name),
+            strtolower(str_replace(' ', '', $machine_name)),
+            'dupli',
+            'a3', 
+            'a4'
+        ];
         
         $res = array();
         $i = 0;
-        while ($result_cons = $query_cons->fetch(PDO::FETCH_OBJ)) {
-            $res[$i]['date'] = intval($result_cons->date);
-            $res[$i]['type'] = $result_cons->type;
-            $res[$i]['nb_p'] = $result_cons->nb_p;
-            $res[$i]['nb_m'] = $result_cons->nb_m;
-            $i++;
+        foreach ($machine_variants as $variant) {
+            $query_cons = $db->prepare('SELECT * FROM cons WHERE machine = ? AND type = ? ORDER BY date ASC');
+            $query_cons->execute([$variant, $type]);
+            
+            while ($result_cons = $query_cons->fetch(PDO::FETCH_OBJ)) {
+                $res[$i]['date'] = intval($result_cons->date);
+                $res[$i]['type'] = $result_cons->type;
+                $res[$i]['nb_p'] = $result_cons->nb_p;
+                $res[$i]['nb_m'] = $result_cons->nb_m;
+                $i++;
+            }
+            
+            // Si on a trouvé des données, arrêter de chercher
+            if ($i > 0) break;
         }
         
         $max = count($res);
@@ -374,24 +388,38 @@ class PriceManager {
         $prix_pack = isset($prix[$machine_key][$tambour]['pack']) ? $prix[$machine_key][$tambour]['pack'] : 0;
         
         // Récupérer les changements de tambour dans cons
-        if ($tambour === 'tambour_noir') {
-            // Pour tambour_noir, chercher les changements de type "tambour" avec tambour = "tambour_noir" ou les anciens changements "encre"
-            $query_cons = $db->prepare('SELECT * FROM cons WHERE machine = ? AND ((type = "tambour" AND tambour = ?) OR type = "encre") ORDER BY date ASC');
-            $query_cons->execute([strtolower($machine_name), $tambour]);
-        } else {
-            // Pour les autres tambours, chercher les changements de type "tambour" avec le tambour spécifique
-            $query_cons = $db->prepare('SELECT * FROM cons WHERE machine = ? AND type = "tambour" AND tambour = ? ORDER BY date ASC');
-            $query_cons->execute([strtolower($machine_name), $tambour]);
-        }
+        // Tenter plusieurs variantes du nom de machine
+        $machine_variants = [
+            strtolower($machine_name),
+            strtolower(str_replace(' ', '', $machine_name)),
+            'dupli',
+            'a3', 
+            'a4'
+        ];
         
         $res = array();
         $i = 0;
-        while ($result_cons = $query_cons->fetch(PDO::FETCH_OBJ)) {
-            $res[$i]['date'] = intval($result_cons->date);
-            $res[$i]['type'] = $result_cons->type;
-            $res[$i]['nb_p'] = $result_cons->nb_p;
-            $res[$i]['nb_m'] = $result_cons->nb_m;
-            $i++;
+        foreach ($machine_variants as $variant) {
+            if ($tambour === 'tambour_noir') {
+                // Pour tambour_noir, chercher les changements de type "tambour" avec tambour = "tambour_noir" ou les anciens changements "encre"
+                $query_cons = $db->prepare('SELECT * FROM cons WHERE machine = ? AND ((type = "tambour" AND tambour = ?) OR type = "encre") ORDER BY date ASC');
+                $query_cons->execute([$variant, $tambour]);
+            } else {
+                // Pour les autres tambours, chercher les changements de type "tambour" avec le tambour spécifique
+                $query_cons = $db->prepare('SELECT * FROM cons WHERE machine = ? AND type = "tambour" AND tambour = ? ORDER BY date ASC');
+                $query_cons->execute([$variant, $tambour]);
+            }
+            
+            while ($result_cons = $query_cons->fetch(PDO::FETCH_OBJ)) {
+                $res[$i]['date'] = intval($result_cons->date);
+                $res[$i]['type'] = $result_cons->type;
+                $res[$i]['nb_p'] = $result_cons->nb_p;
+                $res[$i]['nb_m'] = $result_cons->nb_m;
+                $i++;
+            }
+            
+            // Si on a trouvé des données, arrêter de chercher
+            if ($i > 0) break;
         }
         
         $max = count($res);
