@@ -212,9 +212,9 @@ class PriceManager {
         $prix_unite = isset($prix[$machine_key][$type]['unite']) ? $prix[$machine_key][$type]['unite'] : 0;
         $prix_pack = isset($prix[$machine_key][$type]['pack']) ? $prix[$machine_key][$type]['pack'] : 0;
         
-        // Récupérer les données de consommables
-        $query_cons = $db->prepare('SELECT * FROM cons WHERE machine = ? AND type = ? ORDER BY date ASC');
-        $query_cons->execute([strtolower($machine_name), $type]);
+        // Récupérer les données de consommables avec recherche insensible à la casse
+        $query_cons = $db->prepare('SELECT * FROM cons WHERE LOWER(machine) = LOWER(?) AND type = ? ORDER BY date ASC');
+        $query_cons->execute([$machine_name, $type]);
         
         $res = array();
         $i = 0;
@@ -337,12 +337,14 @@ class PriceManager {
         // Récupérer les changements de tambour dans cons
         if ($tambour === 'tambour_noir') {
             // Pour tambour_noir, chercher les changements de type "tambour" avec tambour = "tambour_noir" ou les anciens changements "encre"
-            $query_cons = $db->prepare('SELECT * FROM cons WHERE machine = ? AND ((type = "tambour" AND tambour = ?) OR type = "encre") ORDER BY date ASC');
-            $query_cons->execute([strtolower($machine_name), $tambour]);
+            // CORRECTION : Recherche insensible à la casse
+            $query_cons = $db->prepare('SELECT * FROM cons WHERE LOWER(machine) = LOWER(?) AND ((type = "tambour" AND tambour = ?) OR type = "encre") ORDER BY date ASC');
+            $query_cons->execute([$machine_name, $tambour]);
         } else {
             // Pour les autres tambours, chercher les changements de type "tambour" avec le tambour spécifique
-            $query_cons = $db->prepare('SELECT * FROM cons WHERE machine = ? AND type = "tambour" AND tambour = ? ORDER BY date ASC');
-            $query_cons->execute([strtolower($machine_name), $tambour]);
+            // CORRECTION : Recherche insensible à la casse
+            $query_cons = $db->prepare('SELECT * FROM cons WHERE LOWER(machine) = LOWER(?) AND type = "tambour" AND tambour = ? ORDER BY date ASC');
+            $query_cons->execute([$machine_name, $tambour]);
         }
         
         $res = array();
@@ -470,8 +472,8 @@ class PriceManager {
         }
         
         // Pour les couleurs individuelles, faire les vrais calculs
-        // Récupérer les données de consommables depuis la table cons
-        $query = $db->prepare('SELECT * FROM cons WHERE machine = ? AND type = ? ORDER BY date ASC');
+        // Récupérer les données de consommables depuis la table cons avec recherche insensible à la casse
+        $query = $db->prepare('SELECT * FROM cons WHERE LOWER(machine) = LOWER(?) AND type = ? ORDER BY date ASC');
         $query->execute(array($photocop_name, $couleur));
         
         $res = array();
