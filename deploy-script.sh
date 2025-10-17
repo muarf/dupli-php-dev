@@ -36,7 +36,14 @@ echo "✅ Changements commités et pushés dans dupli-php-dev"
 echo "📥 2. Pull des changements dans dupli-electron-caddy/app..."
 cd /root/dupli-electron-caddy/app
 
-# Pull des derniers changements
+# Stasher les changements locaux s'il y en a
+if ! git diff --quiet || ! git diff --staged --quiet; then
+    echo "Stash des changements locaux..."
+    git stash push -m "Stash avant pull des changements PDF"
+fi
+
+# Basculer sur main et pull
+git checkout main
 git pull origin main
 
 echo "✅ Changements récupérés dans dupli-electron-caddy/app"
