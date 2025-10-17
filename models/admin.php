@@ -176,6 +176,7 @@ function Action($conf = null)
             
             if ($result && password_verify($_POST['password'], $result['password_hash'])) {
                 $_SESSION['user'] = "1";
+                $_SESSION['admin'] = true;
             } else {
                 $array['login_error'] = 'Mot de passe incorrect. Veuillez réessayer.';
             }
@@ -184,6 +185,7 @@ function Action($conf = null)
             $hash = '$2y$10$WVQNZ603f.6GpQSmITk1wOMztCPwzHXZyGKANw1q3dwVSuMVch7B.';
             if (password_verify($_POST['password'], $hash)) {
                 $_SESSION['user'] = "1";
+                $_SESSION['admin'] = true;
             } else {
                 $array['login_error'] = 'Mot de passe incorrect. Veuillez réessayer.';
             }

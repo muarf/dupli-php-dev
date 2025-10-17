@@ -6,6 +6,39 @@
 <!-- Quill.js JS -->
 <script src="js/quill/quill.min.js"></script>
 
+<style>
+/* Style pour le bouton PDF personnalisé dans Quill.js */
+.ql-toolbar .ql-custom-pdf {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.ql-toolbar .ql-custom-pdf:hover {
+    background: #c82333;
+}
+
+.ql-toolbar .ql-custom-pdf:before {
+    content: "PDF";
+}
+
+/* Style pour les liens PDF dans l'éditeur */
+.ql-editor a[href*=".pdf"] {
+    color: #dc3545;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.ql-editor a[href*=".pdf"]:before {
+    content: "📄 ";
+}
+</style>
+
 <div class="section">
   <div class="container">
     <div class="row">
@@ -63,6 +96,45 @@
           </div>
         </div>
         
+        <!-- Section Upload de PDFs -->
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-upload"></i> 
+              <?php _e('admin_aide.pdf_upload'); ?>
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label><?php _e('admin_aide.select_pdf'); ?> :</label>
+                  <input type="file" id="pdf-file-input" class="form-control" accept=".pdf" />
+                  <small class="text-muted">Maximum 10MB, format PDF uniquement</small>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="uploadPdf()">
+                  <i class="fa fa-upload"></i> <?php _e('admin_aide.upload_pdf'); ?>
+                </button>
+              </div>
+              <div class="col-md-6">
+                <div id="upload-progress" class="progress" style="display: none;">
+                  <div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%"></div>
+                </div>
+                <div id="upload-message" class="alert" style="display: none;"></div>
+              </div>
+            </div>
+            
+            <!-- Liste des PDFs disponibles -->
+            <hr>
+            <h4><?php _e('admin_aide.uploaded_pdfs'); ?></h4>
+            <div id="pdf-list" class="table-responsive">
+              <div class="alert alert-info">
+                <i class="fa fa-spinner fa-spin"></i> Chargement des PDFs...
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Formulaire d'ajout/modification -->
         <div class="panel panel-success">
           <div class="panel-heading">
@@ -142,10 +214,17 @@ var quill = new Quill('#editor', {
             [{ 'list': 'ordered'}, { 'list': 'bullet' }],
             [{ 'align': [] }],
             ['link', 'image'],
+            [{ 'custom-pdf': 'PDF' }],
             ['clean']
         ]
     },
     placeholder: '<?php _e('admin_aide.default_instructions'); ?>'
+});
+
+// Ajouter le bouton PDF personnalisé à la toolbar
+var toolbar = quill.getModule('toolbar');
+toolbar.addHandler('custom-pdf', function() {
+    showPdfInsertModal();
 });
 
 // Fonction pour mettre à jour le contenu caché avant soumission
@@ -321,4 +400,229 @@ function resetForm() {
         }
     }, 200);
 }
+
+// Fonctions pour la gestion des PDFs
+function uploadPdf() {
+    var fileInput = document.getElementById('pdf-file-input');
+    var file = fileInput.files[0];
+    
+    if (!file) {
+        showMessage('Veuillez sélectionner un fichier PDF.', 'danger');
+        return;
+    }
+    
+    if (file.type !== 'application/pdf') {
+        showMessage('Veuillez sélectionner un fichier PDF valide.', 'danger');
+        return;
+    }
+    
+    if (file.size > 10 * 1024 * 1024) {
+        showMessage('Le fichier est trop volumineux (maximum 10MB).', 'danger');
+        return;
+    }
+    
+    var formData = new FormData();
+    formData.append('pdf_file', file);
+    formData.append('action', 'upload');
+    
+    showProgress(true);
+    
+    fetch('upload_aide_pdf.php?action=upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        showProgress(false);
+        if (data.success) {
+            showMessage(data.message, 'success');
+            fileInput.value = '';
+            loadPdfList();
+        } else {
+            showMessage(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        showProgress(false);
+        showMessage('Erreur lors de l\'upload: ' + error.message, 'danger');
+    });
+}
+
+function showProgress(show) {
+    var progress = document.getElementById('upload-progress');
+    progress.style.display = show ? 'block' : 'none';
+    if (show) {
+        var bar = progress.querySelector('.progress-bar');
+        bar.style.width = '100%';
+    }
+}
+
+function showMessage(message, type) {
+    var messageDiv = document.getElementById('upload-message');
+    messageDiv.className = 'alert alert-' + type;
+    messageDiv.textContent = message;
+    messageDiv.style.display = 'block';
+    
+    setTimeout(function() {
+        messageDiv.style.display = 'none';
+    }, 5000);
+}
+
+function loadPdfList() {
+    fetch('upload_aide_pdf.php?action=list')
+    .then(response => response.json())
+    .then(data => {
+        var pdfList = document.getElementById('pdf-list');
+        
+        if (data.success && data.pdfs.length > 0) {
+            var html = '<table class="table table-striped table-hover">' +
+                      '<thead>' +
+                      '<tr>' +
+                      '<th><?php _e('admin_aide.pdf_name'); ?></th>' +
+                      '<th><?php _e('admin_aide.upload_date'); ?></th>' +
+                      '<th><?php _e('admin_aide.pdf_size'); ?></th>' +
+                      '<th>Actions</th>' +
+                      '</tr>' +
+                      '</thead>' +
+                      '<tbody>';
+            
+            data.pdfs.forEach(function(pdf) {
+                var safeName = pdf.name.replace(/'/g, "\\'");
+                var safeUrl = pdf.url.replace(/'/g, "\\'");
+                var safeFilename = pdf.filename.replace(/'/g, "\\'");
+                
+                html += '<tr>' +
+                       '<td>' + pdf.name + '</td>' +
+                       '<td>' + pdf.upload_date + '</td>' +
+                       '<td>' + pdf.size + '</td>' +
+                       '<td>' +
+                       '<button class="btn btn-sm btn-success" onclick="insertPdf(\'' + safeUrl + '\', \'' + safeName + '\')">' +
+                       '<i class="fa fa-plus"></i> <?php _e('admin_aide.insert_pdf'); ?>' +
+                       '</button> ' +
+                       '<button class="btn btn-sm btn-danger" onclick="deletePdf(\'' + safeFilename + '\')">' +
+                       '<i class="fa fa-trash"></i> <?php _e('admin_aide.delete_pdf'); ?>' +
+                       '</button>' +
+                       '</td>' +
+                       '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            pdfList.innerHTML = html;
+        } else {
+            pdfList.innerHTML = '<div class="alert alert-info"><i class="fa fa-info-circle"></i> <?php _e('admin_aide.no_pdfs'); ?></div>';
+        }
+    })
+    .catch(error => {
+        document.getElementById('pdf-list').innerHTML = '<div class="alert alert-danger">Erreur lors du chargement des PDFs</div>';
+    });
+}
+
+function insertPdf(url, name) {
+    var range = quill.getSelection();
+    if (range) {
+        // Insérer un lien vers le PDF
+        quill.insertText(range.index, '[PDF: ' + name + ']', 'link', url);
+        quill.setSelection(range.index + name.length + 7);
+    } else {
+        // Insérer à la fin
+        var length = quill.getLength();
+        quill.insertText(length - 1, '[PDF: ' + name + ']', 'link', url);
+    }
+    
+    showMessage('<?php _e('admin_aide.pdf_inserted'); ?>', 'success');
+}
+
+function deletePdf(filename) {
+    if (confirm('<?php _e('admin_aide.confirm_delete_pdf'); ?>')) {
+        var formData = new FormData();
+        formData.append('filename', filename);
+        formData.append('action', 'delete');
+        
+        fetch('upload_aide_pdf.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage('PDF supprimé avec succès.', 'success');
+                loadPdfList();
+            } else {
+                showMessage(data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            showMessage('Erreur lors de la suppression: ' + error.message, 'danger');
+        });
+    }
+}
+
+function showPdfInsertModal() {
+    // Créer une modal simple pour l'insertion de PDF
+    var modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'pdfInsertModal';
+    modal.innerHTML = 
+        '<div class="modal-dialog">' +
+        '<div class="modal-content">' +
+        '<div class="modal-header">' +
+        '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
+        '<h4 class="modal-title"><?php _e('admin_aide.insert_pdf'); ?></h4>' +
+        '</div>' +
+        '<div class="modal-body" id="modal-pdf-list">' +
+        '<div class="alert alert-info"><i class="fa fa-spinner fa-spin"></i> Chargement...</div>' +
+        '</div>' +
+        '<div class="modal-footer">' +
+        '<button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>' +
+        '</div>' +
+        '</div>' +
+        '</div>';
+    
+    document.body.appendChild(modal);
+    
+    // Charger la liste des PDFs dans la modal
+    fetch('upload_aide_pdf.php?action=list')
+    .then(response => response.json())
+    .then(data => {
+        var modalBody = document.getElementById('modal-pdf-list');
+        
+        if (data.success && data.pdfs.length > 0) {
+            var html = '<div class="list-group">';
+            data.pdfs.forEach(function(pdf) {
+                var safeName = pdf.name.replace(/'/g, "\\'");
+                var safeUrl = pdf.url.replace(/'/g, "\\'");
+                
+                html += '<a href="#" class="list-group-item" onclick="insertPdfFromModal(\'' + safeUrl + '\', \'' + safeName + '\'); return false;">' +
+                       '<h5 class="list-group-item-heading"><i class="fa fa-file-pdf-o"></i> ' + pdf.name + '</h5>' +
+                       '<p class="list-group-item-text">Taille: ' + pdf.size + ' - Uploadé le: ' + pdf.upload_date + '</p>' +
+                       '</a>';
+            });
+            html += '</div>';
+            modalBody.innerHTML = html;
+        } else {
+            modalBody.innerHTML = '<div class="alert alert-info"><i class="fa fa-info-circle"></i> <?php _e('admin_aide.no_pdfs'); ?></div>';
+        }
+    })
+    .catch(error => {
+        document.getElementById('modal-pdf-list').innerHTML = '<div class="alert alert-danger">Erreur lors du chargement des PDFs</div>';
+    });
+    
+    // Afficher la modal
+    $(modal).modal('show');
+    
+    // Nettoyer la modal après fermeture
+    $(modal).on('hidden.bs.modal', function() {
+        document.body.removeChild(modal);
+    });
+}
+
+function insertPdfFromModal(url, name) {
+    insertPdf(url, name);
+    $('#pdfInsertModal').modal('hide');
+}
+
+// Charger la liste des PDFs au chargement de la page
+document.addEventListener('DOMContentLoaded', function() {
+    loadPdfList();
+});
 </script>

@@ -5,8 +5,16 @@ require_once __DIR__ . '/../controler/functions/i18n.php';
 function Action($conf) {
     // Vérification de l'authentification admin
     if(!isset($_SESSION['user'])) {
-        header('Location: ?admin');
-        exit;
+        // Pour les requêtes AJAX, retourner une erreur JSON
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Non authentifié']);
+            exit;
+        } else {
+            header('Location: ?admin');
+            exit;
+        }
     }
     
     $array = array();
@@ -20,10 +28,29 @@ function Action($conf) {
                 $key = $_POST['key'];
                 $value = $_POST['value'];
                 
-                if ($translationManager->updateTranslation($language, $key, $value)) {
-                    $array['success_message'] = "Traduction mise à jour avec succès !";
+                // Debug: les données sont reçues correctement
+                
+                // Vérifier si c'est une requête AJAX
+                if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+                    strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+                    
+                    $result = $translationManager->updateTranslation($language, $key, $value);
+                    
+                    if ($result) {
+                        header('Content-Type: application/json');
+                        echo json_encode(['success' => true, 'message' => 'Traduction mise à jour avec succès !']);
+                    } else {
+                        header('Content-Type: application/json');
+                        echo json_encode(['success' => false, 'message' => 'Erreur lors de la mise à jour de la traduction.']);
+                    }
+                    exit;
                 } else {
-                    $array['error_message'] = "Erreur lors de la mise à jour de la traduction.";
+                    // Requête normale (non-AJAX)
+                    if ($translationManager->updateTranslation($language, $key, $value)) {
+                        $array['success_message'] = "Traduction mise à jour avec succès !";
+                    } else {
+                        $array['error_message'] = "Erreur lors de la mise à jour de la traduction.";
+                    }
                 }
                 break;
                 
@@ -54,6 +81,7 @@ function Action($conf) {
     $array['available_languages'] = $translationManager->getAvailableLanguages();
     $array['translation_keys'] = $translationManager->getAllTranslationKeys();
     $array['translation_stats'] = $translationManager->getTranslationStats();
+    $array['translation_manager'] = $translationManager;
     
     // Langue sélectionnée (par défaut français)
     $selected_language = $_GET['lang'] ?? 'fr';

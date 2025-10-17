@@ -21,6 +21,45 @@
           </div>
         <?php endif; ?>
         
+        <!-- Section Upload de PDFs -->
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-upload"></i> 
+              <?php _e('admin_aide.pdf_upload'); ?>
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label><?php _e('admin_aide.select_pdf'); ?> :</label>
+                  <input type="file" id="pdf-file-input" class="form-control" accept=".pdf" />
+                  <small class="text-muted">Maximum 10MB, format PDF uniquement</small>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="uploadPdf()">
+                  <i class="fa fa-upload"></i> <?php _e('admin_aide.upload_pdf'); ?>
+                </button>
+              </div>
+              <div class="col-md-6">
+                <div id="upload-progress" class="progress" style="display: none;">
+                  <div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%"></div>
+                </div>
+                <div id="upload-message" class="alert" style="display: none;"></div>
+              </div>
+            </div>
+            
+            <!-- Liste des PDFs disponibles -->
+            <hr>
+            <h4><?php _e('admin_aide.uploaded_pdfs'); ?></h4>
+            <div id="pdf-list" class="table-responsive">
+              <div class="alert alert-info">
+                <i class="fa fa-spinner fa-spin"></i> Chargement des PDFs...
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <!-- Section Ajouter une Q&A -->
         <div class="row">
           <div class="col-md-12">
@@ -359,7 +398,7 @@ $(document).ready(function() {
                 location.reload();
             })
             .fail(function(xhr, status, error) {
-                alert('<?php _e('admin_aide_machines.error_adding'); ?>: ' + xhr.responseText);
+                alert('Erreur lors de l\'ajout: ' + xhr.responseText);
             });
     });
     
@@ -367,5 +406,193 @@ $(document).ready(function() {
     $('#editModal').on('hidden.bs.modal', function () {
         $('#edit_reponse').summernote('reset');
     });
+    
+    // Charger la liste des PDFs au chargement de la page
+    loadPdfList();
 });
+
+// Fonctions pour la gestion des PDFs (globales)
+window.uploadPdf = function() {
+    var fileInput = document.getElementById('pdf-file-input');
+    var file = fileInput.files[0];
+    
+    if (!file) {
+        showMessage('Veuillez sélectionner un fichier PDF.', 'danger');
+        return;
+    }
+    
+    if (file.type !== 'application/pdf') {
+        showMessage('Veuillez sélectionner un fichier PDF valide.', 'danger');
+        return;
+    }
+    
+    if (file.size > 10 * 1024 * 1024) {
+        showMessage('Le fichier est trop volumineux (maximum 10MB).', 'danger');
+        return;
+    }
+    
+    var formData = new FormData();
+    formData.append('pdf_file', file);
+    formData.append('action', 'upload');
+    
+    showProgress(true);
+    
+    fetch('upload_aide_pdf.php?action=upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        showProgress(false);
+        if (data.success) {
+            showMessage(data.message, 'success');
+            fileInput.value = '';
+            loadPdfList();
+        } else {
+            showMessage(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        showProgress(false);
+        showMessage('Erreur lors de l\'upload: ' + error.message, 'danger');
+    });
+}
+
+window.showProgress = function(show) {
+    var progress = document.getElementById('upload-progress');
+    progress.style.display = show ? 'block' : 'none';
+    if (show) {
+        var bar = progress.querySelector('.progress-bar');
+        bar.style.width = '100%';
+    }
+}
+
+function showMessage(message, type) {
+    var messageDiv = document.getElementById('upload-message');
+    messageDiv.className = 'alert alert-' + type;
+    messageDiv.textContent = message;
+    messageDiv.style.display = 'block';
+    
+    setTimeout(function() {
+        messageDiv.style.display = 'none';
+    }, 5000);
+}
+
+function loadPdfList() {
+    fetch('upload_aide_pdf.php?action=list')
+    .then(response => response.json())
+    .then(data => {
+        var pdfList = document.getElementById('pdf-list');
+        
+        if (data.success && data.pdfs.length > 0) {
+            var html = '<table class="table table-striped table-hover">' +
+                      '<thead>' +
+                      '<tr>' +
+                      '<th>Nom du PDF</th>' +
+                      '<th>Date d\'upload</th>' +
+                      '<th>Taille</th>' +
+                      '<th>Actions</th>' +
+                      '</tr>' +
+                      '</thead>' +
+                      '<tbody>';
+            
+            data.pdfs.forEach(function(pdf, index) {
+                html += '<tr>' +
+                       '<td>' + pdf.name + '</td>' +
+                       '<td>' + pdf.upload_date + '</td>' +
+                       '<td>' + pdf.size + '</td>' +
+                       '<td>' +
+                       '<button class="btn btn-sm btn-success insert-pdf-btn" data-url="' + pdf.url + '" data-name="' + pdf.name + '">' +
+                       '<i class="fa fa-plus"></i> <?php _e('admin_aide.insert_pdf'); ?>' +
+                       '</button> ' +
+                       '<button class="btn btn-sm btn-danger delete-pdf-btn" data-filename="' + pdf.filename + '">' +
+                       '<i class="fa fa-trash"></i> <?php _e('admin_aide.delete_pdf'); ?>' +
+                       '</button>' +
+                       '</td>' +
+                       '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            pdfList.innerHTML = html;
+            
+            // Ajouter les event listeners pour les nouveaux boutons
+            $(document).off('click', '.insert-pdf-btn').on('click', '.insert-pdf-btn', function() {
+                var url = $(this).data('url');
+                var name = $(this).data('name');
+                insertPdfIntoSummernote(url, name);
+            });
+            
+            $(document).off('click', '.delete-pdf-btn').on('click', '.delete-pdf-btn', function() {
+                var filename = $(this).data('filename');
+                deletePdf(filename);
+            });
+        } else {
+            pdfList.innerHTML = '<div class="alert alert-info"><i class="fa fa-info-circle"></i> <?php _e('admin_aide.no_pdfs'); ?></div>';
+        }
+    })
+    .catch(error => {
+        document.getElementById('pdf-list').innerHTML = '<div class="alert alert-danger">Erreur lors du chargement des PDFs</div>';
+    });
+}
+
+function insertPdfIntoSummernote(url, name) {
+    // Insérer le preview PDF dans l'éditeur Summernote actif
+    var activeEditor = $('#reponse').summernote('code') ? $('#reponse') : $('#edit_reponse');
+    
+    if (activeEditor.length > 0) {
+        var currentContent = activeEditor.summernote('code');
+        var pdfPreview = '<div class="pdf-preview-container" style="margin: 20px 0; border: 1px solid #ddd; border-radius: 5px; overflow: hidden;">' +
+                        '<div class="pdf-header" style="background: #f5f5f5; padding: 10px; border-bottom: 1px solid #ddd;">' +
+                        '<i class="fa fa-file-pdf-o" style="color: #d32f2f; margin-right: 5px;"></i>' +
+                        '<strong>' + name + '</strong>' +
+                        '<a href="' + url + '" target="_blank" style="float: right; color: #1976d2; text-decoration: none;">' +
+                        '<i class="fa fa-external-link"></i> Ouvrir dans un nouvel onglet</a>' +
+                        '</div>' +
+                        '<iframe src="' + url + '" width="100%" height="500px" style="border: none;"></iframe>' +
+                        '</div>';
+        
+        activeEditor.summernote('code', currentContent + pdfPreview);
+        showMessage('Aperçu PDF inséré dans l\'aide', 'success');
+    } else {
+        showMessage('Veuillez d\'abord sélectionner un éditeur de texte.', 'warning');
+    }
+}
+
+function deletePdf(filename) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce PDF ?')) {
+        var formData = new FormData();
+        formData.append('filename', filename);
+        formData.append('action', 'delete');
+        
+        fetch('upload_aide_pdf.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage('PDF supprimé avec succès.', 'success');
+                loadPdfList();
+            } else {
+                showMessage(data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            showMessage('Erreur lors de la suppression: ' + error.message, 'danger');
+        });
+    }
+}
 </script>
+
+<style>
+/* Style pour les liens PDF */
+.pdf-link {
+    color: #dc3545 !important;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.pdf-link:hover {
+    color: #c82333 !important;
+}
+</style>

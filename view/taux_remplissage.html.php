@@ -148,7 +148,7 @@
                         <!-- Boutons d'action -->
                         <div class="text-center" style="margin-top: 20px;">
                             <a href="?taux_remplissage" class="btn btn-primary btn-lg">
-                                <i class="fa fa-plus"></i> Analyser un autre document
+                                <i class="fa fa-plus"></i> <?php _e('taux_remplissage.analyze_another'); ?>
                             </a>
                         </div>
                     </div>
@@ -237,20 +237,20 @@
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <h3 class="panel-title">
-                        <i class="fa fa-info-circle"></i> Comment ça marche ?
+                        <i class="fa fa-info-circle"></i> <?php _e('taux_remplissage.how_it_works'); ?>
                     </h3>
                 </div>
                 <div class="panel-body">
-                    <p>Cet outil analyse vos documents pour calculer le pourcentage d'encre/toner utilisé :</p>
+                    <p><?php _e('taux_remplissage.how_it_works_desc'); ?></p>
                     <ul>
-                        <li><strong>Formats supportés</strong> : PDF, JPEG, PNG, GIF</li>
-                        <li><strong>Analyse pixel par pixel</strong> : Compte les pixels non blancs</li>
-                        <li><strong>Tolérance réglable</strong> : Ajustez la sensibilité de détection</li>
-                        <li><strong>Statistiques détaillées</strong> : Taille, résolution, couleurs principales</li>
+                        <li><?php _e('taux_remplissage.supported_formats'); ?></li>
+                        <li><?php _e('taux_remplissage.pixel_analysis'); ?></li>
+                        <li><?php _e('taux_remplissage.adjustable_tolerance'); ?></li>
+                        <li><?php _e('taux_remplissage.detailed_stats'); ?></li>
                     </ul>
                     <p class="text-muted">
                         <i class="fa fa-lightbulb-o"></i> 
-                        Astuce : Un taux de remplissage élevé indique une consommation d'encre importante. Idéal pour estimer les coûts d'impression.
+                        <?php _e('taux_remplissage.tip'); ?>
                     </p>
                 </div>
             </div>

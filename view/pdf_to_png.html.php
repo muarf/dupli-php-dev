@@ -53,7 +53,7 @@
                                 </a>
                             <?php endif; ?>
                             <a href="?pdf_to_png" class="btn btn-default btn-lg">
-                                <i class="fa fa-plus"></i> Convertir un autre PDF
+                                <i class="fa fa-plus"></i> <?php _e('pdf_to_png.convert_another'); ?>
                             </a>
                         </div>
                     </div>
@@ -147,20 +147,20 @@
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <h3 class="panel-title">
-                        <i class="fa fa-info-circle"></i> Comment ça marche ?
+                        <i class="fa fa-info-circle"></i> <?php _e('pdf_to_png.how_it_works'); ?>
                     </h3>
                 </div>
                 <div class="panel-body">
-                    <p>Cette fonction permet d'extraire les pages d'un PDF en images PNG :</p>
+                    <p><?php _e('pdf_to_png.how_it_works_desc'); ?></p>
                     <ul>
-                        <li><strong>Une image par page</strong> : Chaque page devient une image séparée</li>
-                        <li><strong>Format PNG</strong> : Haute qualité avec transparence supportée</li>
-                        <li><strong>Qualité réglable</strong> : Choisissez entre 72, 150 ou 300 DPI</li>
-                        <li><strong>Téléchargement ZIP</strong> : Toutes les images dans une archive</li>
+                        <li><?php _e('pdf_to_png.one_image_per_page'); ?></li>
+                        <li><?php _e('pdf_to_png.png_format'); ?></li>
+                        <li><?php _e('pdf_to_png.adjustable_quality'); ?></li>
+                        <li><?php _e('pdf_to_png.zip_download'); ?></li>
                     </ul>
                     <p class="text-muted">
                         <i class="fa fa-lightbulb-o"></i> 
-                        Astuce : Utilisez 300 DPI pour obtenir des images prêtes à imprimer en haute qualité.
+                        <?php _e('pdf_to_png.tip'); ?>
                     </p>
                 </div>
             </div>

@@ -72,9 +72,13 @@ class TranslationManager {
      */
     public function getAllTranslationKeys() {
         $keys = [];
-        $frTranslations = $this->getTranslations('fr');
+        $frFile = $this->translationsPath . 'fr.json';
         
-        $this->extractKeys($frTranslations, '', $keys);
+        if (file_exists($frFile)) {
+            $content = file_get_contents($frFile);
+            $frTranslations = json_decode($content, true) ?: [];
+            $this->extractKeys($frTranslations, '', $keys);
+        }
         
         return $keys;
     }
@@ -99,29 +103,38 @@ class TranslationManager {
      */
     public function getTranslationValue($language, $key) {
         $translations = $this->getTranslations($language);
-        $keys = explode('.', $key);
-        $value = $translations;
         
-        foreach ($keys as $k) {
-            if (isset($value[$k])) {
-                $value = $value[$k];
-            } else {
-                return '';
-            }
-        }
-        
-        return is_string($value) ? $value : '';
+        // Les traductions sont déjà en structure plate
+        return isset($translations[$key]) ? $translations[$key] : '';
     }
     
     /**
      * Mettre à jour une traduction spécifique
      */
     public function updateTranslation($language, $key, $value) {
-        $translations = $this->getTranslations($language);
+        if (!in_array($language, $this->availableLanguages)) {
+            return false;
+        }
+        
+        $file = $this->translationsPath . $language . '.json';
+        
+        if (!file_exists($file) || !is_writable($file)) {
+            return false;
+        }
+        
+        // Charger le fichier JSON original (structure imbriquée)
+        $translations = [];
+        $content = file_get_contents($file);
+        $translations = json_decode($content, true) ?: [];
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return false;
+        }
+        
+        // Naviguer et mettre à jour la structure imbriquée
         $keys = explode('.', $key);
         $current = &$translations;
         
-        // Naviguer vers la clé
         for ($i = 0; $i < count($keys) - 1; $i++) {
             if (!isset($current[$keys[$i]])) {
                 $current[$keys[$i]] = [];
@@ -132,7 +145,14 @@ class TranslationManager {
         // Mettre à jour la valeur
         $current[$keys[count($keys) - 1]] = $value;
         
-        return $this->saveTranslations($language, $translations);
+        // Sauvegarder
+        $json = json_encode($translations, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return false;
+        }
+        
+        return file_put_contents($file, $json) !== false;
     }
     
     /**
@@ -225,6 +245,115 @@ class TranslationManager {
         }
         
         return $imported;
+    }
+    
+    /**
+     * Obtenir les statistiques par page
+     */
+    public function getPageStats($language) {
+        $allKeys = $this->getAllTranslationKeys();
+        $translations = $this->getTranslations($language);
+        $pageStats = [];
+        
+        foreach ($allKeys as $key) {
+            $page = explode('.', $key)[0];
+            
+            if (!isset($pageStats[$page])) {
+                $pageStats[$page] = [
+                    'total' => 0,
+                    'translated' => 0,
+                    'percentage' => 0
+                ];
+            }
+            
+            $pageStats[$page]['total']++;
+            
+            if (isset($translations[$key]) && !empty($translations[$key])) {
+                $pageStats[$page]['translated']++;
+            }
+        }
+        
+        // Calculer les pourcentages
+        foreach ($pageStats as $page => &$stats) {
+            $stats['percentage'] = $stats['total'] > 0 ? round(($stats['translated'] / $stats['total']) * 100, 1) : 0;
+        }
+        
+        return $pageStats;
+    }
+    
+    /**
+     * Obtenir les traductions pour une page spécifique
+     */
+    public function getPageTranslations($language, $page) {
+        $allKeys = $this->getAllTranslationKeys();
+        $translations = $this->getTranslations($language);
+        $pageTranslations = [];
+        
+        foreach ($allKeys as $key) {
+            $keyPage = explode('.', $key)[0];
+            
+            if ($keyPage === $page) {
+                $pageTranslations[$key] = $translations[$key] ?? '';
+            }
+        }
+        
+        return $pageTranslations;
+    }
+    
+    /**
+     * Obtenir l'icône pour une page
+     */
+    public function getPageIcon($page) {
+        $icons = [
+            'header' => 'fa-header',
+            'footer' => 'fa-footer',
+            'accueil' => 'fa-home',
+            'admin' => 'fa-cogs',
+            'admin_aide' => 'fa-question-circle',
+            'admin_bdd' => 'fa-database',
+            'admin_edit' => 'fa-edit',
+            'admin_login' => 'fa-sign-in',
+            'admin_mot' => 'fa-key',
+            'admin_mots' => 'fa-key',
+            'admin_aide_machines' => 'fa-cogs',
+            'aide_machines' => 'fa-cogs',
+            'admin_tirage' => 'fa-print',
+            'stats' => 'fa-chart-bar',
+            'tirage_multimachines' => 'fa-print',
+            'changement' => 'fa-exchange-alt',
+            'imposition' => 'fa-file-pdf',
+            'unimpose' => 'fa-file-pdf'
+        ];
+        
+        return $icons[$page] ?? 'fa-file';
+    }
+    
+    /**
+     * Obtenir le nom affiché d'une page
+     */
+    public function getPageName($page) {
+        $names = [
+            'header' => 'En-tête',
+            'footer' => 'Pied de page',
+            'accueil' => 'Page d\'accueil',
+            'admin' => 'Administration',
+            'admin_aide' => 'Aide Administration',
+            'admin_bdd' => 'Base de données',
+            'admin_edit' => 'Édition',
+            'admin_login' => 'Connexion',
+            'admin_mot' => 'Mot de passe',
+            'admin_mots' => 'Mots de passe',
+            'admin_aide_machines' => 'Aide Machines',
+            'aide_machines' => 'Aide Machines',
+            'admin_tirage' => 'Tirage',
+            'stats' => 'Statistiques',
+            'tirage_multimachines' => 'Tirage Multi-Machines',
+            'changement' => 'Changements',
+            'imposition' => 'Imposition',
+            'unimpose' => 'Désimposition'
+        ];
+        
+        return $names[$page] ?? ucfirst($page);
     }
 }
 ?>

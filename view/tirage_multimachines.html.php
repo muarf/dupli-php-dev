@@ -12,6 +12,35 @@ if (isset($array['duplicopieur_selectionne'])) {
 if (isset($array['prix_data'])) {
     $prix_data = $array['prix_data'];
 }
+
+// Générer les mappings machine -> price_key côté serveur
+$machine_price_mappings = [];
+try {
+    require_once __DIR__ . '/../controler/functions/database.php';
+    $db = pdo_connect();
+    
+    // Récupérer tous les photocopieurs actifs
+    $stmt = $db->prepare("SELECT id, marque FROM photocopieurs WHERE actif = 1 ORDER BY marque");
+    $stmt->execute();
+    $photocopieurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    foreach ($photocopieurs as $photocopieur) {
+        $machine_name = $photocopieur['marque'];
+        $photocopier_id = $photocopieur['id'];
+        
+        // Vérifier si des prix existent pour cet ID
+        $stmt = $db->prepare("SELECT COUNT(*) FROM prix WHERE machine_type = 'photocop' AND machine_id = ?");
+        $stmt->execute([$photocopier_id]);
+        $count = $stmt->fetchColumn();
+        
+        if ($count > 0) {
+            $machine_price_mappings[$machine_name] = "photocop_$photocopier_id";
+        }
+    }
+} catch (Exception $e) {
+    error_log("Erreur lors de la génération des mappings machine: " . $e->getMessage());
+    $machine_price_mappings = [];
+}
 ?>
 
 <style>
@@ -264,7 +293,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
     <?php if (isset($contact) && isset($machines) && ($contact != "")): ?>
     <div class="summary-card">
         <h3 class="text-center"><i class="fa fa-calculator"></i> <?php _e('tirage_multimachines.summary'); ?></h3>
-        <div class="total-price text-center"><?= number_format($prix_total, 2) ?>€</div>
+        <div class="total-price text-center"><?= number_format($prix_total, 2) ?> <?php _e('tirage_multimachines.currency'); ?></div>
         <p class="mb-0 text-center">Contact: <strong><?= htmlspecialchars($contact) ?></strong></p>
     </div>
     
@@ -277,7 +306,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                         <p class="text-center"><strong><?= ucfirst($machine['type']) ?></strong></p>
                         <div class="text-center" style="margin-top: 15px;">
                             <h3 style="color: #337ab7; margin: 0;">
-                                <strong><?= number_format($machine['prix'], 2) ?>€</strong>
+                                <strong><?= number_format($machine['prix'], 2) ?> <?php _e('tirage_multimachines.currency'); ?></strong>
                             </h3>
                         </div>
                     </div>
@@ -316,8 +345,8 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                     <div class="col-md-6">
                                         <h5><i class="fa fa-cogs"></i> Configuration</h5>
                                         <ul class="list-unstyled">
-                                            <li><strong>Masters :</strong> <?= $machine['nb_masters'] ?? 0 ?></li>
-                                            <li><strong>Passages :</strong> <?= $machine['nb_passages'] ?? 0 ?></li>
+                                            <li><strong><?php _e('tirage_multimachines.masters'); ?> :</strong> <?= $machine['nb_masters'] ?? 0 ?></li>
+                                            <li><strong><?php _e('tirage_multimachines.passes'); ?> :</strong> <?= $machine['nb_passages'] ?? 0 ?></li>
                                             <?php if (isset($machine['rv']) && $machine['rv'] == 'oui'): ?>
                                                 <li><i class="fa fa-check text-success"></i> Recto/Verso</li>
                                             <?php endif; ?>
@@ -327,12 +356,12 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                                 <li><i class="fa fa-check text-info"></i> Format A3</li>
                                             <?php endif; ?>
                                             <?php if (isset($machine['feuilles_payees']) && $machine['feuilles_payees'] == 'oui'): ?>
-                                                <li><i class="fa fa-check text-warning"></i> Feuilles déjà payées</li>
+                                                <li><i class="fa fa-check text-warning"></i> <?php _e('tirage_multimachines.sheets_already_paid'); ?></li>
                                             <?php endif; ?>
                                         </ul>
                                     </div>
                                     <div class="col-md-6">
-                                        <h5><i class="fa fa-euro"></i> Détail des coûts</h5>
+                                        <h5><i class="fa fa-euro"></i> <?php _e('tirage_multimachines.cost_details'); ?></h5>
                                         <ul class="list-unstyled">
                                             <?php 
                                             // Calculer les coûts détaillés pour le duplicopieur
@@ -374,17 +403,17 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                             $cout_passages = $nb_passages * $prix_passage;
                                             $cout_papier = $nb_f * $prix_papier;
                                             ?>
-                                            <li><strong>Masters :</strong> <?= $nb_masters ?> × <?= number_format($prix_master, 4) ?>€ = <?= number_format($cout_masters, 2) ?>€</li>
-                                            <li><strong>Passages :</strong> <?= $nb_passages ?> × <?= number_format($prix_passage, 4) ?>€ = <?= number_format($cout_passages, 2) ?>€</li>
-                                            <li><strong>Papier :</strong> <?= $nb_f ?> feuilles × <?= number_format($prix_papier, 3) ?>€ = <?= number_format($cout_papier, 2) ?>€</li>
+                                            <li><strong><?php _e('tirage_multimachines.masters'); ?> :</strong> <?= $nb_masters ?> × <?= number_format($prix_master, 4) ?> <?php _e('tirage_multimachines.currency'); ?> = <?= number_format($cout_masters, 2) ?> <?php _e('tirage_multimachines.currency'); ?></li>
+                                            <li><strong><?php _e('tirage_multimachines.passes'); ?> :</strong> <?= $nb_passages ?> × <?= number_format($prix_passage, 4) ?> <?php _e('tirage_multimachines.currency'); ?> = <?= number_format($cout_passages, 2) ?> <?php _e('tirage_multimachines.currency'); ?></li>
+                                            <li><strong><?php _e('tirage_multimachines.paper'); ?> :</strong> <?= $nb_f ?> <?php _e('tirage_multimachines.sheets'); ?> × <?= number_format($prix_papier, 3) ?> <?php _e('tirage_multimachines.currency'); ?> = <?= number_format($cout_papier, 2) ?> <?php _e('tirage_multimachines.currency'); ?></li>
                                             <?php if (isset($machine['rv']) && $machine['rv'] == 'oui'): ?>
-                                                <li><i class="fa fa-info-circle text-info"></i> Recto/Verso : Papier divisé par 2</li>
+                                                <li><i class="fa fa-info-circle text-info"></i> <?php _e('tirage_multimachines.recto_verso'); ?> : <?php _e('tirage_multimachines.paper_divided_by_2'); ?></li>
                                             <?php endif; ?>
                                             <?php if (isset($machine['feuilles_payees']) && $machine['feuilles_payees'] == 'oui'): ?>
-                                                <li><i class="fa fa-check text-warning"></i> Feuilles déjà payées : Papier gratuit</li>
+                                                <li><i class="fa fa-check text-warning"></i> <?php _e('tirage_multimachines.sheets_already_paid'); ?> : <?php _e('tirage_multimachines.free_paper'); ?></li>
                                             <?php endif; ?>
                                             <?php if ($taille === 'A4'): ?>
-                                                <li><i class="fa fa-info-circle text-info"></i> Format A4 : Masters et passages divisés par 2</li>
+                                                <li><i class="fa fa-info-circle text-info"></i> <?php _e('tirage_multimachines.format_a4_masters_passes_divided'); ?></li>
                                             <?php endif; ?>
                                         </ul>
                                     </div>
@@ -400,9 +429,9 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                             <?php foreach ($machine['brochures'] as $brochure_index => $brochure): ?>
                                                 <div class="well well-sm">
                                                     <strong>Brochure #<?= ($brochure_index + 1) ?></strong><br>
-                                                    • <?= $brochure['nb_exemplaires'] ?> exemplaires<br>
-                                                    • <?= $brochure['nb_feuilles'] ?> feuilles/exemplaire<br>
-                                                    • Format : <?= $brochure['taille'] ?><br>
+                                                    • <?= $brochure['nb_exemplaires'] ?> <?php _e('tirage_multimachines.exemplaires'); ?><br>
+                                                    • <?= $brochure['nb_feuilles'] ?> <?php _e('tirage_multimachines.feuilles_per_exemplaire'); ?><br>
+                                                    • <?php _e('tirage_multimachines.format'); ?> : <?= $brochure['taille'] ?><br>
                                                     <?php if (isset($brochure['rv']) && $brochure['rv'] == 'oui'): ?>
                                                         • <i class="fa fa-check text-success"></i> Recto/Verso<br>
                                                     <?php endif; ?>
@@ -410,14 +439,14 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                                         • <i class="fa fa-check text-success"></i> Couleur<br>
                                                     <?php endif; ?>
                                                     <?php if (isset($brochure['feuilles_payees']) && $brochure['feuilles_payees'] == 'oui'): ?>
-                                                        • <i class="fa fa-check text-warning"></i> Feuilles payées<br>
+                                                        • <i class="fa fa-check text-warning"></i> <?php _e('tirage_multimachines.sheets_paid'); ?><br>
                                                     <?php endif; ?>
                                                 </div>
                                             <?php endforeach; ?>
                                         <?php endif; ?>
                                     </div>
                                     <div class="col-md-6">
-                                        <h5><i class="fa fa-euro"></i> Détail des coûts</h5>
+                                        <h5><i class="fa fa-euro"></i> <?php _e('tirage_multimachines.cost_details'); ?></h5>
                                         <ul class="list-unstyled">
                                             <?php 
                                             // Calculer les coûts détaillés pour le photocopieur
@@ -450,14 +479,26 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                                         $prix_encre_brochure = 0;
                                                         $machine_name = $machine['machine'];
                                                         
-                                                        // Déterminer la clé de la machine
+                                                        // Déterminer la clé de la machine dynamiquement
                                                         $machine_key = null;
-                                                        if (strtolower($machine_name) === 'comcolor') {
-                                                            $machine_key = 'photocop_1';
-                                                        } elseif (strtolower($machine_name) === 'konika') {
-                                                            $machine_key = 'photocop_4';
-                                                        } else {
-                                                            // Chercher la première clé photocop_ disponible
+                                                        
+                                                        // Récupérer l'ID du photocopieur par son nom
+                                                        $stmt = $db->prepare("SELECT id FROM photocopieurs WHERE marque = ? AND actif = 1");
+                                                        $stmt->execute([$machine_name]);
+                                                        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                                                        
+                                                        if ($result) {
+                                                            $photocopier_id = $result['id'];
+                                                            $machine_key = "photocop_$photocopier_id";
+                                                            
+                                                            // Vérifier si des prix existent pour cet ID
+                                                            if (!isset($prix_data[$machine_key])) {
+                                                                $machine_key = null; // Pas de prix trouvé
+                                                            }
+                                                        }
+                                                        
+                                                        // Fallback si pas trouvé
+                                                        if (!$machine_key) {
                                                             foreach ($prix_data as $key => $value) {
                                                                 if (strpos($key, 'photocop_') === 0) {
                                                                     $machine_key = $key;
@@ -519,19 +560,19 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                                 }
                                             }
                                             ?>
-                                            <li><strong>Papier :</strong> <?= $total_pages ?> pages × <?= number_format($prix_papier, 3) ?>€ = <?= number_format($total_papier, 2) ?>€</li>
-                                            <li><strong>Encre/Toner :</strong> <?= $total_pages_encre ?> pages × <?= number_format($prix_encre, 4) ?>€ = <?= number_format($total_encre, 2) ?>€</li>
-                                            <li><strong>Total :</strong> <?= number_format($machine['prix'], 2) ?>€</li>
+                                            <li><strong><?php _e('tirage_multimachines.paper_label'); ?> :</strong> <?= $total_pages ?> <?php _e('tirage_multimachines.pages'); ?> × <?= number_format($prix_papier, 3) ?> <?php _e('tirage_multimachines.currency'); ?> = <?= number_format($total_papier, 2) ?> <?php _e('tirage_multimachines.currency'); ?></li>
+                                            <li><strong><?php _e('tirage_multimachines.ink_toner_label'); ?> :</strong> <?= $total_pages_encre ?> <?php _e('tirage_multimachines.pages'); ?> × <?= number_format($prix_encre, 4) ?> <?php _e('tirage_multimachines.currency'); ?> = <?= number_format($total_encre, 2) ?> <?php _e('tirage_multimachines.currency'); ?></li>
+                                            <li><strong><?php _e('tirage_multimachines.total'); ?> :</strong> <?= number_format($machine['prix'], 2) ?> <?php _e('tirage_multimachines.currency'); ?></li>
                                             <?php if (isset($machine['brochures']) && is_array($machine['brochures'])): ?>
                                                 <?php foreach ($machine['brochures'] as $brochure_index => $brochure): ?>
                                                     <?php if (!empty($brochure['rv']) && $brochure['rv'] == 'oui'): ?>
-                                                        <li><i class="fa fa-info-circle text-info"></i> Brochure #<?= ($brochure_index + 1) ?> : Recto/Verso (double encre)</li>
+                                                        <li><i class="fa fa-info-circle text-info"></i> <?php _e('tirage_multimachines.brochure_number'); ?><?= ($brochure_index + 1) ?> : <?php _e('tirage_multimachines.recto_verso_double_ink'); ?></li>
                                                     <?php endif; ?>
                                                     <?php if (!empty($brochure['feuilles_payees']) && $brochure['feuilles_payees'] == 'oui'): ?>
-                                                        <li><i class="fa fa-check text-warning"></i> Brochure #<?= ($brochure_index + 1) ?> : Feuilles déjà payées</li>
+                                                        <li><i class="fa fa-check text-warning"></i> <?php _e('tirage_multimachines.brochure_number'); ?><?= ($brochure_index + 1) ?> : <?php _e('tirage_multimachines.sheets_already_paid'); ?></li>
                                                     <?php endif; ?>
                                                     <?php if (!empty($brochure['taille']) && $brochure['taille'] === 'A4'): ?>
-                                                        <li><i class="fa fa-info-circle text-info"></i> Brochure #<?= ($brochure_index + 1) ?> : Format A4 (encre divisée par 2)</li>
+                                                        <li><i class="fa fa-info-circle text-info"></i> <?php _e('tirage_multimachines.brochure_number'); ?><?= ($brochure_index + 1) ?> : <?php _e('tirage_multimachines.format_a4_ink_divided'); ?></li>
                                                     <?php endif; ?>
                                                 <?php endforeach; ?>
                                             <?php endif; ?>
@@ -543,7 +584,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                             <div class="text-center" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
                                 <h4 class="text-primary">
                                     <i class="fa fa-euro"></i> 
-                                    <strong><?= number_format($machine['prix'], 2) ?>€</strong>
+                                    <strong><?= number_format($machine['prix'], 2) ?> <?php _e('tirage_multimachines.currency'); ?></strong>
                                 </h4>
                             </div>
                         </div>
@@ -555,7 +596,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
         <div class="alert alert-info text-center">
             <h3><i class="fa fa-calculator"></i> TOTAL GLOBAL</h3>
             <h2 class="text-primary">
-                <strong><?= number_format($prix_total, 2) ?>€</strong>
+                <strong><?= number_format($prix_total, 2) ?> <?php _e('tirage_multimachines.currency'); ?></strong>
             </h2>
         </div>
     <?php endif; ?>
@@ -754,7 +795,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                             </h4>
                         </div>
                         <div class="col-xs-4 col-sm-3 text-right">
-                            <span class="machine-price-preview" id="price-preview-0">0.00€</span>
+                            <span class="machine-price-preview" id="price-preview-0">0.00 <?php _e('tirage_multimachines.currency'); ?></span>
                         </div>
                     </div>
                 </div>
@@ -799,7 +840,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                 </p>
                             <?php elseif(isset($duplicopieurs) && count($duplicopieurs) > 1): ?>
                                 <select name="machines[0][duplicopieur_id]" class="form-control" required onchange="updateDuplicopieurCounters(this.value, 0)">
-                                    <option value="">Choisir un duplicopieur</option>
+                                    <option value=""><?php _e('tirage_multimachines.choose_duplicopieur'); ?></option>
                                     <?php foreach($duplicopieurs as $index => $dup): ?>
                                         <?php 
                                         $machine_name = $dup['marque'];
@@ -814,7 +855,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                     <?php endforeach; ?>
                                 </select>
                             <?php else: ?>
-                                <p class="form-control-static text-danger">Aucun duplicopieur disponible</p>
+                                <p class="form-control-static text-danger"><?php _e('tirage_multimachines.no_duplicopieur'); ?></p>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -859,7 +900,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                     <div class="checkbox">
                                         <label for="feuilles_payees_0">
                                             <input name="machines[0][feuilles_payees]" value="oui" type="checkbox" onchange="calculateTotalPrice()" id="feuilles_payees_0">
-                                            <i class="fa fa-money" style="color: #f39c12;"></i> Feuilles déjà payées
+                                            <i class="fa fa-money" style="color: #f39c12;"></i> <?php _e('tirage_multimachines.sheets_already_paid'); ?>
                                         </label>
                                     </div>
                                 </div>
@@ -914,7 +955,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                     <fieldset style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
                                         <legend style="width: auto; padding: 0 10px; font-size: 16px; margin-bottom: 10px;"><?php _e('tirage_multimachines.counters_after'); ?></legend>
                                         <div class="form-group">
-                                            <label class="col-xs-4 control-label" for="master_ap_0">Masters</label>  
+                                            <label class="col-xs-4 control-label" for="master_ap_0"><?php _e('tirage_multimachines.masters_label'); ?></label>  
                                             <div class="col-xs-8">
                                                 <input id="master_ap_0" name="machines[0][master_ap]" class="form-control input-sm" type="number" min="0" value="<?= $master_av ?>" onchange="calculateTotalPrice()" style="max-width: 120px;">
                                             </div>
@@ -935,7 +976,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="col-xs-4 control-label" for="nb_masters_0">Masters</label>  
+                                        <label class="col-xs-4 control-label" for="nb_masters_0"><?php _e('tirage_multimachines.masters_label'); ?></label>  
                                         <div class="col-xs-8">
                                             <input id="nb_masters_0" name="machines[0][nb_masters]" class="form-control input-sm" type="number" min="0" value="0" onchange="calculateTotalPrice()" style="max-width: 120px;">
                                             <span class="help-block">Nombre utilisé</span>  
@@ -944,7 +985,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="col-xs-4 control-label" for="nb_passages_0">Passages</label>  
+                                        <label class="col-xs-4 control-label" for="nb_passages_0"><?php _e('tirage_multimachines.passes_label'); ?></label>  
                                         <div class="col-xs-8">
                                             <input id="nb_passages_0" name="machines[0][nb_passages]" class="form-control input-sm" type="number" min="0" value="0" onchange="calculateTotalPrice()" style="max-width: 120px;">
                                             <span class="help-block">Nombre effectué</span>
@@ -978,7 +1019,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                 }
                                 ?>
                             </select>
-                            <span class="help-block">Quelle photocopieuse utilisez-vous ?</span>
+                            <span class="help-block"><?php _e('tirage_multimachines.which_photocopier'); ?></span>
                         </div>
                     </div>
                     
@@ -1053,7 +1094,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                     <div class="checkbox-inline">
                                         <label for="feuilles_payees_0_0">
                                             <input name="machines[0][brochures][0][feuilles_payees]" value="oui" type="checkbox" onchange="calculateTotalPrice()" id="feuilles_payees_0_0">
-                                            <i class="fa fa-money" style="color: #f39c12;"></i> Feuilles déjà payées
+                                            <i class="fa fa-money" style="color: #f39c12;"></i> <?php _e('tirage_multimachines.sheets_already_paid'); ?>
                                         </label>
                                     </div>
                                 </div>
@@ -1085,7 +1126,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                 <!-- Prix de la machine -->
                 <div class="form-group" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #28a745;">
                     <label class="col-md-4 control-label" style="font-size: 14px; font-weight: normal;">
-                        <i class="fa fa-euro" style="margin-right: 5px; color: #28a745;"></i> Prix de ce tirage
+                        <i class="fa fa-euro" style="margin-right: 5px; color: #28a745;"></i> <?php _e('tirage_multimachines.price_this_tirage'); ?>
                     </label>
                     <div class="col-md-8">
                         <div class="form-control-static machine-price" data-machine="0" id="machine-price-0" style="font-size: 16px; font-weight: bold; color: #28a745;">0.00€</div>
@@ -1113,7 +1154,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
         <div class="section">
             <div class="container">
                 <div class="row">
-                    <div class="col-md-12"><button id="singlebutton" name="ok" class="btn btn-success btn-block">Suivant</button></div>
+                    <div class="col-md-12"><button id="singlebutton" name="ok" class="btn btn-success btn-block"><?php _e('tirage_multimachines.next'); ?></button></div>
                 </div>
             </div>
         </div>
@@ -1196,12 +1237,11 @@ function findMachinePriceKey(machineName) {
         }
     }
     
-    // Pour l'instant, utiliser une logique de fallback
-    // On va essayer de deviner l'ID en fonction du nom
-    if (machineName.toLowerCase() === 'comcolor') {
-        return 'photocop_1';
-    } else if (machineName.toLowerCase() === 'konika') {
-        return 'photocop_4'; // ID réel de la machine konika
+    // Vérifier le cache des mappings
+    if (window.machinePriceCache && window.machinePriceCache[machineName]) {
+        const priceKey = window.machinePriceCache[machineName];
+        console.log(`🔑 Clé depuis le cache pour ${machineName}: ${priceKey}`);
+        return priceKey;
     }
     
     // Si on ne trouve pas, essayer de trouver la première clé photocop_ disponible
@@ -1503,7 +1543,7 @@ function calculateMachinePrice(machineIndex) {
             // Détail du calcul
             detailCalcul = `
                 <div class="price-detail" style="font-size: 0.9em; color: #666; margin-top: 5px;">
-                    <strong>Détail du calcul :</strong><br>
+                    <strong><?php _e('tirage_multimachines.calculation_detail'); ?> :</strong><br>
                     • ${nbMasters} masters × ${prixMaster.toFixed(2)}€ = ${coutMasters.toFixed(2)}€<br>
                     • ${nbPassages} passages × ${prixPassage.toFixed(2)}€ = ${coutPassages.toFixed(2)}€<br>
                     • ${nb_f.toFixed(0)} feuilles papier × ${prixPapier.toFixed(2)}€ = ${coutPapier.toFixed(2)}€<br>
@@ -1770,9 +1810,23 @@ function calculateTotalPrice() {
     return total; // Retourner le total pour utilisation dans updatePaymentAmount
 }
 
+// Initialiser le cache des mappings machine -> price_key
+function initializeMachinePriceCache() {
+    console.log('🔄 Initialisation du cache des mappings machine...');
+    
+    // Utiliser les mappings générés côté serveur
+    window.machinePriceCache = <?= json_encode($machine_price_mappings) ?>;
+    
+    console.log('✅ Cache des mappings initialisé côté serveur:', window.machinePriceCache);
+}
+
 // Gestion des machines
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔍 DOM chargé, initialisation des prix...');
+    
+    // Initialiser le cache des mappings machine -> price_key
+    initializeMachinePriceCache();
+    
     calculateTotalPrice();
     
     const addMachineBtn = document.getElementById('add-machine');
@@ -1862,6 +1916,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('duplicopieurRadio trouvé:', !!duplicopieurRadio);
                 console.log('photocopieurRadio trouvé:', !!photocopieurRadio);
                 toggleMachineType(newIndex);
+                
+                // Charger les tambours du duplicopieur si un duplicopieur est sélectionné
+                const duplicopieurIdField = document.querySelector(`input[name="machines[${newIndex}][duplicopieur_id]"]`);
+                if (duplicopieurIdField && duplicopieurIdField.value) {
+                    const duplicopieurId = duplicopieurIdField.value;
+                    console.log('🎯 Chargement des tambours pour machine', newIndex, ', duplicopieur ID:', duplicopieurId);
+                    loadTamboursForDuplicopieur(duplicopieurId, newIndex);
+                } else {
+                    console.log('⚠️ Pas de duplicopieur sélectionné pour machine', newIndex);
+                }
             }, 100);
     
     calculateTotalPrice();

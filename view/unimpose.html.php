@@ -36,7 +36,7 @@ $title = __("unimpose.title");
                             Le fichier <strong><?= htmlspecialchars($result) ?></strong> est prêt au téléchargement.
                         </p>
                         <a href="<?= htmlspecialchars($download_url) ?>" class="btn btn-success btn-lg" onclick="openPdfInApp('<?= htmlspecialchars($download_url) ?>')">
-                            <i class="fa fa-download"></i> Télécharger le PDF désimposé
+                            <i class="fa fa-download"></i> <?php _e('unimpose.download_unimposed'); ?>
                         </a>
                     </div>
                 </div>
@@ -103,19 +103,19 @@ $title = __("unimpose.title");
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <h3 class="panel-title">
-                        <i class="fa fa-info-circle"></i> Comment ça marche ?
+                        <i class="fa fa-info-circle"></i> <?php _e('unimpose.how_it_works'); ?>
                     </h3>
                 </div>
                 <div class="panel-body">
-                    <p>Cette fonction permet de transformer un PDF imposé (livret) en pages normales :</p>
+                    <p><?php _e('unimpose.how_it_works_desc'); ?></p>
                     <ul>
-                        <li><strong>Pages A3 imposées</strong> → <strong>Pages A4 normales</strong></li>
-                        <li><strong>Ordre de livret</strong> → <strong>Ordre séquentiel</strong></li>
-                        <li><strong>2 pages par feuille</strong> → <strong>1 page par feuille</strong></li>
+                        <li><?php _e('unimpose.a3_to_a4'); ?></li>
+                        <li><?php _e('unimpose.booklet_to_sequential'); ?></li>
+                        <li><?php _e('unimpose.two_pages_to_one'); ?></li>
                     </ul>
                     <p class="text-muted">
                         <i class="fa fa-lightbulb-o"></i> 
-                        Parfait pour récupérer un document original à partir d'un livret déjà imposé.
+                        <?php _e('unimpose.tip'); ?>
                     </p>
                 </div>
             </div>

@@ -276,6 +276,7 @@ $(document).ready(function() {
                         console.log('Erreur lors du chargement des compteurs');
                     });
             } else {
+                // C'est un photocopieur - cacher le champ masters
                 mastersGroup.hide();
                 tambourGroup.hide();
                 $('#nb_m').prop('required', false);
@@ -310,13 +311,28 @@ $(document).ready(function() {
         
         // Gestion du champ masters pour les duplicopieurs
         if (duplicopieursNames.indexOf(machine) !== -1) {
+            // Toujours afficher le champ masters pour les duplicopieurs
+            $('#masters-group').show();
+            
             if (type === 'master') {
                 $('#nb_m').prop('required', true);
-                $('#masters-group').show();
             } else {
+                // Pour tous les autres types (tambour, encre), le champ masters est optionnel
                 $('#nb_m').prop('required', false);
-                $('#masters-group').hide();
             }
+            
+            // Récupérer la dernière valeur de masters
+            $.get('models/changement.php?ajax=get_last_counters&machine=' + encodeURIComponent(machine), function(data) {
+                if (data.success && data.counters && data.counters.master_av !== undefined) {
+                    $('#nb_m').val(data.counters.master_av);
+                }
+            }).fail(function() {
+                console.log('Erreur lors de la récupération des compteurs');
+            });
+        } else {
+            // Pour les photocopieurs, cacher le champ masters
+            $('#nb_m').prop('required', false);
+            $('#masters-group').hide();
         }
     });
     

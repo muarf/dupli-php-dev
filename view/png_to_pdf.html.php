@@ -148,7 +148,7 @@
                     </h3>
                 </div>
                 <div class="panel-body">
-                    <p>Cette fonction permet de convertir vos images en PDF prêt à imprimer :</p>
+                    <p><?php _e('png_to_pdf.how_it_works_desc'); ?></p>
                     <ul>
                         <li><?php _e('png_to_pdf.format_a4'); ?></li>
                         <li><?php _e('png_to_pdf.format_a3'); ?></li>
