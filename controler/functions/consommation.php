@@ -101,8 +101,18 @@ function get_cons($machine)
     	$table_name = ($machine === 'dx4545' || $machine === 'A3' || $machine === 'dupli') ? 'dupli' : $machine;
     	$nb = get_last_number($table_name);
     }
+<<<<<<< HEAD
     // CORRECTION : Recherche insensible à la casse pour gérer "Duplicopieur" vs "duplicopieur"
     $query =$db->query('SELECT * FROM cons where LOWER(machine) = LOWER("'.$machine.'")');
+=======
+    // Cas spécial : "Duplicopieur" doit utiliser les données "dupli"
+    $machine_for_cons = $machine;
+    if ($machine === 'Duplicopieur') {
+        $machine_for_cons = 'dupli';
+    }
+    
+    $query =$db->query('SELECT * FROM cons where machine = "'.$machine_for_cons.'"');
+>>>>>>> 31db3548c60d47be04db7ab5f5cc6c19b8565db9
     $i=0;
     while ($result = $query->fetch(PDO::FETCH_OBJ))
     {
@@ -243,8 +253,13 @@ function get_cons($machine)
       
       // CORRECTION : Chercher l'ID réel du duplicopieur dans la base de données au lieu d'utiliser dupli_1 en dur
       $machine_key = '';
+<<<<<<< HEAD
       if (strtolower($machine) === 'dx4545' || strtolower($machine) === 'a3' || strtolower($machine) === 'dupli') {
           // Pour les anciennes machines, utiliser dupli_1 comme fallback
+=======
+      $machine_lower = strtolower($machine);
+      if ($machine_lower === 'dx4545' || $machine_lower === 'a3' || $machine_lower === 'dupli' || $machine_lower === 'duplicopieur') {
+>>>>>>> 31db3548c60d47be04db7ab5f5cc6c19b8565db9
           $machine_key = 'dupli_1';
       } else {
           // Pour les nouvelles machines, chercher l'ID réel dans la table duplicopieurs

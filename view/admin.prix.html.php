@@ -37,6 +37,7 @@
           <p class="lead"><?php _e('admin.price_management_desc'); ?></p>
         </div>
         
+        
         <?php 
         // Afficher un tableau pour chaque machine (duplicopieur ou photocopieuse)
         foreach ($machines as $key => $val) 

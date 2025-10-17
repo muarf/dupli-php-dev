@@ -862,10 +862,10 @@ function handleMainAdminSection($array, $siteManager) {
     $settings = $siteManager->getCurrentSettings();
     $array = array_merge($array, $settings);
     
-    // Obtenir les emails
-    $array['emails'] = $siteManager->getEmails();
-    
-    return template("../view/admin.html.php", $array);
+        // Obtenir les emails
+        $array['emails'] = $siteManager->getEmails();
+        
+        return template("../view/admin.html.php", $array);
 }
 
 /**

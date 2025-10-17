@@ -32,7 +32,7 @@ echo "✅ Changements commités et pushés dans dupli-php-dev"
 
 # 2. Pull des changements dans dupli-electron-caddy/app
 echo "📥 2. Pull des changements dans dupli-electron-caddy/app..."
-cd /root/duplic-electron-caddy/app
+cd /root/dupli-electron-caddy/app
 
 # Pull des derniers changements
 git pull origin main
@@ -43,7 +43,7 @@ echo "✅ Changements récupérés dans dupli-electron-caddy/app"
 echo "🏷️ 3. Création d'une nouvelle release..."
 
 # Aller dans le répertoire principal de dupli-electron-caddy
-cd /root/duplic-electron-caddy
+cd /root/dupli-electron-caddy/
 
 # Obtenir la dernière release depuis GitHub
 echo "🔍 Récupération de la dernière release depuis GitHub..."
