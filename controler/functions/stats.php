@@ -25,12 +25,9 @@ function nombre_feuilles_depuis_duplicopieur($duplicop_id, $now, $ago)
         $sql = ' WHERE duplicopieur_id = ' . intval($duplicop_id);
     }
     
-<<<<<<< HEAD
     // CORRECTION : Utiliser sum(passage_ap - passage_av) pour calculer le nombre de feuilles, pas sum(rv)
-=======
     // Pour les duplicopieurs, calculer le nombre de feuilles basé sur les passages
     // rv peut contenir 'oui'/'non' pour recto-verso, pas le nombre de feuilles
->>>>>>> 31db3548c60d47be04db7ab5f5cc6c19b8565db9
     $query                 = $db->query('select sum(passage_ap - passage_av) as nbr from dupli ' . $sql . '');
     $result                = $query->fetch(PDO::FETCH_OBJ);
     $nbf_total['nbf']      = $result->nbr ?? 0;
@@ -72,17 +69,13 @@ function nombre_feuilles_depuis($machine, $now, $ago)
         $nbf_total['ago'] = $now - $ago;
         $sql              = ' WHERE date < ' . $now . ' AND date >' . $nbf_total['ago'] . '';
     }
-<<<<<<< HEAD
     // CORRECTION : Utiliser sum(passage_ap - passage_av) pour calculer le nombre de feuilles, pas sum(rv)
-    $query                 = $db->query('select sum(passage_ap - passage_av) as nbr from ' . $table_name . ' ' . $sql . '');
-=======
     // Pour les duplicopieurs (table dupli), calculer le nombre de feuilles basé sur les passages
     if ($table_name === 'dupli') {
         $query = $db->query('select sum(passage_ap - passage_av) as nbr from ' . $table_name . ' ' . $sql . '');
     } else {
         $query = $db->query('select sum(rv) as nbr from ' . $table_name . ' ' . $sql . '');
     }
->>>>>>> 31db3548c60d47be04db7ab5f5cc6c19b8565db9
     $result                = $query->fetch(PDO::FETCH_OBJ);
     $nbf_total['nbf']      = $result->nbr;
     $query                 = $db->query('select sum(prix) as nbr from ' . $table_name . ' ' . $sql . '');

@@ -234,15 +234,9 @@ class PriceManager {
         $prix_unite = isset($prix[$machine_key][$type]['unite']) ? $prix[$machine_key][$type]['unite'] : 0;
         $prix_pack = isset($prix[$machine_key][$type]['pack']) ? $prix[$machine_key][$type]['pack'] : 0;
         
-<<<<<<< HEAD
         // Récupérer les données de consommables avec recherche insensible à la casse
         $query_cons = $db->prepare('SELECT * FROM cons WHERE LOWER(machine) = LOWER(?) AND type = ? ORDER BY date ASC');
         $query_cons->execute([$machine_name, $type]);
-=======
-        // Récupérer les données de consommables depuis la table cons
-        $query_cons = $db->prepare('SELECT * FROM cons WHERE machine = ? AND type = ? ORDER BY date ASC');
-        $query_cons->execute([strtolower($machine_name), $type]);
->>>>>>> 31db3548c60d47be04db7ab5f5cc6c19b8565db9
         
         $res = array();
         $i = 0;

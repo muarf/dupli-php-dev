@@ -170,3 +170,6 @@
         </div>
       </div>
     </div>
+
+<!-- Auto-updater UI (Electron uniquement - ne s'active pas en mode PHP standalone) -->
+<script src="js/updater-ui.js"></script>
