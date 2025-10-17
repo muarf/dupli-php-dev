@@ -14,8 +14,9 @@ cd /root/dupli-php-dev
 # Ajouter tous les fichiers modifiés
 git add .
 
-# Commit avec un message descriptif
-git commit -m "feat: Ajout fonctionnalité upload PDF pour aide_machines
+# Commit avec un message descriptif (si il y a des changements)
+if ! git diff --staged --quiet; then
+    git commit -m "feat: Ajout fonctionnalité upload PDF pour aide_machines
 
 - Upload de PDFs jusqu'à 20MB avec stockage permanent
 - Interface d'upload dans admin_aide_machines.html.php
@@ -24,6 +25,7 @@ git commit -m "feat: Ajout fonctionnalité upload PDF pour aide_machines
 - Limites PHP augmentées (upload_max_filesize, post_max_size)
 - Sécurité: .htaccess pour protéger les uploads
 - Traductions ajoutées pour l'interface PDF"
+fi
 
 # Push vers le repository distant
 git push origin main
