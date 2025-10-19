@@ -40,7 +40,7 @@ function analyzePDFFormat($pdfFile)
     try {
         // Vérifier que le fichier est bien un PDF
         if ($pdfFile['type'] !== 'application/pdf') {
-            throw new Exception('Le fichier doit être un PDF');
+            throw new Exception(__('errors.file_must_be_pdf'));
         }
         
         $originalFile = $pdfFile['tmp_name'];
@@ -55,7 +55,7 @@ function analyzePDFFormat($pdfFile)
             $pageCount = $pdf->setSourceFile($originalFile);
             
             if ($pageCount === 0) {
-                throw new Exception('PDF vide ou illisible');
+                throw new Exception(__('errors.pdf_empty_or_unreadable'));
             }
             
         } catch (Exception $e) {
@@ -91,7 +91,7 @@ function analyzePDFFormat($pdfFile)
             $pageCount = $pdf->setSourceFile($cleanedPdfFile);
             
             if ($pageCount === 0) {
-                throw new Exception('Impossible de lire le PDF même après nettoyage Ghostscript');
+                throw new Exception(__('errors.cannot_read_pdf_after_ghostscript'));
             }
             
             $usedGhostscript = true;
@@ -172,7 +172,7 @@ function processImpositionTracts()
     
     // Vérifier qu'un fichier a été uploadé
     if (!isset($_FILES['pdf_file']) || $_FILES['pdf_file']['error'] !== UPLOAD_ERR_OK) {
-        throw new Exception("Erreur lors de l'upload du fichier PDF.");
+        throw new Exception(__('errors.upload_error'));
     }
     
     // Créer un nom de fichier unique
@@ -189,11 +189,11 @@ function processImpositionTracts()
     
     // Vérifier les permissions du fichier déplacé
     if (!file_exists($inputFile)) {
-        throw new Exception("Le fichier déplacé n'existe pas.");
+        throw new Exception(__('errors.file_moved_not_exists'));
     }
     
     if (!is_readable($inputFile)) {
-        throw new Exception("Le fichier déplacé n'est pas lisible.");
+        throw new Exception(__('errors.file_moved_not_readable'));
     }
     
     // S'assurer que le fichier a les bonnes permissions

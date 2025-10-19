@@ -38,7 +38,7 @@ try {
         }
     }
 } catch (Exception $e) {
-    error_log("Erreur lors de la génération des mappings machine: " . $e->getMessage());
+    error_log(__('errors.machine_mapping_error') . ": " . $e->getMessage());
     $machine_price_mappings = [];
 }
 ?>

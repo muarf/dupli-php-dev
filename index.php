@@ -17,7 +17,7 @@ set_error_handler(function($severity, $message, $file, $line) {
     
     // Créer les données d'erreur
     $errorData = [
-        'type' => 'Erreur PHP',
+        'type' => __('php_errors.php_error'),
         'message' => $message,
         'file' => $file,
         'line' => $line,
@@ -40,15 +40,15 @@ set_error_handler(function($severity, $message, $file, $line) {
     
     // Mapper les types d'erreurs
     $error_types = [
-        E_ERROR => 'Erreur Fatale',
-        E_WARNING => 'Avertissement',
-        E_NOTICE => 'Notice',
-        E_USER_ERROR => 'Erreur Utilisateur',
-        E_USER_WARNING => 'Avertissement Utilisateur',
-        E_USER_NOTICE => 'Notice Utilisateur'
+        E_ERROR => __('php_errors.fatal_error'),
+        E_WARNING => __('php_errors.warning'),
+        E_NOTICE => __('php_errors.notice'),
+        E_USER_ERROR => __('php_errors.user_error'),
+        E_USER_WARNING => __('php_errors.user_warning'),
+        E_USER_NOTICE => __('php_errors.user_notice')
     ];
     
-    $error_type_name = isset($error_types[$severity]) ? $error_types[$severity] : 'Erreur';
+    $error_type_name = isset($error_types[$severity]) ? $error_types[$severity] : __('common.error');
     
     echo show_error_page($message, $error_type_name, $file, $line);
     exit;
@@ -68,7 +68,7 @@ set_exception_handler(function($exception) {
     
     echo show_error_page(
         $exception->getMessage(), 
-        'Exception', 
+        __('php_errors.exception'), 
         $exception->getFile(), 
         $exception->getLine(),
         $exception->getTraceAsString()
@@ -92,7 +92,7 @@ register_shutdown_function(function() {
         
         echo show_error_page(
             $error['message'], 
-            'Erreur Fatale', 
+            __('php_errors.fatal_error'), 
             $error['file'], 
             $error['line']
         );
@@ -312,21 +312,21 @@ if ($page === 'ajax_delete_machine') {
     // Vérifier l'authentification admin
     if (!isset($_SESSION['user'])) {
         http_response_code(401);
-        echo json_encode(['success' => false, 'error' => 'Non autorisé']);
+        echo json_encode(['success' => false, 'error' => __('errors.not_authenticated')]);
         exit;
     }
     
     // Vérifier que c'est bien une requête POST
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
-        echo json_encode(['error' => 'Méthode non autorisée']);
+        echo json_encode(['error' => __('errors.method_not_allowed')]);
         exit;
     }
     
     // Vérifier que les paramètres sont présents
     if (!isset($_POST['machine_id']) || !isset($_POST['machine_type'])) {
         http_response_code(400);
-        echo json_encode(['error' => 'Paramètres manquants']);
+        echo json_encode(['error' => __('errors.missing_parameters')]);
         exit;
     }
     
@@ -336,14 +336,14 @@ if ($page === 'ajax_delete_machine') {
     // Valider le type de machine
     if (!in_array($machine_type, ['duplicopieur', 'photocopieur'])) {
         http_response_code(400);
-        echo json_encode(['error' => 'Type de machine invalide']);
+        echo json_encode(['error' => __('errors.invalid_machine_type')]);
         exit;
     }
     
     // Valider l'ID de la machine
     if (!is_numeric($machine_id) || $machine_id <= 0) {
         http_response_code(400);
-        echo json_encode(['error' => 'ID de machine invalide']);
+        echo json_encode(['error' => __('errors.invalid_machine_id')]);
         exit;
     }
     

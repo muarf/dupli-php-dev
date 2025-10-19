@@ -25,7 +25,7 @@ function Action($conf = null)
                 echo json_encode(['success' => true, 'change' => $change]);
             } else {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'error' => 'Changement non trouvé']);
+                echo json_encode(['success' => false, 'error' => __('errors.change_not_found')]);
             }
             exit;
         } catch (Exception $e) {
@@ -48,7 +48,7 @@ function Action($conf = null)
                 echo json_encode(['success' => true, 'aide' => $aide]);
             } else {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'error' => 'Aide non trouvée']);
+                echo json_encode(['success' => false, 'error' => __('errors.help_not_found')]);
             }
             exit;
         } catch (Exception $e) {
@@ -281,7 +281,7 @@ require_once __DIR__ . '/../controler/conf.php';
                         
                         if(empty($old_name) || empty($new_name)) {
                             header('Content-Type: application/json');
-                            echo json_encode(['error' => 'Nom manquant']);
+                            echo json_encode(['error' => __('errors.name_missing')]);
                             exit;
                         }
                         
@@ -603,7 +603,7 @@ function handlePostActions($array, $dbManager, $backupManager, $siteManager, $pr
         } else {
             // Si les données ne sont pas valides, afficher un message d'erreur
             header('Content-Type: application/json');
-            echo json_encode(['status' => 'error', 'message' => 'Données invalides']);
+            echo json_encode(['status' => 'error', 'message' => __('errors.invalid_data')]);
             
             // Terminer le script PHP
             exit();
@@ -1158,7 +1158,7 @@ function handleAideSection($array) {
                 exit;
             } else {
                 http_response_code(404);
-                echo 'Aide non trouvée';
+                echo __('errors.help_not_found');
                 exit;
             }
         }

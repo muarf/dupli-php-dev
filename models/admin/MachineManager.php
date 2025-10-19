@@ -51,10 +51,10 @@ class AdminMachineManager {
             // Créer automatiquement une aide pour la nouvelle machine
             $this->createDefaultAide($db, $machine_name);
             
-            return ['success' => "Machine $machine_name ajoutée avec succès"];
+            return ['success' => __('errors.machine_added_success', ['machine' => $machine_name])];
             
         } catch (Exception $e) {
-            return ['error' => "Erreur lors de l'ajout de la machine : " . $e->getMessage()];
+            return ['error' => __('errors.machine_add_error') . " : " . $e->getMessage()];
         }
     }
     
@@ -528,7 +528,7 @@ class AdminMachineManager {
                     
                     return ['success' => "Duplicopieur $machine_name supprimé avec succès"];
                 } else {
-                    return ['error' => "Duplicopieur introuvable"];
+                    return ['error' => __('errors.duplicopieur_not_found')];
                 }
                 
             } elseif ($machine_type === 'photocopieur') {
@@ -556,7 +556,7 @@ class AdminMachineManager {
                     
                     return ['success' => "Photocopieur $machine_name supprimé avec succès"];
                 } else {
-                    return ['error' => "Photocopieur introuvable"];
+                    return ['error' => __('errors.photocopieur_not_found')];
                 }
             } else {
                 return ['error' => "Type de machine invalide"];
@@ -660,7 +660,7 @@ class AdminMachineManager {
             $result = $query->fetch(PDO::FETCH_OBJ);
             
             if ($result && $result->count > 0) {
-                return ['error' => 'Une machine avec ce nom existe déjà'];
+                return ['error' => __('errors.machine_name_exists')];
             }
             
             // Démarrer une transaction
