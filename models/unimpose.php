@@ -55,7 +55,7 @@ function unimpose_booklet($input_file, $output_file) {
         }
         
         if (!$resultFile) {
-            throw new Exception("Échec de la désimposition du PDF");
+            throw new Exception(__('errors.unimpose_failed'));
         }
         
         return $resultFile;

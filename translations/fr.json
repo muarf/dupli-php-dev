@@ -270,6 +270,9 @@
         "password_too_short": "Le nouveau mot de passe doit contenir au moins 6 caractères.",
         "passwords_dont_match_realtime": "Les mots de passe ne correspondent pas."
     },
+    "admin_bdd": {
+        "file_choice_help": "Choisir un fichier existant pour copier la structure et les données, ou \"Structure complète\" pour créer toutes les tables nécessaires"
+    },
     "admin_aide_machines": {
         "title": "Gestion des Questions-Réponses des Machines",
         "error": "Erreur",
