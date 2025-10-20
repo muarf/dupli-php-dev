@@ -1019,7 +1019,7 @@ function deleteChange($data) {
             return ['error' => __('errors.multiple_entries_deleted_by_error')];
         }
         
-        return ['success' => "Changement supprimé avec succès"];
+        return ['success' => __('errors.change_deleted_success')];
         
     } catch (Exception $e) {
         return ['error' => "Erreur lors de la suppression : " . $e->getMessage()];
@@ -1228,7 +1228,7 @@ function addAide($machine, $contenu) {
         $query->execute([$machine]);
         
         if ($query->fetchColumn() > 0) {
-            return ['error' => "Une aide existe déjà pour cette machine"];
+            return ['error' => __('errors.help_already_exists_for_machine')];
         }
         
         // Insérer la nouvelle aide
@@ -1255,7 +1255,7 @@ function updateAide($id, $machine, $contenu) {
         $query->execute([$id]);
         
         if ($query->fetchColumn() == 0) {
-            return ['error' => "Aide non trouvée"];
+            return ['error' => __('errors.help_not_found')];
         }
         
         // Mettre à jour l'aide
@@ -1283,7 +1283,7 @@ function deleteAide($id) {
         $machine = $query->fetchColumn();
         
         if (!$machine) {
-            return ['error' => "Aide non trouvée"];
+            return ['error' => __('errors.help_not_found')];
         }
         
         // Supprimer l'aide

@@ -474,7 +474,11 @@
         "cm": "cm",
         "inches": "inches",
         "points": "points",
-        "pixels": "pixels"
+        "pixels": "pixels",
+        "element_not_found": "element not found",
+        "no_total_price_found": "No total price found",
+        "elements_not_found": "payeOui or cbField elements not found",
+        "not_found": "not found"
     },
     "errors": {
         "not_authenticated": "Not authenticated",
@@ -522,7 +526,15 @@
         "qa_deleted_success": "Q&A deleted successfully",
         "change_add_error": "Error during addition",
         "machine_added_success": "Machine :machine added successfully",
-        "machine_mapping_error": "Error during machine mapping generation"
+        "machine_mapping_error": "Error during machine mapping generation",
+        "configuration_not_defined": "Configuration not defined",
+        "change_updated_success": "Change updated successfully",
+        "no_entry_found_to_delete": "No entry found to delete",
+        "multiple_entries_deleted_by_error": "Multiple entries were deleted by error",
+        "help_already_exists_for_machine": "Help already exists for this machine",
+        "database_file_copy_error": "Error during database file copy",
+        "backup_file_copy_error": "Error during backup file copy",
+        "file_deletion_error": "Error during file deletion"
     },
     "php_errors": {
         "php_error": "PHP Error",

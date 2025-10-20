@@ -873,7 +873,11 @@
         "cm": "cm",
         "inches": "pouces",
         "points": "points",
-        "pixels": "pixels"
+        "pixels": "pixels",
+        "element_not_found": "élément non trouvé",
+        "no_total_price_found": "Aucun prix total trouvé",
+        "elements_not_found": "Éléments payeOui ou cbField non trouvés",
+        "not_found": "non trouvé"
     },
     "errors": {
         "not_authenticated": "Non authentifié",
@@ -921,7 +925,15 @@
         "qa_deleted_success": "Q&A supprimée avec succès",
         "change_add_error": "Erreur lors de l'ajout",
         "machine_added_success": "Machine :machine ajoutée avec succès",
-        "machine_mapping_error": "Erreur lors de la génération des mappings machine"
+        "machine_mapping_error": "Erreur lors de la génération des mappings machine",
+        "configuration_not_defined": "Configuration non définie",
+        "change_updated_success": "Changement mis à jour avec succès",
+        "no_entry_found_to_delete": "Aucune entrée trouvée à supprimer",
+        "multiple_entries_deleted_by_error": "Plusieurs entrées ont été supprimées par erreur",
+        "help_already_exists_for_machine": "Une aide existe déjà pour cette machine",
+        "database_file_copy_error": "Erreur lors de la copie du fichier de base de données",
+        "backup_file_copy_error": "Erreur lors de la copie du fichier de sauvegarde",
+        "file_deletion_error": "Erreur lors de la suppression du fichier"
     },
     "php_errors": {
         "php_error": "Erreur PHP",

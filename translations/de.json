@@ -125,7 +125,11 @@
     "remove": "Entfernen",
     "confirm": "Bestätigen",
     "yes": "Ja",
-    "no": "Nein"
+    "no": "Nein",
+    "element_not_found": "Element nicht gefunden",
+    "no_total_price_found": "Kein Gesamtpreis gefunden",
+    "elements_not_found": "payeOui oder cbField Elemente nicht gefunden",
+    "not_found": "nicht gefunden"
   },
   "errors": {
     "not_authenticated": "Nicht authentifiziert",
@@ -172,8 +176,16 @@
     "qa_updated_success": "Q&A erfolgreich aktualisiert",
     "qa_deleted_success": "Q&A erfolgreich gelöscht",
     "change_add_error": "Fehler beim Hinzufügen",
-    "machine_added_success": "Maschine :machine erfolgreich hinzugefügt",
-    "machine_mapping_error": "Fehler bei der Generierung der Maschinenzuordnungen"
+        "machine_added_success": "Maschine :machine erfolgreich hinzugefügt",
+        "machine_mapping_error": "Fehler bei der Generierung der Maschinenzuordnungen",
+        "configuration_not_defined": "Konfiguration nicht definiert",
+        "change_updated_success": "Änderung erfolgreich aktualisiert",
+        "no_entry_found_to_delete": "Kein Eintrag zum Löschen gefunden",
+        "multiple_entries_deleted_by_error": "Mehrere Einträge wurden versehentlich gelöscht",
+        "help_already_exists_for_machine": "Hilfe existiert bereits für diese Maschine",
+        "database_file_copy_error": "Fehler beim Kopieren der Datenbankdatei",
+        "backup_file_copy_error": "Fehler beim Kopieren der Backup-Datei",
+        "file_deletion_error": "Fehler beim Löschen der Datei"
   },
   "php_errors": {
     "php_error": "PHP-Fehler",
