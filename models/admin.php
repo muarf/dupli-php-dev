@@ -219,7 +219,7 @@ require_once __DIR__ . '/../controler/conf.php';
             require_once __DIR__ . '/../controler/functions/error_handler.php';
             $result = show_error_page(
                 "La configuration de la base de données n'a pas été chargée correctement. Cela peut arriver si les fichiers de configuration sont manquants ou corrompus.",
-                "Configuration non définie",
+                __('errors.configuration_not_defined'),
                 __FILE__,
                 __LINE__,
                 null,
@@ -966,7 +966,7 @@ function addChange($data) {
         $query = $db->prepare('INSERT INTO cons (date, machine, type, nb_p, nb_m, tambour) VALUES (?, ?, ?, ?, ?, ?)');
         $query->execute([$date, $machine, $type, $nb_p, $nb_m, $tambour]);
         
-        return ['success' => "Changement ajouté avec succès"];
+        return ['success' => __('errors.change_added_success')];
         
     } catch (Exception $e) {
         return ['error' => "Erreur lors de l'ajout : " . $e->getMessage()];
@@ -990,7 +990,7 @@ function updateChange($data) {
         $query = $db->prepare('UPDATE cons SET date = ?, nb_p = ? WHERE machine = ? AND type = ? AND date = ?');
         $query->execute([$new_date, $counter, $machine, $type, $old_date]);
         
-        return ['success' => "Changement mis à jour avec succès"];
+        return ['success' => __('errors.change_updated_success')];
         
     } catch (Exception $e) {
         return ['error' => "Erreur lors de la mise à jour : " . $e->getMessage()];
@@ -1014,9 +1014,9 @@ function deleteChange($data) {
         $deleted_count = $query->rowCount();
         
         if ($deleted_count === 0) {
-            return ['error' => "Aucune entrée trouvée à supprimer"];
+            return ['error' => __('errors.no_entry_found_to_delete')];
         } elseif ($deleted_count > 1) {
-            return ['error' => "Plusieurs entrées ont été supprimées par erreur"];
+            return ['error' => __('errors.multiple_entries_deleted_by_error')];
         }
         
         return ['success' => "Changement supprimé avec succès"];

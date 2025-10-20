@@ -559,7 +559,7 @@ class AdminMachineManager {
                     return ['error' => __('errors.photocopieur_not_found')];
                 }
             } else {
-                return ['error' => "Type de machine invalide"];
+                return ['error' => __('errors.invalid_machine_type')];
             }
             
         } catch (Exception $e) {
