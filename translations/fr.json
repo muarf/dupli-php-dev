@@ -941,7 +941,13 @@
         "help_already_exists_for_machine": "Une aide existe déjà pour cette machine",
         "database_file_copy_error": "Erreur lors de la copie du fichier de base de données",
         "backup_file_copy_error": "Erreur lors de la copie du fichier de sauvegarde",
-        "file_deletion_error": "Erreur lors de la suppression du fichier"
+        "file_deletion_error": "Erreur lors de la suppression du fichier",
+        "unimpose_failed": "Échec de la désimposition du PDF",
+        "pdf_no_pages": "Le fichier PDF ne contient aucune page",
+        "file_moved_success": "Fichier déplacé avec succès",
+        "original_pdf_deleted": "Fichier PDF original supprimé",
+        "processing_completed_success": "Traitement terminé avec succès",
+        "template_generated_success": "Template généré avec succès"
     },
     "php_errors": {
         "php_error": "Erreur PHP",
