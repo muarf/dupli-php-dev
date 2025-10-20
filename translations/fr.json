@@ -368,7 +368,11 @@
         "price": "Prix",
         "price_paid": "Prix payé",
         "difference": "Différence",
-        "user_paid": "Combien l'utilisateur a payé"
+        "user_paid": "Combien l'utilisateur a payé",
+        "sheets_count": "nombre de feuilles",
+        "sheets_per_print": "nombre de feuilles par tirage",
+        "prints_count": "nombre de tirages",
+        "monthly_profit": "Gain pour ce mois"
     },
     "tirage_multimachines": {
         "title": "Tirage Multi-Machines",
@@ -877,7 +881,8 @@
         "element_not_found": "élément non trouvé",
         "no_total_price_found": "Aucun prix total trouvé",
         "elements_not_found": "Éléments payeOui ou cbField non trouvés",
-        "not_found": "non trouvé"
+        "not_found": "non trouvé",
+        "page_navigation": "Navigation des pages"
     },
     "errors": {
         "not_authenticated": "Non authentifié",

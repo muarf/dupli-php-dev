@@ -129,7 +129,8 @@
     "element_not_found": "Element nicht gefunden",
     "no_total_price_found": "Kein Gesamtpreis gefunden",
     "elements_not_found": "payeOui oder cbField Elemente nicht gefunden",
-    "not_found": "nicht gefunden"
+    "not_found": "nicht gefunden",
+    "page_navigation": "Seitennavigation"
   },
   "errors": {
     "not_authenticated": "Nicht authentifiziert",
@@ -200,5 +201,22 @@
   "unimpose": {
     "pdf_unimposed_success": "Ihr PDF wurde erfolgreich entimponiert",
     "file_ready_download": "Die Datei <strong>:file</strong> ist zum Download bereit."
+  },
+  "stats": {
+    "title": "Statistiken",
+    "intro_text": "Seit Beginn des Dupli-Abenteuers im Jahr 2011 haben wir insgesamt {nb_f} Seiten in mehr als {nb_t} Malen gedruckt. Wenn wir genauer hinschauen, macht das einen Durchschnitt von {nb_t_par_mois} Drucken pro Monat, mit etwa {nbf_par_mois} Blättern im Durchschnitt. Sie drucken {nb_moy_par_mois} Kopien pro Druck. Ich erspare Ihnen nicht den Umsatz: {ca} Euro seit Beginn, wenn wir die {doit} Euro abziehen, die uns geschuldet werden: {ca2} Euro. Sie haben uns {ca1} Euro gegeben. Wir sind also {benf} Euro, aber das ist ohne den Preis der Miete der Condos zu zählen, die bei 50 Euro pro Monat... ! Die Big Data sind da, ich lasse Sie schauen :) ps: und das sind auch 1800 Codezeilen!",
+    "monthly_stats": "Monatliche Statistiken",
+    "date": "Datum",
+    "sheets": "Blätter",
+    "prints": "Drucke",
+    "average": "Durchschnitt",
+    "price": "Preis",
+    "price_paid": "Gezahlter Preis",
+    "difference": "Unterschied",
+    "user_paid": "Wie viel der Benutzer bezahlt hat",
+    "sheets_count": "Anzahl der Blätter",
+        "sheets_per_print": "Anzahl der Blätter pro Druck",
+        "prints_count": "Anzahl der Drucke",
+        "monthly_profit": "Gewinn für diesen Monat"
   }
 }

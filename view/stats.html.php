@@ -61,12 +61,12 @@
                <tr class="<?= $class ?>">
                         <td><?=$date?></td>
                         
-                        <td rel="tooltip" title="nombre de feuilles"><?=ceil($stat['duplicopieurs'][$machine_name]['stat'][$i]['nbf'] ?? 0)?></td>
-                        <td rel="tooltip" title="nombre de tirages"><?=$stat['duplicopieurs'][$machine_name]['stat'][$i]['nbt'] ?? 0?></td>
-                        <td rel="tooltip" title="nombre de feuilles par tirage"><?=ceil($stat['duplicopieurs'][$machine_name]['stat'][$i]['moy'] ?? 0)?></td>
+                        <td rel="tooltip" title="<?php _e('stats.sheets_count'); ?>"><?=ceil($stat['duplicopieurs'][$machine_name]['stat'][$i]['nbf'] ?? 0)?></td>
+                        <td rel="tooltip" title="<?php _e('stats.prints_count'); ?>"><?=$stat['duplicopieurs'][$machine_name]['stat'][$i]['nbt'] ?? 0?></td>
+                        <td rel="tooltip" title="<?php _e('stats.sheets_per_print'); ?>"><?=ceil($stat['duplicopieurs'][$machine_name]['stat'][$i]['moy'] ?? 0)?></td>
                         <td rel="tooltip" title="Prix coutant"><?=ceil($stat['duplicopieurs'][$machine_name]['stat'][$i]['prix'] ?? 0)?>€</td>
                         <td rel="tooltip" title="Combien l'utilisateur a payé"><?=ceil($stat['duplicopieurs'][$machine_name]['stat'][$i]['prixpaye'] ?? 0)?>€</td>
-                        <td rel="tooltip" title="Gain pour ce mois"><?=ceil($stat['duplicopieurs'][$machine_name]['stat'][$i]['benef'] ?? 0)?>€</td>
+                        <td rel="tooltip" title="<?php _e('stats.monthly_profit'); ?>"><?=ceil($stat['duplicopieurs'][$machine_name]['stat'][$i]['benef'] ?? 0)?>€</td>
                      </tr>
             <?php
             }
@@ -82,7 +82,7 @@
             </tbody>
           </table>
           <?php $iii = 1;?>
-          <nav aria-label="Navigation des pages">
+          <nav aria-label="<?php _e('common.page_navigation'); ?>">
             <ul class="pagination pagination-sm">
             <?php while($iii < ($stat['duplicopieurs'][$machine_name]['nb_page'] ?? 0)) { ?>
               <li><a href="?stats&<?=$page_param?>=<?= $iii?>"><?= $iii?></a></li>
@@ -156,12 +156,12 @@
                <tr class="<?= $class ?>">
                         <td><?=$date?></td>
                         
-                        <td rel="tooltip" title="nombre de feuilles"><?=ceil($stat['photocopiers'][$photocop_name]['stat'][$i]['nbf'] ?? 0)?></td>
-                        <td rel="tooltip" title="nombre de tirages"><?=$stat['photocopiers'][$photocop_name]['stat'][$i]['nbt'] ?? 0?></td>
-                        <td rel="tooltip" title="nombre de feuilles par tirage"><?=ceil($stat['photocopiers'][$photocop_name]['stat'][$i]['moy'] ?? 0)?></td>
+                        <td rel="tooltip" title="<?php _e('stats.sheets_count'); ?>"><?=ceil($stat['photocopiers'][$photocop_name]['stat'][$i]['nbf'] ?? 0)?></td>
+                        <td rel="tooltip" title="<?php _e('stats.prints_count'); ?>"><?=$stat['photocopiers'][$photocop_name]['stat'][$i]['nbt'] ?? 0?></td>
+                        <td rel="tooltip" title="<?php _e('stats.sheets_per_print'); ?>"><?=ceil($stat['photocopiers'][$photocop_name]['stat'][$i]['moy'] ?? 0)?></td>
                         <td rel="tooltip" title="Prix coutant"><?=ceil($stat['photocopiers'][$photocop_name]['stat'][$i]['prix'] ?? 0)?>€</td>
                         <td rel="tooltip" title="Combien l'utilisateur a payé"><?=ceil($stat['photocopiers'][$photocop_name]['stat'][$i]['prixpaye'] ?? 0)?>€</td>
-                        <td rel="tooltip" title="Gain pour ce mois"><?=ceil($stat['photocopiers'][$photocop_name]['stat'][$i]['benef'] ?? 0)?>€</td>
+                        <td rel="tooltip" title="<?php _e('stats.monthly_profit'); ?>"><?=ceil($stat['photocopiers'][$photocop_name]['stat'][$i]['benef'] ?? 0)?>€</td>
                      </tr>
             <?php
             }
@@ -177,7 +177,7 @@
             </tbody>
           </table>
           <?php $iii = 1;?>
-          <nav aria-label="Navigation des pages">
+          <nav aria-label="<?php _e('common.page_navigation'); ?>">
             <ul class="pagination pagination-sm">
             <?php while($iii < ($stat['photocopiers'][$photocop_name]['nb_page'] ?? 0)) { ?>
               <li><a href="?stats&<?=$page_param?>=<?= $iii?>"><?= $iii?></a></li>

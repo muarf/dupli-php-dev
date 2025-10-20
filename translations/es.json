@@ -129,7 +129,8 @@
     "element_not_found": "elemento no encontrado",
     "no_total_price_found": "No se encontró precio total",
     "elements_not_found": "Elementos payeOui o cbField no encontrados",
-    "not_found": "no encontrado"
+    "not_found": "no encontrado",
+    "page_navigation": "Navegación de páginas"
   },
   "errors": {
     "not_authenticated": "No autenticado",
@@ -200,5 +201,22 @@
   "unimpose": {
     "pdf_unimposed_success": "Su PDF ha sido desimponido exitosamente",
     "file_ready_download": "El archivo <strong>:file</strong> está listo para descargar."
+  },
+  "stats": {
+    "title": "Estadísticas",
+    "intro_text": "Desde el inicio de la aventura dupli en 2011, hemos impreso un total de {nb_f} páginas en más de {nb_t} veces. Si miramos más de cerca, eso nos da un promedio de {nb_t_par_mois} impresiones por mes, con aproximadamente {nbf_par_mois} hojas en promedio. Imprimes {nb_moy_par_mois} copias por impresión. No te ahorro la facturación: {ca} euros desde el inicio, si quitamos los {doit} euros que nos deben: {ca2} euros. Nos has dado {ca1} euros. Por lo tanto, somos {benf} euros, pero eso es sin contar el precio del alquiler de los condos que a razón de 50 euros por mes nos haría... ! Los big data están ahí, te dejo mirar :) ps: ¡y también son 1800 líneas de código!",
+    "monthly_stats": "Estadísticas por mes",
+    "date": "Fecha",
+    "sheets": "Hojas",
+    "prints": "Impresiones",
+    "average": "Promedio",
+    "price": "Precio",
+    "price_paid": "Precio pagado",
+    "difference": "Diferencia",
+    "user_paid": "Cuánto pagó el usuario",
+    "sheets_count": "número de hojas",
+        "sheets_per_print": "número de hojas por impresión",
+        "prints_count": "número de impresiones",
+        "monthly_profit": "Ganancia para este mes"
   }
 }

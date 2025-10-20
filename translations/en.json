@@ -162,7 +162,11 @@
         "price": "Price",
         "price_paid": "Price paid",
         "difference": "Difference",
-        "user_paid": "How much the user paid"
+        "user_paid": "How much the user paid",
+        "sheets_count": "number of sheets",
+        "sheets_per_print": "number of sheets per print",
+        "prints_count": "number of prints",
+        "monthly_profit": "Profit for this month"
     },
     "changement": {
         "title": "Consumable change report",
@@ -478,7 +482,8 @@
         "element_not_found": "element not found",
         "no_total_price_found": "No total price found",
         "elements_not_found": "payeOui or cbField elements not found",
-        "not_found": "not found"
+        "not_found": "not found",
+        "page_navigation": "Page navigation"
     },
     "errors": {
         "not_authenticated": "Not authenticated",
