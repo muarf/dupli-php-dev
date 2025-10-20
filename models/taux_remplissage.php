@@ -245,7 +245,7 @@ function Action($conf) {
                     error_log("Déplacement du fichier vers: " . $uploadFile);
                     
                     if (move_uploaded_file($_FILES["file"]["tmp_name"], $uploadFile)) {
-                        error_log("Fichier déplacé avec succès");
+                        error_log(__('errors.file_moved_success'));
                         $image_to_analyze = $uploadFile;
                         
                         // Si c'est un PDF, le convertir en image
@@ -280,10 +280,10 @@ function Action($conf) {
                         // Nettoyer le fichier uploadé original si c'était un PDF
                         if ($mimeType === 'application/pdf') {
                             unlink($uploadFile);
-                            error_log("Fichier PDF original supprimé");
+                            error_log(__('errors.original_pdf_deleted'));
                         }
                         
-                        error_log("Traitement terminé avec succès");
+                        error_log(__('errors.processing_completed_success'));
                     } else {
                         $errors[] = "Erreur lors de l'upload du fichier (move_uploaded_file a échoué).";
                         error_log("ERREUR: move_uploaded_file a échoué");
@@ -317,7 +317,7 @@ function Action($conf) {
             'success' => $success,
             'result' => $result
         ));
-        error_log("Template généré avec succès");
+        error_log(__('errors.template_generated_success'));
         return $template_result;
     } catch (Exception $e) {
         error_log("=== ERREUR LORS DU TEMPLATE ===");

@@ -30,9 +30,9 @@ class AideManager {
             $result = $stmt->execute([$machine, $question, $reponse, $ordre, $categorie]);
             
             if ($result) {
-                return ['success' => 'Q&A ajoutée avec succès'];
+                return ['success' => __('errors.qa_added_success')];
             } else {
-                return ['error' => 'Erreur lors de l\'ajout'];
+                return ['error' => __('errors.qa_add_error')];
             }
             
         } catch (Exception $e) {
@@ -68,9 +68,9 @@ class AideManager {
             $result = $stmt->execute([$machine, $contenu_aide]);
             
             if ($result) {
-                return ['success' => 'Aide ajoutée avec succès'];
+                return ['success' => __('errors.help_added_success')];
             } else {
-                return ['error' => 'Erreur lors de l\'ajout'];
+                return ['error' => __('errors.qa_add_error')];
             }
             
         } catch (Exception $e) {
@@ -91,9 +91,9 @@ class AideManager {
             $result = $stmt->execute([$machine, $question, $reponse, $ordre, $categorie, $id]);
             
             if ($result) {
-                return ['success' => 'Q&A mise à jour avec succès'];
+                return ['success' => __('errors.qa_updated_success')];
             } else {
-                return ['error' => 'Erreur lors de la mise à jour'];
+                return ['error' => __('errors.help_update_error')];
             }
             
         } catch (Exception $e) {
@@ -114,9 +114,9 @@ class AideManager {
             $result = $stmt->execute([$machine, $contenu_aide, $id]);
             
             if ($result) {
-                return ['success' => 'Aide mise à jour avec succès'];
+                return ['success' => __('errors.help_updated_success')];
             } else {
-                return ['error' => 'Erreur lors de la mise à jour'];
+                return ['error' => __('errors.help_update_error')];
             }
             
         } catch (Exception $e) {
@@ -139,7 +139,7 @@ class AideManager {
             if ($result) {
                 return ['success' => 'Q&A supprimée avec succès'];
             } else {
-                return ['error' => 'Erreur lors de la suppression'];
+                return ['error' => __('errors.help_deletion_error')];
             }
             
         } catch (Exception $e) {
@@ -160,9 +160,9 @@ class AideManager {
             $result = $stmt->execute([$id]);
             
             if ($result) {
-                return ['success' => 'Aide supprimée avec succès'];
+                return ['success' => __('errors.help_deleted_success')];
             } else {
-                return ['error' => 'Erreur lors de la suppression'];
+                return ['error' => __('errors.help_deletion_error')];
             }
             
         } catch (Exception $e) {

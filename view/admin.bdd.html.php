@@ -274,7 +274,7 @@
                     <option value="duplinew">Copier depuis duplinew.sqlite (production)</option>
                     <option value="duplinew_dev">Copier depuis duplinew_dev.sqlite (développement)</option>
                   </select>
-                  <small class="text-muted">Choisir un fichier existant pour copier la structure et les données, ou "Structure complète" pour créer toutes les tables nécessaires</small>
+                  <small class="text-muted"><?php _e('admin_bdd.file_choice_help'); ?></small>
                 </div>
               </div>
               

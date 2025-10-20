@@ -6,14 +6,14 @@ require_once __DIR__ . '/MachineManager.php';
 // Vérifier que c'est bien une requête POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Méthode non autorisée']);
+    echo json_encode(['error' => __('errors.method_not_allowed')]);
     exit;
 }
 
 // Vérifier que les paramètres sont présents
 if (!isset($_POST['machine_id']) || !isset($_POST['machine_type'])) {
     http_response_code(400);
-    echo json_encode(['error' => 'Paramètres manquants']);
+    echo json_encode(['error' => __('errors.missing_parameters')]);
     exit;
 }
 
@@ -23,14 +23,14 @@ $machine_type = $_POST['machine_type'];
 // Valider le type de machine
 if (!in_array($machine_type, ['duplicopieur', 'photocopieur'])) {
     http_response_code(400);
-    echo json_encode(['error' => 'Type de machine invalide']);
+    echo json_encode(['error' => __('errors.invalid_machine_type')]);
     exit;
 }
 
 // Valider l'ID de la machine
 if (!is_numeric($machine_id) || $machine_id <= 0) {
     http_response_code(400);
-    echo json_encode(['error' => 'ID de machine invalide']);
+    echo json_encode(['error' => __('errors.invalid_machine_id')]);
     exit;
 }
 

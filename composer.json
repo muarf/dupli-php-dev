@@ -1,6 +1,6 @@
 {
     "name": "dupli-dev/app",
-    "description": "Application de gestion des tirages",
+    "description": "Print management application",
     "type": "project",
     "authors": [
         {

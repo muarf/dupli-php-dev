@@ -670,7 +670,7 @@ function Action($conf = null) {
             }
             if ($machine['type'] === 'duplicopieur') {
                 if (isset($_GET['debug'])) {
-                    $array['debug']['duplicopieur_debug_' . $index] = "ENTRÉE DANS LE CALCUL DUPLICOPIEUR " . $index;
+                    $array['debug']['duplicopieur_debug_' . $index] = __('debug.duplicopieur_calculation_entry') . " " . $index;
                 }
                 // Calcul duplicopieur
                 $mode_saisie = $machine['mode_saisie'] ?? 'compteurs';

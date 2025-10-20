@@ -30,10 +30,10 @@ $title = __("unimpose.title");
                             <i class="fa fa-file-text-o"></i>
                         </div>
                         <h4 style="color: #333; margin-bottom: 20px;">
-                            Votre PDF a été désimposé avec succès
+                            <?php _e('unimpose.pdf_unimposed_success'); ?>
                         </h4>
                         <p style="color: #666; margin-bottom: 25px;">
-                            Le fichier <strong><?= htmlspecialchars($result) ?></strong> est prêt au téléchargement.
+                            <?php _e('unimpose.file_ready_download', ['file' => htmlspecialchars($result)]); ?>
                         </p>
                         <a href="<?= htmlspecialchars($download_url) ?>" class="btn btn-success btn-lg" onclick="openPdfInApp('<?= htmlspecialchars($download_url) ?>')">
                             <i class="fa fa-download"></i> <?php _e('unimpose.download_unimposed'); ?>

@@ -47,7 +47,7 @@ class BackupManager {
                 $result['filename'] = $filename;
                 $result['size'] = $this->formatFileSize(filesize($filepath));
             } else {
-                $result['error'] = "Erreur lors de la copie du fichier de base de données";
+                $result['error'] = __('errors.database_file_copy_error');
             }
             
         } catch (Exception $e) {
@@ -85,7 +85,7 @@ class BackupManager {
                 $result['success'] = "Sauvegarde restaurée avec succès : $backup_file";
                 $result['safety_backup'] = basename($safety_backup);
             } else {
-                $result['error'] = "Erreur lors de la copie du fichier de sauvegarde";
+                $result['error'] = __('errors.backup_file_copy_error');
             }
             
         } catch (Exception $e) {
@@ -112,7 +112,7 @@ class BackupManager {
             if (unlink($filepath)) {
                 $result['success'] = "Sauvegarde supprimée avec succès : $backup_file";
             } else {
-                $result['error'] = "Erreur lors de la suppression du fichier";
+                $result['error'] = __('errors.file_deletion_error');
             }
             
         } catch (Exception $e) {

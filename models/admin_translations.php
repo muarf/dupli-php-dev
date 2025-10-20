@@ -9,7 +9,7 @@ function Action($conf) {
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
             strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
             header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Non authentifié']);
+            echo json_encode(['success' => false, 'message' => __('errors.not_authenticated')]);
             exit;
         } else {
             header('Location: ?admin');
@@ -71,7 +71,7 @@ function Action($conf) {
                     $imported = $translationManager->importFromCSV($language, $csvContent);
                     $array['success_message'] = "$imported traductions importées avec succès !";
                 } else {
-                    $array['error_message'] = "Erreur lors de l'import du fichier CSV.";
+                    $array['error_message'] = __('errors.csv_import_error');
                 }
                 break;
         }

@@ -25,7 +25,7 @@ function Action($conf = null)
                 echo json_encode(['success' => true, 'change' => $change]);
             } else {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'error' => 'Changement non trouvé']);
+                echo json_encode(['success' => false, 'error' => __('errors.change_not_found')]);
             }
             exit;
         } catch (Exception $e) {
@@ -48,7 +48,7 @@ function Action($conf = null)
                 echo json_encode(['success' => true, 'aide' => $aide]);
             } else {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'error' => 'Aide non trouvée']);
+                echo json_encode(['success' => false, 'error' => __('errors.help_not_found')]);
             }
             exit;
         } catch (Exception $e) {
@@ -219,7 +219,7 @@ require_once __DIR__ . '/../controler/conf.php';
             require_once __DIR__ . '/../controler/functions/error_handler.php';
             $result = show_error_page(
                 "La configuration de la base de données n'a pas été chargée correctement. Cela peut arriver si les fichiers de configuration sont manquants ou corrompus.",
-                "Configuration non définie",
+                __('errors.configuration_not_defined'),
                 __FILE__,
                 __LINE__,
                 null,
@@ -281,7 +281,7 @@ require_once __DIR__ . '/../controler/conf.php';
                         
                         if(empty($old_name) || empty($new_name)) {
                             header('Content-Type: application/json');
-                            echo json_encode(['error' => 'Nom manquant']);
+                            echo json_encode(['error' => __('errors.name_missing')]);
                             exit;
                         }
                         
@@ -603,7 +603,7 @@ function handlePostActions($array, $dbManager, $backupManager, $siteManager, $pr
         } else {
             // Si les données ne sont pas valides, afficher un message d'erreur
             header('Content-Type: application/json');
-            echo json_encode(['status' => 'error', 'message' => 'Données invalides']);
+            echo json_encode(['status' => 'error', 'message' => __('errors.invalid_data')]);
             
             // Terminer le script PHP
             exit();
@@ -966,7 +966,7 @@ function addChange($data) {
         $query = $db->prepare('INSERT INTO cons (date, machine, type, nb_p, nb_m, tambour) VALUES (?, ?, ?, ?, ?, ?)');
         $query->execute([$date, $machine, $type, $nb_p, $nb_m, $tambour]);
         
-        return ['success' => "Changement ajouté avec succès"];
+        return ['success' => __('errors.change_added_success')];
         
     } catch (Exception $e) {
         return ['error' => "Erreur lors de l'ajout : " . $e->getMessage()];
@@ -990,7 +990,7 @@ function updateChange($data) {
         $query = $db->prepare('UPDATE cons SET date = ?, nb_p = ? WHERE machine = ? AND type = ? AND date = ?');
         $query->execute([$new_date, $counter, $machine, $type, $old_date]);
         
-        return ['success' => "Changement mis à jour avec succès"];
+        return ['success' => __('errors.change_updated_success')];
         
     } catch (Exception $e) {
         return ['error' => "Erreur lors de la mise à jour : " . $e->getMessage()];
@@ -1014,12 +1014,12 @@ function deleteChange($data) {
         $deleted_count = $query->rowCount();
         
         if ($deleted_count === 0) {
-            return ['error' => "Aucune entrée trouvée à supprimer"];
+            return ['error' => __('errors.no_entry_found_to_delete')];
         } elseif ($deleted_count > 1) {
-            return ['error' => "Plusieurs entrées ont été supprimées par erreur"];
+            return ['error' => __('errors.multiple_entries_deleted_by_error')];
         }
         
-        return ['success' => "Changement supprimé avec succès"];
+        return ['success' => __('errors.change_deleted_success')];
         
     } catch (Exception $e) {
         return ['error' => "Erreur lors de la suppression : " . $e->getMessage()];
@@ -1158,7 +1158,7 @@ function handleAideSection($array) {
                 exit;
             } else {
                 http_response_code(404);
-                echo 'Aide non trouvée';
+                echo __('errors.help_not_found');
                 exit;
             }
         }
@@ -1228,7 +1228,7 @@ function addAide($machine, $contenu) {
         $query->execute([$machine]);
         
         if ($query->fetchColumn() > 0) {
-            return ['error' => "Une aide existe déjà pour cette machine"];
+            return ['error' => __('errors.help_already_exists_for_machine')];
         }
         
         // Insérer la nouvelle aide
@@ -1255,7 +1255,7 @@ function updateAide($id, $machine, $contenu) {
         $query->execute([$id]);
         
         if ($query->fetchColumn() == 0) {
-            return ['error' => "Aide non trouvée"];
+            return ['error' => __('errors.help_not_found')];
         }
         
         // Mettre à jour l'aide
@@ -1283,7 +1283,7 @@ function deleteAide($id) {
         $machine = $query->fetchColumn();
         
         if (!$machine) {
-            return ['error' => "Aide non trouvée"];
+            return ['error' => __('errors.help_not_found')];
         }
         
         // Supprimer l'aide

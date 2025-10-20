@@ -113,7 +113,7 @@ if(isset($_POST['delete'])){?>
                                             <input id="contact" name="contact" value="<?= htmlspecialchars($tirage['contact']) ?>" 
                                                    class="form-control" required type="text" 
                                                    data-toggle="tooltip" data-placement="top" 
-                                                   title="Nom du client ou contact">
+                                                   title="<?php _e('admin_tirage.contact'); ?>">
                                         </div>
                                     </div>
                                 </div>
@@ -152,7 +152,7 @@ if(isset($_POST['delete'])){?>
                                             <input id="passage_av" name="passage_av" value="<?= $tirage['passage_av'] ?>" 
                                                    class="form-control" required type="number" min="0"
                                                    data-toggle="tooltip" data-placement="top" 
-                                                   title="Nombre de passages avant">
+                                                   title="<?php _e('tirage_multimachines.passage_av_tooltip'); ?>">
                                         </div>
                                     </div>
                                 </div>
@@ -163,7 +163,7 @@ if(isset($_POST['delete'])){?>
                                             <input id="passage_ap" name="passage_ap" value="<?= $tirage['passage_ap'] ?>" 
                                                    class="form-control" required type="number" min="0"
                                                    data-toggle="tooltip" data-placement="top" 
-                                                   title="Nombre de passages après">
+                                                   title="<?php _e('tirage_multimachines.passage_ap_tooltip'); ?>">
                                         </div>
                                     </div>
                                 </div>
@@ -174,7 +174,7 @@ if(isset($_POST['delete'])){?>
                                             <input id="master_av" name="master_av" value="<?= $tirage['master_av'] ?>" 
                                                    class="form-control" required type="number" min="0"
                                                    data-toggle="tooltip" data-placement="top" 
-                                                   title="Nombre de masters avant">
+                                                   title="<?php _e('tirage_multimachines.master_av_tooltip'); ?>">
                                         </div>
                                     </div>
                                 </div>
@@ -185,7 +185,7 @@ if(isset($_POST['delete'])){?>
                                             <input id="master_ap" name="master_ap" value="<?= $tirage['master_ap'] ?>" 
                                                    class="form-control" required type="number" min="0"
                                                    data-toggle="tooltip" data-placement="top" 
-                                                   title="Nombre de masters après">
+                                                   title="<?php _e('tirage_multimachines.master_ap_tooltip'); ?>">
                                         </div>
                                     </div>
                                 </div>
@@ -208,7 +208,7 @@ if(isset($_POST['delete'])){?>
                                             <input id="nb_f" name="nb_f" value="<?= isset($tirage['nb_f']) ? $tirage['nb_f'] : (intval($tirage['passage_ap']) - intval($tirage['passage_av'])) ?>" 
                                                    class="form-control" required type="number" min="1"
                                                    data-toggle="tooltip" data-placement="top" 
-                                                   title="Nombre total de feuilles imprimées">
+                                                   title="<?php _e('tirage_multimachines.nb_f_tooltip'); ?>">
                                         </div>
                                     </div>
                                 </div>
@@ -266,7 +266,7 @@ if(isset($_POST['delete'])){?>
                                                 <input id="prix" name="prix" value="<?= $tirage['prix'] ?>" 
                                                        class="form-control" required type="number" step="0.01" min="0"
                                                        data-toggle="tooltip" data-placement="top" 
-                                                       title="Prix total en euros">
+                                                       title="<?php _e('tirage_multimachines.price_tooltip'); ?>">
                                                 <span class="input-group-addon">€</span>
                                             </div>
                                         </div>
@@ -314,7 +314,7 @@ if(isset($_POST['delete'])){?>
                                             <textarea id="mot" name="mot" class="form-control" rows="3" 
                                                       placeholder="Message ou notes supplémentaires..."
                                                       data-toggle="tooltip" data-placement="top" 
-                                                      title="Message ou notes optionnelles"><?= htmlspecialchars($tirage['mot']) ?></textarea>
+                                                      title="<?php _e('tirage_multimachines.message_tooltip'); ?>"><?= htmlspecialchars($tirage['mot']) ?></textarea>
                                         </div>
                                     </div>
                                 </div>

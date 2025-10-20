@@ -43,9 +43,9 @@ class ChangesManager {
             ]);
             
             if ($result) {
-                return ['success' => 'Changement ajouté avec succès'];
+                return ['success' => __('errors.change_added_success')];
             } else {
-                return ['error' => 'Erreur lors de l\'ajout'];
+                return ['error' => __('errors.change_add_error')];
             }
             
         } catch (Exception $e) {
@@ -69,9 +69,9 @@ class ChangesManager {
             $result = $stmt->execute([$id]);
             
             if ($result) {
-                return ['success' => 'Changement supprimé avec succès'];
+                return ['success' => __('errors.change_deleted_success')];
             } else {
-                return ['error' => 'Erreur lors de la suppression'];
+                return ['error' => __('errors.change_deletion_error')];
             }
             
         } catch (Exception $e) {
@@ -106,9 +106,9 @@ class ChangesManager {
             ]);
             
             if ($result) {
-                return ['success' => 'Changement modifié avec succès'];
+                return ['success' => __('errors.change_modified_success')];
             } else {
-                return ['error' => 'Erreur lors de la modification'];
+                return ['error' => __('errors.change_modification_error')];
             }
             
         } catch (Exception $e) {

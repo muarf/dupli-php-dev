@@ -38,7 +38,7 @@ try {
         }
     }
 } catch (Exception $e) {
-    error_log("Erreur lors de la génération des mappings machine: " . $e->getMessage());
+    error_log(__('errors.machine_mapping_error') . ": " . $e->getMessage());
     $machine_price_mappings = [];
 }
 ?>
@@ -676,7 +676,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
             <div class="section">
                 <div class="container">
                     <div class="row">
-                        <div class="col-md-12"><button id="singlebutton" name="enregistrer" value="1" class="btn btn-success btn-block">Enregistrer !</button></div>
+                        <div class="col-md-12"><button id="singlebutton" name="enregistrer" value="1" class="btn btn-success btn-block"><?php _e('common.save'); ?> !</button></div>
                     </div>
                 </div>
             </div>
@@ -1445,10 +1445,10 @@ function calculateMachinePrice(machineIndex) {
             var passageAp = parseFloat(passageApElement ? passageApElement.value : 0) || 0;
             
             console.log("🔍 Valeurs brutes des champs:", {
-                masterAvElement_value: masterAvElement ? masterAvElement.value : "élément non trouvé",
-                masterApElement_value: masterApElement ? masterApElement.value : "élément non trouvé",
-                passageAvElement_value: passageAvElement ? passageAvElement.value : "élément non trouvé",
-                passageApElement_value: passageApElement ? passageApElement.value : "élément non trouvé"
+                masterAvElement_value: masterAvElement ? masterAvElement.value : "<?php _e('common.element_not_found'); ?>",
+                masterApElement_value: masterApElement ? masterApElement.value : "<?php _e('common.element_not_found'); ?>",
+                passageAvElement_value: passageAvElement ? passageAvElement.value : "<?php _e('common.element_not_found'); ?>",
+                passageApElement_value: passageApElement ? passageApElement.value : "<?php _e('common.element_not_found'); ?>"
             });
             
             nbMasters = Math.max(0, masterAp - masterAv);
@@ -1997,7 +1997,7 @@ function updatePaymentAmount() {
     
     // Vérifier que les éléments existent avant de les utiliser
     if (!payeOui || !cbField) {
-        console.log("Éléments payeOui ou cbField non trouvés");
+        console.log("<?php _e('common.elements_not_found'); ?>");
         return;
     }
     
@@ -2030,7 +2030,7 @@ function updatePaymentAmount() {
             }
         }
         
-        console.log("Aucun prix total trouvé");
+        console.log("<?php _e('common.no_total_price_found'); ?>");
     } else {
         // Si "non" est sélectionné, vider le champ
         cbField.value = '';
@@ -2199,7 +2199,7 @@ function updatePanelPreview(machineIndex) {
         pricePreview.textContent = price.toFixed(2) + '€';
         console.log("✅ Prix preview mis à jour:", price.toFixed(2) + '€');
     } else {
-        console.log("❌ ERREUR: price-preview-" + machineIndex + " non trouvé");
+        console.log("❌ <?php _e('common.error'); ?>: price-preview-" + machineIndex + " <?php _e('common.not_found'); ?>");
     }
 }
 

@@ -41,7 +41,7 @@ class UnimposeBooklet {
             // Nombre de pages dans le PDF d'entrée : $pageCount
             
             if ($pageCount == 0) {
-                throw new Exception("Le fichier PDF ne contient aucune page");
+                throw new Exception(__('errors.pdf_no_pages'));
             }
             
             // Obtenir les dimensions de la première page
