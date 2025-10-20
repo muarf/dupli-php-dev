@@ -949,6 +949,10 @@
         "processing_completed_success": "Traitement terminé avec succès",
         "template_generated_success": "Template généré avec succès"
     },
+    "debug": {
+        "duplicopieur_calculation_entry": "ENTRÉE DANS LE CALCUL DUPLICOPIEUR",
+        "no_machines_detected": "Aucune machine détectée"
+    },
     "php_errors": {
         "php_error": "Erreur PHP",
         "fatal_error": "Erreur Fatale",
