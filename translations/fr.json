@@ -361,6 +361,7 @@
         "title": "Statistiques",
         "intro_text": "Depuis le début de l'aventure dupli en 2011, nous avons tiré un total de {nb_f} pages en plus de {nb_t} fois. Si l'on regarde de plus près ça nous fait une moyenne de {nb_t_par_mois} tirages par mois, avec environ {nbf_par_mois} feuilles en moyenne. Vous tirez {nb_moy_par_mois} copies par tirage. Je ne vous épargne pas le chiffre d'affaire : {ca} euros depuis le début, si l'on enlève les {doit} euros que l'on nous doit : {ca2} euros. Vous nous avez donné {ca1} euros. Nous sommes donc {benf} euros, mais c'est sans compter le prix du loyer des condos qui à raison de 50 euros par mois nous ferai... ! Le big data est là, je vous laisse regarder :) ps : et c'est aussi 1800 lignes de code !",
         "monthly_stats": "Statistiques par mois",
+        "monthly_stats_for": "Statistiques mensuelles pour",
         "date": "Date",
         "sheets": "Feuilles",
         "prints": "Tirages",
