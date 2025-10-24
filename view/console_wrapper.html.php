@@ -81,12 +81,14 @@
           <div class="panel-heading">
             <h3 class="panel-title"><i class="fa fa-desktop"></i> Console Web</h3>
           </div>
-          <div class="panel-body" style="padding: 0;">
+          <div class="panel-body" style="padding: 0; position: relative;">
             <iframe 
               src="<?php echo htmlspecialchars($wrapper['console_url']); ?>" 
-              style="width: 100%; height: 800px; border: none;"
+              style="width: 100%; height: 800px; border: none; min-height: 600px;"
               frameborder="0"
-              allowfullscreen>
+              allowfullscreen
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation">
+              <p>Votre navigateur ne supporte pas les iframes. <a href="<?php echo htmlspecialchars($wrapper['console_url']); ?>" target="_blank">Ouvrir la console dans un nouvel onglet</a></p>
             </iframe>
           </div>
         </div>
