@@ -83,7 +83,7 @@
           </div>
           <div class="panel-body" style="padding: 0; position: relative;">
             <iframe 
-              src="<?php echo htmlspecialchars($wrapper['console_url']); ?>" 
+              src="?console_proxy&url=<?php echo urlencode($wrapper['console_url']); ?>" 
               style="width: 100%; height: 800px; border: none; min-height: 600px;"
               frameborder="0"
               allowfullscreen

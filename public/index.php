@@ -165,7 +165,7 @@ if ($page === 'ajax_delete_machine') {
 }
 
 
-$page_secure = array('base','accueil','devis','tirage_multimachines','changement','admin','admin_aide_machines','admin_translations','installation','setup','setup_save','setup_upload','stats','imposition','unimpose','imposition_tracts','png_to_pdf','pdf_to_png','riso_separator','taux_remplissage','aide_machines','error','lang','console_wrapper');
+$page_secure = array('base','accueil','devis','tirage_multimachines','changement','admin','admin_aide_machines','admin_translations','installation','setup','setup_save','setup_upload','stats','imposition','unimpose','imposition_tracts','png_to_pdf','pdf_to_png','riso_separator','taux_remplissage','aide_machines','error','lang','console_wrapper','console_proxy');
 
 if(in_array($page, $page_secure,true)){
     
@@ -192,6 +192,10 @@ if(in_array($page, $page_secure,true)){
     
     // Pages spéciales qui n'utilisent pas le template standard
     if ($page == 'installation' || $page == 'setup') {
+        $content = Action($conf);
+        echo $content;
+    } elseif ($page == 'console_proxy') {
+        // Proxy console - afficher directement sans template
         $content = Action($conf);
         echo $content;
     } else {
