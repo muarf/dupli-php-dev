@@ -46,6 +46,11 @@ function Action($conf = null) {
     $response = preg_replace('/src="(\/[^"]+)"/', 'src="' . $baseUrl . '$1"', $response);
     $response = preg_replace('/url\((\/[^)]+)\)/', 'url(' . $baseUrl . '$1)', $response);
     
+    // Forcer l'affichage de la page système et masquer la page login
+    $response = preg_replace('/id_page_system[^>]*style="display: none;"/', 'id_page_system', $response);
+    $response = preg_replace('/id_page_login[^>]*style="display: block;"/', 'id_page_login" style="display: none;"', $response);
+    $response = str_replace('id_page_login" style="display: block;"', 'id_page_login" style="display: none;"', $response);
+    
     // Afficher le contenu
     return $response;
 }
