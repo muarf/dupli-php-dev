@@ -247,10 +247,14 @@ require_once __DIR__ . '/../controler/conf.php';
         $statsManager = new StatsManager($conf);
         $editManager = new EditManager($conf);
         $machineManager = new AdminMachineManager($conf);
-        $changesManager = new ChangesManager($conf);
-        $aideManager = new AideManager($conf);
-        
-        // Récupérer la base de données actuelle
+            $changesManager = new ChangesManager($conf);
+            $aideManager = new AideManager($conf);
+            
+            // Console Wrapper Manager
+            require_once __DIR__ . '/admin/ConsoleWrapperManager.php';
+            $consoleWrapperManager = new ConsoleWrapperManager($conf);
+            
+            // Récupérer la base de données actuelle
         $array['current_db'] = $dbManager->getCurrentDatabase();
         
         // Stocker les variables dans $GLOBALS pour la vue
@@ -322,6 +326,8 @@ require_once __DIR__ . '/../controler/conf.php';
                 return handleEmailsSection($array, $siteManager);
             } elseif(isset($_GET['mots'])) {
                 return handlePasswordSection($array, $siteManager);
+            } elseif(isset($_GET['console_wrappers'])) {
+                return handleConsoleWrappersSection($array, $consoleWrapperManager);
             } else {
                 return handleMainAdminSection($array, $siteManager);
             }
@@ -810,6 +816,91 @@ function handlePostActions($array, $dbManager, $backupManager, $siteManager, $pr
                 $array['aide_error'] = $result['error'];
             } else {
                 $array['aide_deleted'] = $result['success'];
+            }
+        }
+    }
+    
+    // Actions pour les console wrappers
+    if(isset($_POST['console_wrapper_action'])) {
+        $action = $_POST['console_wrapper_action'];
+        
+        if($action === 'add' && isset($_POST['machine_name']) && isset($_POST['console_url'])) {
+            require_once __DIR__ . '/admin/ConsoleWrapperManager.php';
+            $consoleWrapperManager = new ConsoleWrapperManager($conf);
+            
+            $wrapperData = [
+                'machine_name' => $_POST['machine_name'],
+                'console_url' => $_POST['console_url'],
+                'console_type' => $_POST['console_type'] ?? 'riso_comcolor',
+                'username' => $_POST['username'] ?? null,
+                'password' => $_POST['password'] ?? null,
+                'scan_endpoint' => $_POST['scan_endpoint'] ?? 'UI/IE/NewUIpage/Page/RC_Scan.phtml',
+                'enabled' => isset($_POST['enabled']) ? 1 : 0
+            ];
+            
+            $result = $consoleWrapperManager->addWrapper($wrapperData);
+            if (isset($result['error'])) {
+                $array['wrapper_error'] = $result['error'];
+            } else {
+                $array['wrapper_success'] = $result['success'];
+            }
+        }
+        
+        if($action === 'edit' && isset($_POST['wrapper_id'])) {
+            require_once __DIR__ . '/admin/ConsoleWrapperManager.php';
+            $consoleWrapperManager = new ConsoleWrapperManager($conf);
+            
+            $wrapperData = [
+                'machine_name' => $_POST['machine_name'],
+                'console_url' => $_POST['console_url'],
+                'console_type' => $_POST['console_type'] ?? 'riso_comcolor',
+                'username' => $_POST['username'] ?? null,
+                'password' => $_POST['password'] ?? null,
+                'scan_endpoint' => $_POST['scan_endpoint'] ?? 'UI/IE/NewUIpage/Page/RC_Scan.phtml',
+                'enabled' => isset($_POST['enabled']) ? 1 : 0
+            ];
+            
+            $result = $consoleWrapperManager->updateWrapper($_POST['wrapper_id'], $wrapperData);
+            if (isset($result['error'])) {
+                $array['wrapper_error'] = $result['error'];
+            } else {
+                $array['wrapper_success'] = $result['success'];
+            }
+        }
+        
+        if($action === 'delete' && isset($_POST['wrapper_id'])) {
+            require_once __DIR__ . '/admin/ConsoleWrapperManager.php';
+            $consoleWrapperManager = new ConsoleWrapperManager($conf);
+            
+            $result = $consoleWrapperManager->deleteWrapper($_POST['wrapper_id']);
+            if (isset($result['error'])) {
+                $array['wrapper_error'] = $result['error'];
+            } else {
+                $array['wrapper_success'] = $result['success'];
+            }
+        }
+        
+        if($action === 'toggle' && isset($_POST['wrapper_id'])) {
+            require_once __DIR__ . '/admin/ConsoleWrapperManager.php';
+            $consoleWrapperManager = new ConsoleWrapperManager($conf);
+            
+            $result = $consoleWrapperManager->toggleEnabled($_POST['wrapper_id']);
+            if (isset($result['error'])) {
+                $array['wrapper_error'] = $result['error'];
+            } else {
+                $array['wrapper_success'] = $result['success'];
+            }
+        }
+        
+        if($action === 'test' && isset($_POST['wrapper_id'])) {
+            require_once __DIR__ . '/admin/ConsoleWrapperManager.php';
+            $consoleWrapperManager = new ConsoleWrapperManager($conf);
+            
+            $result = $consoleWrapperManager->testConnection($_POST['wrapper_id']);
+            if (isset($result['error'])) {
+                $array['wrapper_error'] = $result['error'];
+            } else {
+                $array['wrapper_success'] = $result['success'];
             }
         }
     }
@@ -1509,6 +1600,23 @@ function handleAideMachinesSection($array) {
         $array['message'] = ['type' => 'danger', 'text' => 'Erreur : ' . $e->getMessage()];
         return template("../view/admin_aide_machines.html.php", $array);
     }
+}
+
+/**
+ * Gérer la section des wrappers de consoles
+ */
+function handleConsoleWrappersSection($array, $consoleWrapperManager) {
+    // Obtenir tous les wrappers
+    $array['console_wrappers'] = $consoleWrapperManager->getAllWrappers();
+    
+    // Gérer les messages
+    if (isset($array['wrapper_success'])) {
+        $array['message'] = ['type' => 'success', 'text' => $array['wrapper_success']];
+    } elseif (isset($array['wrapper_error'])) {
+        $array['message'] = ['type' => 'danger', 'text' => $array['wrapper_error']];
+    }
+    
+    return template("../view/admin.console_wrappers.html.php", $array);
 }
 
 ?>

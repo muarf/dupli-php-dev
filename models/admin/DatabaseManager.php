@@ -595,6 +595,20 @@ class AdminDatabaseManager {
                 `date_creation` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
                 `date_modification` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci",
+            
+            'machine_console_wrappers' => "CREATE TABLE IF NOT EXISTS `machine_console_wrappers` (
+                `id` int NOT NULL AUTO_INCREMENT,
+                `machine_name` varchar(255) NOT NULL,
+                `console_url` varchar(500) NOT NULL,
+                `console_type` varchar(100) DEFAULT 'riso_comcolor',
+                `username` varchar(100) DEFAULT NULL,
+                `password` varchar(255) DEFAULT NULL,
+                `scan_endpoint` varchar(500) DEFAULT 'UI/IE/NewUIpage/Page/RC_Scan.phtml',
+                `enabled` tinyint(1) DEFAULT 1,
+                `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+                `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci"
         );
         

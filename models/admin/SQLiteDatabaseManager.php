@@ -527,6 +527,19 @@ class SQLiteDatabaseManager {
                 cb TEXT NOT NULL,
                 mot TEXT NOT NULL,
                 date TEXT NOT NULL
+            )",
+            
+            'machine_console_wrappers' => "CREATE TABLE IF NOT EXISTS machine_console_wrappers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                machine_name TEXT NOT NULL,
+                console_url TEXT NOT NULL,
+                console_type TEXT DEFAULT 'riso_comcolor',
+                username TEXT,
+                password TEXT,
+                scan_endpoint TEXT DEFAULT 'UI/IE/NewUIpage/Page/RC_Scan.phtml',
+                enabled INTEGER DEFAULT 1,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )"
         );
         

@@ -374,7 +374,7 @@ if ($page === 'ajax_delete_machine') {
 }
 
 
-$page_secure = array('base','accueil','devis','tirage_multimachines','changement','admin','admin_aide_machines','admin_translations','installation','setup','setup_save','setup_upload','stats','imposition','imposition_tracts','unimpose','png_to_pdf','pdf_to_png','riso_separator','taux_remplissage','aide_machines','error','lang');
+$page_secure = array('base','accueil','devis','tirage_multimachines','changement','admin','admin_aide_machines','admin_translations','installation','setup','setup_save','setup_upload','stats','imposition','imposition_tracts','unimpose','png_to_pdf','pdf_to_png','riso_separator','taux_remplissage','aide_machines','error','lang','console_wrapper');
 
 if(in_array($page, $page_secure,true)){
     

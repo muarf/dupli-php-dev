@@ -72,6 +72,12 @@
                 </a>
                 <small class="text-muted"><?php _e('admin.email_management_desc'); ?></small>
               </div>
+              <div class="col-md-3">
+                <a href="?admin&console_wrappers" class="btn btn-primary btn-block">
+                  <i class="fa fa-desktop"></i> Consoles machines
+                </a>
+                <small class="text-muted">Gérer les accès aux consoles web</small>
+              </div>
             </div>
           </div>
         </div>

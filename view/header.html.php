@@ -157,6 +157,18 @@
                 <?php _e('header.help_tutorials'); ?>
               </a>
             </li>
+            <?php if(isset($console_wrappers) && !empty($console_wrappers)): ?>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                <i class="fa fa-file-image-o"></i> Scans <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <?php foreach($console_wrappers as $wrapper): ?>
+                  <li><a href="?console_wrapper&id=<?=$wrapper['id']?>"><?=$wrapper['machine_name']?></a></li>
+                <?php endforeach; ?>
+              </ul>
+            </li>
+            <?php endif; ?>
             <li>
               <a href="?stats">
                 <span class="glyphicon glyphicon-stats" aria-hidden="true"></span>
