@@ -83,11 +83,10 @@
           </div>
           <div class="panel-body" style="padding: 0; position: relative;">
             <iframe 
-              src="?console_proxy&url=<?php echo urlencode($wrapper['console_url']); ?>" 
+              src="<?php echo htmlspecialchars($wrapper['console_url']); ?>" 
               style="width: 100%; height: 800px; border: none; min-height: 600px;"
               frameborder="0"
-              allowfullscreen
-              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation">
+              allowfullscreen>
               <p>Votre navigateur ne supporte pas les iframes. <a href="<?php echo htmlspecialchars($wrapper['console_url']); ?>" target="_blank">Ouvrir la console dans un nouvel onglet</a></p>
             </iframe>
           </div>

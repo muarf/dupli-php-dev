@@ -13,6 +13,12 @@ function Action($conf = null) {
         die('URL manquante');
     }
     
+    // Si c'est une sous-requête (CSS, JS, etc.), reconstruire l'URL complète
+    if (strpos($url, '/UI/') !== false) {
+        $baseUrl = isset($_GET['base']) ? $_GET['base'] : 'http://localhost:8022';
+        $url = $baseUrl . $url;
+    }
+    
     // Récupérer le contenu de la console
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -34,17 +40,28 @@ function Action($conf = null) {
     
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
     curl_close($ch);
     
-    if ($response === false || $httpCode !== 200) {
-        die('Erreur lors de la récupération de la console');
+    if ($response === false) {
+        die('Erreur cURL: ' . $error);
     }
     
-    // Remplacer les URLs relatives par des URLs absolues
+    if ($httpCode !== 200) {
+        die('Code HTTP: ' . $httpCode . ' - URL: ' . $url);
+    }
+    
+    // Remplacer les URLs relatives par des URLs absolues via le proxy
     $baseUrl = rtrim($url, '/');
-    $response = preg_replace('/href="(\/[^"]+)"/', 'href="' . $baseUrl . '$1"', $response);
-    $response = preg_replace('/src="(\/[^"]+)"/', 'src="' . $baseUrl . '$1"', $response);
-    $response = preg_replace('/url\((\/[^)]+)\)/', 'url(' . $baseUrl . '$1)', $response);
+    $proxyUrl = '?console_proxy&url=' . urlencode($baseUrl);
+    
+    // Remplacer les liens et scripts
+    $response = preg_replace('/href="(\/[^"]+)"/', 'href="' . $proxyUrl . '$1"', $response);
+    $response = preg_replace('/src="(\/[^"]+)"/', 'src="' . $proxyUrl . '$1"', $response);
+    $response = preg_replace('/url\((\/[^)]+)\)/', 'url(' . $proxyUrl . '$1)', $response);
+    
+    // Remplacer les URLs dans les iframes
+    $response = preg_replace('/src="([^"]*UI\/[^"]+)"/', 'src="' . $proxyUrl . '/$1"', $response);
     
     // Modifier userStatus pour forcer l'affichage de la page système
     $response = preg_replace('/id="userStatus" value="[^"]*"/', 'id="userStatus" value="1"', $response);
