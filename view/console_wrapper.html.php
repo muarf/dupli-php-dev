@@ -76,6 +76,21 @@
           </div>
         </div>
         
+        <!-- Console intégrée via iframe -->
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-desktop"></i> Console Web</h3>
+          </div>
+          <div class="panel-body" style="padding: 0;">
+            <iframe 
+              src="<?php echo htmlspecialchars($wrapper['console_url']); ?>" 
+              style="width: 100%; height: 800px; border: none;"
+              frameborder="0"
+              allowfullscreen>
+            </iframe>
+          </div>
+        </div>
+        
         <!-- Bouton retour -->
         <div class="row">
           <div class="col-md-12">
