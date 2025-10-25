@@ -25,6 +25,22 @@ curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
 curl_setopt($ch, CURLOPT_HEADER, true);
 
+// Gérer les méthodes HTTP (GET, POST, etc.)
+$method = $_SERVER['REQUEST_METHOD'];
+if ($method === 'POST') {
+    curl_setopt($ch, CURLOPT_POST, true);
+    $post_data = file_get_contents('php://input');
+    if ($post_data) {
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+    }
+    // Copier les headers Content-Type si présents
+    if (isset($_SERVER['CONTENT_TYPE'])) {
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: ' . $_SERVER['CONTENT_TYPE']
+        ]);
+    }
+}
+
 $response = curl_exec($ch);
 $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $content_type_header = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
@@ -90,6 +106,23 @@ if (strpos($content_type, 'text/html') === 0) {
     
     // Corriger les doubles slashes
     $body = str_replace('/riso-proxy//', '/riso-proxy/', $body);
+}
+
+// Pour le JavaScript, réécrire les URLs AJAX et masquer les erreurs
+if (strpos($content_type, 'javascript') !== false) {
+    // Réécrire les URLs dans les requêtes AJAX
+    $body = preg_replace('/(["\'])\/Backend\//', '$1/riso-proxy/Backend/', $body);
+    $body = preg_replace('/(["\'])Backend\//', '$1/riso-proxy/Backend/', $body);
+    
+    // Ajouter une gestion d'erreur silencieuse pour les requêtes AJAX
+    $body .= "\n// Masquer les erreurs AJAX pour une meilleure UX\n";
+    $body .= "if (typeof XMLHttpRequest !== 'undefined') {\n";
+    $body .= "  const originalSend = XMLHttpRequest.prototype.send;\n";
+    $body .= "  XMLHttpRequest.prototype.send = function(...args) {\n";
+    $body .= "    this.addEventListener('error', function() { console.log('RISO API non disponible via proxy'); });\n";
+    $body .= "    return originalSend.apply(this, args);\n";
+    $body .= "  };\n";
+    $body .= "}\n";
 }
 
 echo $body;
