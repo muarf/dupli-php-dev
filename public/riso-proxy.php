@@ -13,10 +13,8 @@ $base_url = 'http://localhost:8023';
 // Construire l'URL complète
 $target_url = $base_url . '/' . ltrim($path, '/');
 
-// Headers pour éviter le cache
-header('Cache-Control: no-cache, no-store, must-revalidate');
-header('Pragma: no-cache');
-header('Expires: 0');
+// Debug
+error_log("RISO Proxy: Demande pour $request_uri -> $target_url");
 
 // Récupérer le contenu
 $ch = curl_init($target_url);
@@ -25,19 +23,33 @@ curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
+curl_setopt($ch, CURLOPT_HEADER, true);
 
 $response = curl_exec($ch);
 $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$content_type_header = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
 curl_close($ch);
 
-if ($response === false || $http_code !== 200) {
+if ($response === false) {
+    error_log("RISO Proxy: Erreur cURL pour $target_url");
     http_response_code(404);
-    die('Ressource non trouvée');
+    die('Erreur de connexion');
 }
+
+if ($http_code !== 200) {
+    error_log("RISO Proxy: HTTP $http_code pour $target_url");
+    http_response_code($http_code);
+    die("Erreur HTTP: $http_code");
+}
+
+// Séparer headers et contenu
+list($headers, $body) = explode("\r\n\r\n", $response, 2);
 
 // Déterminer le type de contenu
 $content_type = 'text/html';
-if (strpos($path, '.css') !== false) {
+if ($content_type_header) {
+    $content_type = $content_type_header;
+} elseif (strpos($path, '.css') !== false) {
     $content_type = 'text/css';
 } elseif (strpos($path, '.js') !== false) {
     $content_type = 'application/javascript';
@@ -45,24 +57,40 @@ if (strpos($path, '.css') !== false) {
     $content_type = 'image/png';
 } elseif (strpos($path, '.gif') !== false) {
     $content_type = 'image/gif';
+} elseif (strpos($path, '.jpg') !== false || strpos($path, '.jpeg') !== false) {
+    $content_type = 'image/jpeg';
 }
 
+// Headers de réponse
 header('Content-Type: ' . $content_type);
+header('X-Frame-Options: ALLOWALL');
+
+// Pour les images et fichiers binaires, pas de cache
+if (strpos($content_type, 'image/') === 0) {
+    header('Cache-Control: no-cache');
+} else {
+    header('Cache-Control: no-cache, no-store, must-revalidate');
+    header('Pragma: no-cache');
+    header('Expires: 0');
+}
 
 // Pour le HTML, réécrire les URLs
-if ($content_type === 'text/html') {
+if (strpos($content_type, 'text/html') === 0) {
     // Modifier userStatus pour forcer l'affichage de la page système
-    $response = preg_replace('/id="userStatus" value="[^"]*"/', 'id="userStatus" value="1"', $response);
+    $body = preg_replace('/id="userStatus" value="[^"]*"/', 'id="userStatus" value="1"', $body);
     
     // Forcer l'affichage de la page système et masquer la page login
-    $response = str_replace('class="style_page_system"', 'class="style_page_system" style="display: block !important;"', $response);
-    $response = str_replace('class="style_page_login"', 'class="style_page_login" style="display: none !important;"', $response);
+    $body = str_replace('class="style_page_system"', 'class="style_page_system" style="display: block !important;"', $body);
+    $body = str_replace('class="style_page_login"', 'class="style_page_login" style="display: none !important;"', $body);
     
-    // Réécrire les URLs pour pointer vers le proxy
-    $response = preg_replace('/href="(\/[^"]+)"/', 'href="/riso-proxy$1"', $response);
-    $response = preg_replace('/src="(\/[^"]+)"/', 'src="/riso-proxy$1"', $response);
-    $response = preg_replace('/url\((\/[^)]+)\)/', 'url(/riso-proxy$1)', $response);
+    // Réécrire les URLs relatives pour pointer vers le proxy
+    $body = preg_replace('/href="([^"]*)"/', 'href="/riso-proxy/$1"', $body);
+    $body = preg_replace('/src="([^"]*)"/', 'src="/riso-proxy/$1"', $body);
+    $body = preg_replace('/url\(([^)]+)\)/', 'url(/riso-proxy/$1)', $body);
+    
+    // Corriger les doubles slashes
+    $body = str_replace('/riso-proxy//', '/riso-proxy/', $body);
 }
 
-echo $response;
+echo $body;
 ?>
