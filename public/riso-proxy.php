@@ -7,8 +7,8 @@
 $request_uri = $_SERVER['REQUEST_URI'];
 $path = str_replace('/riso-proxy/', '', $request_uri);
 
-// URL de base de la console RISO
-$base_url = 'http://localhost:8022';
+// URL de base de la console RISO  
+$base_url = 'http://localhost:8023';
 
 // Construire l'URL complète
 $target_url = $base_url . '/' . ltrim($path, '/');
