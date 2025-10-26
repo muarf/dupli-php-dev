@@ -333,6 +333,19 @@ if (strpos($content_type, 'text/html') === 0) {
                         url = '/riso-proxy/UI/IE/NewUIpage/Page/' + url;
                     }
                 }
+                
+                // Intercepter les URLs de téléchargement
+                if (url.includes('download') || url.includes('zip')) {
+                    console.log('Téléchargement détecté:', url);
+                    if (window.parent !== window) {
+                        window.parent.postMessage({
+                            type: 'download-url',
+                            url: url,
+                            scanName: 'SCAN-0540'
+                        }, '*');
+                    }
+                }
+                
                 return originalOpen.apply(this, [method, url].concat(args));
             };
         })();
@@ -365,6 +378,22 @@ if (strpos($content_type, 'text/html') === 0) {
                 console.error('Erreur extraction scans:', e);
             }
         }, 3000);
+        
+        // Intercepter les téléchargements créés
+        var originalCreateScanJobZip = window.createScanJobZip;
+        if (typeof createScanJobZip === 'function') {
+            window.createScanJobZip = function() {
+                console.log('createScanJobZip appelé');
+                var result = originalCreateScanJobZip.apply(this, arguments);
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'zip-created',
+                        message: 'Le fichier ZIP est prêt pour téléchargement'
+                    }, '*');
+                }
+                return result;
+            };
+        }
         </script>";
         
         // Injecter le script au tout début du head pour qu'il s'exécute en premier
