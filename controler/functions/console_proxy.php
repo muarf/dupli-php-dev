@@ -60,14 +60,39 @@ function parseScansFromRISO($html) {
         
         $xpath = new DOMXPath($dom);
         
-        // Chercher les lignes de tableau (patterns RISO ComColor)
-        // Adapté selon la structure HTML réelle de RC_Scan.phtml
+        // Dans la console RISO, les scans sont dans des lignes de tableau
+        // Chercher toutes les lignes de données
+        $rows = $xpath->query("//tr[td[@id='id_img_name']]");
         
-        // Pattern générique : chercher les éléments de scan
-        // Note: Cette fonction sera ajustée après avoir analysé le HTML réel de RC_Scan.phtml
-        
-        // Pour l'instant, retourner un array vide
-        // La structure sera implémentée après tests
+        foreach ($rows as $row) {
+            $cells = $xpath->query("./td", $row);
+            
+            if ($cells->length >= 4) {
+                $nameNode = $cells->item(0);
+                $ownerNode = $cells->item(1);
+                $pagesNode = $cells->item(2);
+                $dateNode = $cells->item(3);
+                
+                if ($nameNode && $ownerNode && $pagesNode && $dateNode) {
+                    $name = trim($nameNode->textContent);
+                    $owner = trim($ownerNode->textContent);
+                    $pages = trim($pagesNode->textContent);
+                    $date = trim($dateNode->textContent);
+                    
+                    // Nettoyer le nom (enlever le logo etc.)
+                    $name = preg_replace('/^(logo)?\s*/i', '', $name);
+                    
+                    if (!empty($name)) {
+                        $scans[] = [
+                            'name' => $name,
+                            'owner' => $owner,
+                            'pages' => $pages,
+                            'date' => $date
+                        ];
+                    }
+                }
+            }
+        }
         
     } catch (Exception $e) {
         error_log("Erreur parsing RISO: " . $e->getMessage());
@@ -90,22 +115,54 @@ function getConsoleScans($wrapper_id) {
             return ['error' => 'Wrapper non trouvé'];
         }
         
-        // Construire l'URL de la page de scans
+        // Récupérer les scans via le backend de la console RISO
         $baseUrl = rtrim($wrapper['console_url'], '/');
-        $scanUrl = $baseUrl . '/' . $wrapper['scan_endpoint'];
-        
-        // Effectuer la requête proxy
-        $result = proxyConsoleRequest($scanUrl);
-        
-        if (isset($result['error'])) {
-            return $result;
-        }
-        
-        // Parser les scans selon le type de console
         $scans = [];
         
         if ($wrapper['console_type'] === 'riso_comcolor') {
-            $scans = parseScansFromRISO($result['content']);
+            // Appeler le backend RISO directement pour récupérer les scans
+            $backendUrl = $baseUrl . '/Backend/APP/UI_6_3_6_1_list.app';
+            
+            // Données POST pour récupérer les scans
+            $postData = http_build_query([
+                'type' => 's',
+                'currentPage' => '1',
+                'currentRows' => '10',
+                'sortParse' => '',
+                'sortOrder' => '',
+                'loginUserRole' => '1',
+                'loginUserName' => '',
+                'loginUserID' => '',
+                'searchCondition' => ''
+            ]);
+            
+            // Faire la requête POST vers le backend
+            $ch = curl_init($backendUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+            
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            
+            if ($response && $httpCode == 200) {
+                // Parser le XML de réponse
+                $xml = simplexml_load_string($response);
+                if ($xml) {
+                    foreach ($xml->xpath('//job_id') as $job) {
+                        $scan = [
+                            'name' => (string)$job->job_name,
+                            'owner' => (string)$job->owner_name,
+                            'pages' => (string)$job->page_count,
+                            'date' => (string)$job->date
+                        ];
+                        $scans[] = $scan;
+                    }
+                }
+            }
         }
         
         return ['scans' => $scans];

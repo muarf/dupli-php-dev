@@ -38,39 +38,11 @@
                 </h3>
               </div>
               <div class="panel-body">
-                <?php if(empty($scans)): ?>
+                <div id="scans-placeholder">
                   <div class="alert alert-info">
-                    <i class="fa fa-info-circle"></i> Aucun scan trouvé. 
-                    <br><small>Les scans seront affichés ici une fois disponibles depuis la console.</small>
+                    <i class="fa fa-info-circle"></i> Chargement des scans...
                   </div>
-                <?php else: ?>
-                  <div class="table-responsive">
-                    <table class="table table-striped">
-                      <thead>
-                        <tr>
-                          <th>Nom du document</th>
-                          <th>Pages</th>
-                          <th>Date</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <?php foreach($scans as $scan): ?>
-                          <tr>
-                            <td><?php echo htmlspecialchars($scan['name']); ?></td>
-                            <td><?php echo htmlspecialchars($scan['pages']); ?></td>
-                            <td><?php echo htmlspecialchars($scan['date']); ?></td>
-                            <td>
-                              <a href="?console_wrapper&id=<?php echo $wrapper['id']; ?>&download=<?php echo urlencode($scan['name']); ?>" class="btn btn-xs btn-success">
-                                <i class="fa fa-download"></i> Télécharger
-                              </a>
-                            </td>
-                          </tr>
-                        <?php endforeach; ?>
-                      </tbody>
-                    </table>
-                  </div>
-                <?php endif; ?>
+                </div>
               </div>
             </div>
           </div>
@@ -82,13 +54,59 @@
             <h3 class="panel-title"><i class="fa fa-desktop"></i> Console Web</h3>
           </div>
           <div class="panel-body" style="padding: 0; position: relative;">
-            <iframe 
+              <iframe 
+              id="console-iframe"
               src="/riso-proxy/" 
               style="width: 100%; height: 800px; border: none; min-height: 600px;"
               frameborder="0"
               allowfullscreen>
               <p>Votre navigateur ne supporte pas les iframes. <a href="<?php echo htmlspecialchars($wrapper['console_url']); ?>" target="_blank">Ouvrir la console dans un nouvel onglet</a></p>
             </iframe>
+            
+            <script type="text/javascript">
+            // Attendre que l'iframe soit chargé et afficher un message postMessage
+            setTimeout(function() {
+              var iframe = document.getElementById('console-iframe');
+              var placeholder = document.getElementById('scans-placeholder');
+              
+              // Créer un listener pour recevoir les données des scans de l'iframe
+              window.addEventListener('message', function(event) {
+                // Vérifier que le message provient de notre iframe (pas nécessaire car même origin grâce au proxy)
+                if (event.data && event.data.type === 'scans-data') {
+                  var scans = event.data.scans;
+                  
+                  if (scans && scans.length > 0) {
+                    var html = '<div class="table-responsive"><table class="table table-striped"><thead><tr><th>Nom du document</th><th>Propriétaire</th><th>Pages</th><th>Date</th><th>Actions</th></tr></thead><tbody>';
+                    
+                        scans.forEach(function(scan) {
+                          var fileName = scan.name.replace(/^logo/, '').trim();
+                          // Lien direct vers la console RISO
+                          html += '<tr><td>' + escapeHtml(fileName) + '</td><td>' + escapeHtml(scan.owner) + '</td><td>' + escapeHtml(scan.pages) + '</td><td>' + escapeHtml(scan.date) + '</td><td><a href=\"http://localhost:8023/UI/IE/NewUIpage/Page/RC_Scan.phtml\" target=\"_blank\" class=\"btn btn-xs btn-success\"><i class=\"fa fa-download\"></i> Télécharger</a></td></tr>';
+                        });
+                    
+                    html += '</tbody></table></div>';
+                    placeholder.innerHTML = html;
+                  }
+                }
+              });
+              
+              function escapeHtml(text) {
+                var map = {
+                  '&': '&amp;',
+                  '<': '&lt;',
+                  '>': '&gt;',
+                  '"': '&quot;',
+                  "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+              }
+            }, 1000);
+            
+            // Fonction pour montrer le scan dans l'iframe
+            function showScanInIframe(fileName) {
+              alert('Recherchez \"' + fileName + '\" dans l\'iframe ci-dessous, cochez-le, puis cliquez sur \"Télécharger\".');
+            }
+            </script>
           </div>
         </div>
         
