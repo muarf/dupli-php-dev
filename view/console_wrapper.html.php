@@ -81,7 +81,7 @@
                         scans.forEach(function(scan) {
                           var fileName = scan.name.replace(/^logo/, '').trim();
                           // Lien direct vers la console RISO
-                          html += '<tr><td>' + escapeHtml(fileName) + '</td><td>' + escapeHtml(scan.owner) + '</td><td>' + escapeHtml(scan.pages) + '</td><td>' + escapeHtml(scan.date) + '</td><td><a href=\"http://localhost:8023/UI/IE/NewUIpage/Page/RC_Scan.phtml\" target=\"_blank\" class=\"btn btn-xs btn-success\"><i class=\"fa fa-download\"></i> Télécharger</a></td></tr>';
+                          html += '<tr><td>' + escapeHtml(fileName) + '</td><td>' + escapeHtml(scan.owner) + '</td><td>' + escapeHtml(scan.pages) + '</td><td>' + escapeHtml(scan.date) + '</td><td><a href=\"http://192.168.1.110/UI/IE/NewUIpage/Page/RC_Scan.phtml\" target=\"_blank\" class=\"btn btn-xs btn-success\"><i class=\"fa fa-download\"></i> Télécharger</a></td></tr>';
                         });
                     
                     html += '</tbody></table></div>';
