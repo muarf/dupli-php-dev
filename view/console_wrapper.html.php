@@ -56,7 +56,7 @@
           <div class="panel-body" style="padding: 0; position: relative;">
               <iframe 
               id="riso-console-iframe"
-              src="/riso-proxy/" 
+              src="<?php echo htmlspecialchars($wrapper['console_url']); ?>" 
               style="width: 100%; height: 800px; border: none; min-height: 600px;"
               frameborder="0"
               allowfullscreen>
@@ -80,8 +80,11 @@
                     
                         scans.forEach(function(scan) {
                           var fileName = scan.name.replace(/^logo/, '').trim();
-                          // Lien vers la console RISO pour téléchargement manuel
-                          html += '<tr><td>' + escapeHtml(fileName) + '</td><td>' + escapeHtml(scan.owner) + '</td><td>' + escapeHtml(scan.pages) + '</td><td>' + escapeHtml(scan.date) + '</td><td><a href="http://192.168.1.110/" target="_blank" class="btn btn-xs btn-success"><i class="fa fa-download"></i> Télécharger</a></td></tr>';
+                          // Lien direct vers le téléchargement via le proxy RISO
+                          // Le proxy téléchargera depuis la console RISO configurée
+                          // Lien vers la console RISO où l'utilisateur peut télécharger
+                          var consoleUrl = '<?php echo htmlspecialchars($wrapper["console_url"]); ?>';
+                          html += '<tr><td>' + escapeHtml(fileName) + '</td><td>' + escapeHtml(scan.owner) + '</td><td>' + escapeHtml(scan.pages) + '</td><td>' + escapeHtml(scan.date) + '</td><td><a href="' + consoleUrl + 'UI/IE/NewUIpage/Page/RC_Scan.phtml" target="_blank" class="btn btn-xs btn-success"><i class="fa fa-external-link"></i> Télécharger dans la console</a></td></tr>';
                         });
                     
                     html += '</tbody></table></div>';
