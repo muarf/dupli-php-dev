@@ -55,7 +55,7 @@
           </div>
           <div class="panel-body" style="padding: 0; position: relative;">
               <iframe 
-              id="console-iframe"
+              id="riso-console-iframe"
               src="/riso-proxy/" 
               style="width: 100%; height: 800px; border: none; min-height: 600px;"
               frameborder="0"
@@ -80,8 +80,8 @@
                     
                         scans.forEach(function(scan) {
                           var fileName = scan.name.replace(/^logo/, '').trim();
-                          // Lien direct vers la console RISO
-                          html += '<tr><td>' + escapeHtml(fileName) + '</td><td>' + escapeHtml(scan.owner) + '</td><td>' + escapeHtml(scan.pages) + '</td><td>' + escapeHtml(scan.date) + '</td><td><a href=\"http://192.168.1.110/UI/IE/NewUIpage/Page/RC_Scan.phtml\" target=\"_blank\" class=\"btn btn-xs btn-success\"><i class=\"fa fa-download\"></i> Télécharger</a></td></tr>';
+                          // Lien vers la console RISO pour téléchargement manuel
+                          html += '<tr><td>' + escapeHtml(fileName) + '</td><td>' + escapeHtml(scan.owner) + '</td><td>' + escapeHtml(scan.pages) + '</td><td>' + escapeHtml(scan.date) + '</td><td><a href="http://192.168.1.110/UI/IE/NewUIpage/Page/RC_Scan.phtml" target="_blank" class="btn btn-xs btn-success"><i class="fa fa-download"></i> Télécharger</a></td></tr>';
                         });
                     
                     html += '</tbody></table></div>';
