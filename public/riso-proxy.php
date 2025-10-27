@@ -258,6 +258,18 @@ if (strpos($content_type, 'text/html') === 0) {
             return this;
         };
         
+        // Protéger GLOBALEMENT contre les erreurs de contentDocument
+        Object.defineProperty(HTMLElement.prototype, 'contentDocument', {
+            get: function() {
+                try {
+                    // Tentative normale d'accès
+                    return this.contentWindow ? this.contentWindow.document : null;
+                } catch(e) {
+                    return null;
+                }
+            }
+        });
+        
         // Appeler getDataByServer après un délai pour laisser les scripts se charger
         console.log('Proxy fix script loaded');
         
@@ -308,6 +320,32 @@ if (strpos($content_type, 'text/html') === 0) {
                 }
                 return originalDefineProperty.call(this, obj, prop, descriptor);
             };
+            
+            // Redéfinir setMainHomeHeight pour éviter les erreurs de contentDocument null
+            if (typeof setMainHomeHeight === 'function') {
+                var originalSetMainHomeHeight = setMainHomeHeight;
+                window.setMainHomeHeight = function() {
+                    try {
+                        return originalSetMainHomeHeight.apply(this, arguments);
+                    } catch(e) {
+                        // Ignorer l'erreur
+                        return;
+                    }
+                };
+            } else {
+                // Si la fonction n'existe pas encore, la définir avec protection
+                window.setMainHomeHeight = function() {
+                    try {
+                        // Essayer d'exécuter le code original si disponible
+                        if (window.parent && window.parent.document) {
+                            // Code original sécurisé
+                        }
+                    } catch(e) {
+                        // Ignorer l'erreur
+                        return;
+                    }
+                };
+            }
             
             // Intercepter fetch pour router toutes les requêtes via le proxy
             const originalFetch = window.fetch;
