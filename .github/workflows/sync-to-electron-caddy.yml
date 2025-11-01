@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: MuArF/dupli-electron-caddy
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.ELECTRON_CADDY_TOKEN || secrets.GITHUB_TOKEN }}
           path: target
     
       - name: Copy files to app/
@@ -71,16 +71,26 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Current version: $VERSION"
     
+      - name: Get commit message from source
+        id: commit_msg
+        run: |
+          cd source
+          COMMIT_MSG=$(git log -1 --pretty=format:'%s')
+          echo "message=$COMMIT_MSG" >> $GITHUB_OUTPUT
+    
       - name: Commit and push to dupli-electron-caddy
         run: |
           cd target
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Utiliser ELECTRON_CADDY_TOKEN si disponible, sinon GITHUB_TOKEN
+          TOKEN="${{ secrets.ELECTRON_CADDY_TOKEN || secrets.GITHUB_TOKEN }}"
+          git remote set-url origin https://x-access-token:$TOKEN@github.com/MuArF/dupli-electron-caddy.git
           git add app/
           
           # Vérifier s'il y a des changements
           if ! git diff --staged --quiet; then
-            git commit -m "Sync from dupli-php-dev: $(git log -1 --pretty=format:'%s' ../source)
+            git commit -m "Sync from dupli-php-dev: ${{ steps.commit_msg.outputs.message }}
             
             Auto-sync triggered by: ${{ github.sha }}"
             git push
