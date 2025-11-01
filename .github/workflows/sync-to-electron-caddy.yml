@@ -1,0 +1,106 @@
+name: Sync to dupli-electron-caddy and trigger release
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'test_*.php'
+      - '*.md'
+      - '.gitignore'
+      - 'CHANGELOG_*.md'
+      - 'COMPORTEMENT_*.md'
+      - 'GUIDE_*.md'
+      - 'README_*.md'
+      - 'RESUME_*.md'
+      - 'TAUX_REMPLISSAGE.md'
+      - 'GITHUB_SETUP.md'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    
+    steps:
+      - name: Checkout dupli-php-dev
+        uses: actions/checkout@v4
+        with:
+          path: source
+          token: ${{ secrets.GITHUB_TOKEN }}
+    
+      - name: Checkout dupli-electron-caddy
+        uses: actions/checkout@v4
+        with:
+          repository: MuArF/dupli-electron-caddy
+          token: ${{ secrets.ELECTRON_CADDY_TOKEN }}
+          path: target
+    
+      - name: Copy files to app/
+        run: |
+          cd target
+          # Exclure les fichiers spécifiques
+          rsync -av --delete \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='vendor' \
+            --exclude='tmp' \
+            --exclude='sessions' \
+            --exclude='uploads' \
+            --exclude='sauvegarde' \
+            --exclude='backups' \
+            --exclude='downloads' \
+            --exclude='*.db' \
+            --exclude='*.sqlite' \
+            --exclude='test_*.php' \
+            --exclude='*.bat' \
+            --exclude='test.pdf' \
+            --exclude='cookies.txt' \
+            --exclude='conti' \
+            --exclude='.gitignore' \
+            --exclude='PROMPT_NEXT_ASSISTANT.md' \
+            --exclude='DIFF_ANALYSIS.md' \
+            ../source/ app/
+    
+      - name: Get version from package.json
+        id: get_version
+        run: |
+          cd target
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $VERSION"
+    
+      - name: Commit and push to dupli-electron-caddy
+        run: |
+          cd target
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add app/
+          
+          # Vérifier s'il y a des changements
+          if ! git diff --staged --quiet; then
+            git commit -m "Sync from dupli-php-dev: $(git log -1 --pretty=format:'%s' ../source)
+            
+            Auto-sync triggered by: ${{ github.sha }}"
+            git push
+            echo "HAS_CHANGES=true" >> $GITHUB_ENV
+          else
+            echo "No changes to sync"
+            echo "HAS_CHANGES=false" >> $GITHUB_ENV
+          fi
+    
+      - name: Trigger release workflow
+        if: env.HAS_CHANGES == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ELECTRON_CADDY_TOKEN }}
+          script: |
+            // Déclencher le workflow de release dans dupli-electron-caddy
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'MuArF',
+              repo: 'dupli-electron-caddy',
+              workflow_id: 'release.yml',
+              ref: 'main'
+            });
+            console.log('Release workflow triggered in dupli-electron-caddy');
+
