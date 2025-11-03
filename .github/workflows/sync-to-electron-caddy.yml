@@ -36,6 +36,8 @@ jobs:
           repository: MuArF/dupli-electron-caddy
           token: ${{ secrets.ELECTRON_CADDY_TOKEN || secrets.GITHUB_TOKEN }}
           path: target
+          ref: main
+          fetch-depth: 0
     
       - name: Copy files to app/
         run: |
@@ -86,6 +88,12 @@ jobs:
           # Utiliser ELECTRON_CADDY_TOKEN si disponible, sinon GITHUB_TOKEN
           TOKEN="${{ secrets.ELECTRON_CADDY_TOKEN || secrets.GITHUB_TOKEN }}"
           git remote set-url origin https://x-access-token:$TOKEN@github.com/MuArF/dupli-electron-caddy.git
+          
+          # S'assurer d'avoir la dernière version de main
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+          
           git add app/
           
           # Vérifier s'il y a des changements
@@ -93,7 +101,7 @@ jobs:
             git commit -m "Sync from dupli-php-dev: ${{ steps.commit_msg.outputs.message }}
             
             Auto-sync triggered by: ${{ github.sha }}"
-            git push
+            git push origin main
             echo "HAS_CHANGES=true" >> $GITHUB_ENV
           else
             echo "No changes to sync"
