@@ -104,8 +104,14 @@ jobs:
             git push origin main
             echo "HAS_CHANGES=true" >> $GITHUB_ENV
           else
-            echo "No changes to sync"
-            echo "HAS_CHANGES=false" >> $GITHUB_ENV
+            # Forcer un commit même sans changements pour déclencher la release
+            # Utiliser --allow-empty pour créer un commit vide qui déclenchera la release
+            git commit --allow-empty -m "Sync from dupli-php-dev: ${{ steps.commit_msg.outputs.message }} (no file changes)
+            
+            Auto-sync triggered by: ${{ github.sha }}"
+            git push origin main
+            echo "HAS_CHANGES=true" >> $GITHUB_ENV
+            echo "No file changes, but commit created to trigger release"
           fi
     
       - name: Trigger release workflow
