@@ -64,6 +64,10 @@ jobs:
             --exclude='PROMPT_NEXT_ASSISTANT.md' \
             --exclude='DIFF_ANALYSIS.md' \
             ../source/ app/
+          
+          # Afficher un résumé des fichiers copiés
+          echo "Files synced to app/:"
+          find app/ -type f | wc -l | xargs echo "Total files:"
     
       - name: Get version from package.json
         id: get_version
@@ -96,23 +100,20 @@ jobs:
           
           git add app/
           
-          # Vérifier s'il y a des changements
-          if ! git diff --staged --quiet; then
-            git commit -m "Sync from dupli-php-dev: ${{ steps.commit_msg.outputs.message }}
-            
-            Auto-sync triggered by: ${{ github.sha }}"
-            git push origin main
-            echo "HAS_CHANGES=true" >> $GITHUB_ENV
-          else
-            # Forcer un commit même sans changements pour déclencher la release
-            # Utiliser --allow-empty pour créer un commit vide qui déclenchera la release
-            git commit --allow-empty -m "Sync from dupli-php-dev: ${{ steps.commit_msg.outputs.message }} (no file changes)
-            
-            Auto-sync triggered by: ${{ github.sha }}"
-            git push origin main
-            echo "HAS_CHANGES=true" >> $GITHUB_ENV
-            echo "No file changes, but commit created to trigger release"
+          # Toucher un fichier pour forcer un changement si aucun changement détecté
+          if git diff --staged --quiet; then
+            # Forcer un changement en modifiant un timestamp dans un fichier .sync
+            echo "# Last sync: $(date -u +"%Y-%m-%d %H:%M:%S UTC") - Commit: ${{ github.sha }}" > app/.sync-timestamp
+            git add app/.sync-timestamp
+            echo "No file changes detected, forcing sync with timestamp file"
           fi
+          
+          # Créer le commit avec tous les changements
+          git commit -m "Sync from dupli-php-dev: ${{ steps.commit_msg.outputs.message }}
+          
+          Auto-sync triggered by: ${{ github.sha }}"
+          git push origin main
+          echo "HAS_CHANGES=true" >> $GITHUB_ENV
     
       - name: Trigger release workflow
         if: env.HAS_CHANGES == 'true'
