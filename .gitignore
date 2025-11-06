@@ -16,7 +16,7 @@ composer.phar
 /sauvegarde/
 
 # Fichiers de configuration sensibles
-php.ini
+# php.ini - Nécessaire pour la synchronisation avec dupli-electron-caddy (build Windows)
 php-appimage.ini
 
 # Fichiers de log
