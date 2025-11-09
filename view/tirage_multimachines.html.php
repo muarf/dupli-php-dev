@@ -503,6 +503,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                             $total_encre = 0;
                                             $total_pages = 0;
                                             $total_pages_encre = 0;
+                                            $total_feuilles_physiques = 0;
                                             $prix_papier = 0;
                                             $prix_encre = 0;
                                             
@@ -517,10 +518,12 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                                         $couleur = isset($brochure['couleur']) && $brochure['couleur'] == 'oui';
                                                         $feuilles_payees = isset($brochure['feuilles_payees']) && $brochure['feuilles_payees'] == 'oui';
                                                         
-                                                        // Prix du papier
-                                                        $prix_papier = $prix_data['papier'][$taille] ?? 0;
-                                                        $cout_papier = $feuilles_payees ? 0 : ($nb_pages * $prix_papier);
-                                                        $total_papier += $cout_papier;
+                                                         // Prix du papier
+                                                         $prix_papier = $prix_data['papier'][$taille] ?? 0;
+                                                         $nb_feuilles_physiques = $rv ? (int)ceil($nb_pages / 2) : $nb_pages;
+                                                         $cout_papier = $feuilles_payees ? 0 : ($nb_feuilles_physiques * $prix_papier);
+                                                         $total_papier += $cout_papier;
+                                                         $total_feuilles_physiques += $nb_feuilles_physiques;
                                                         
                                                         // Prix d'encre selon le type de machine
                                                         $prix_encre_brochure = 0;
@@ -600,10 +603,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                                         }
                                                         
                                                         // Calculer le coût d'encre
-                                                        $nb_pages_encre = $nb_pages;
-                                                        if ($rv) {
-                                                            $nb_pages_encre = $nb_pages * 2;
-                                                        }
+                                                         $nb_pages_encre = $rv ? $nb_pages * 2 : $nb_pages;
                                                         $cout_encre = $nb_pages_encre * $prix_encre_brochure;
                                                         $total_encre += $cout_encre;
                                                         $total_pages += $nb_pages;
@@ -616,7 +616,7 @@ if (isset($_POST['contact']) && isset($_POST['enregistrer'])) {
                                                 }
                                             }
                                             ?>
-                                            <li><strong><?php _e('tirage_multimachines.paper_label'); ?> :</strong> <?= $total_pages ?> <?php _e('tirage_multimachines.pages'); ?> × <?= number_format($prix_papier, 3) ?> <?php _e('tirage_multimachines.currency'); ?> = <?= number_format($total_papier, 2) ?> <?php _e('tirage_multimachines.currency'); ?></li>
+                                            <li><strong><?php _e('tirage_multimachines.paper_label'); ?> :</strong> <?= $total_feuilles_physiques ?> <?php _e('tirage_multimachines.sheets'); ?> × <?= number_format($prix_papier, 3) ?> <?php _e('tirage_multimachines.currency'); ?> = <?= number_format($total_papier, 2) ?> <?php _e('tirage_multimachines.currency'); ?></li>
                                             <li><strong><?php _e('tirage_multimachines.ink_toner_label'); ?> :</strong> <?= $total_pages_encre ?> <?php _e('tirage_multimachines.pages'); ?> × <?= number_format($prix_encre, 4) ?> <?php _e('tirage_multimachines.currency'); ?> = <?= number_format($total_encre, 2) ?> <?php _e('tirage_multimachines.currency'); ?></li>
                                             <li><strong><?php _e('tirage_multimachines.total'); ?> :</strong> <?= number_format($machine['prix'], 2) ?> <?php _e('tirage_multimachines.currency'); ?></li>
                                             <?php if (isset($machine['brochures']) && is_array($machine['brochures'])): ?>
@@ -1524,9 +1524,12 @@ function updateTotalFeuillesForMachine(machineIndex) {
             var exemplaires = parseInt(exemplairesInput.value) || 0;
             var feuilles = parseInt(feuillesInput.value) || 0;
             var total = exemplaires * feuilles;
+            var rvCheckbox = brochure.querySelector('input[name*="[rv]"]');
+            var isRv = rvCheckbox && rvCheckbox.checked;
+            var feuillesPhysiques = isRv ? Math.ceil(total / 2) : total;
             
-            if (total > 0) {
-                totalSpan.textContent = total + (total > 1 ? ' feuilles' : ' feuille');
+            if (feuillesPhysiques > 0) {
+                totalSpan.textContent = feuillesPhysiques + (feuillesPhysiques > 1 ? ' feuilles' : ' feuille');
                 totalSpan.style.color = '#007bff';
             } else {
                 totalSpan.textContent = '0 feuille';
@@ -1702,7 +1705,7 @@ function calculateMachinePrice(machineIndex) {
         // Calcul pour photocopieur
         var brochures = machineElement.querySelectorAll('.brochure-item');
         var totalExemplaires = 0;
-        var totalFeuilles = 0;
+        var totalFeuillesPhysiques = 0;
         
         brochures.forEach(function(brochure) {
             var nbExemplaires = parseFloat(brochure.querySelector('input[name*="[nb_exemplaires]"]').value) || 0;
@@ -1768,17 +1771,18 @@ function calculateMachinePrice(machineIndex) {
             
             // Calculer le coût
             var nbPages = nbExemplaires * nbFeuilles;
-            var coutPapier = feuilles_payees ? 0 : (nbPages * prixPapier); // Papier = nombre de feuilles (0 si déjà payées)
-            var coutEncre = nbPages * prixEncre; // Encre de base
-            if (rv) coutEncre = coutEncre * 2; // Recto-verso = 2 fois plus d'encre
+            var nbFeuillesReelles = rv ? Math.ceil(nbPages / 2) : nbPages;
+            var nbFaces = rv ? nbPages * 2 : nbPages;
+            var coutPapier = feuilles_payees ? 0 : (nbFeuillesReelles * prixPapier); // Papier = feuilles physiques (0 si déjà payées)
+            var coutEncre = nbFaces * prixEncre; // Encre calculée sur le nombre de faces
             var coutBrochure = coutPapier + coutEncre;
             
-            console.log(`Brochure ${taille}: exemplaires=${nbExemplaires}, feuilles=${nbFeuilles}, rv=${rv}, nbPages=${nbPages}, prixPapier=${prixPapier}, prixEncre=${prixEncre}, coutBrochure=${coutBrochure}`);
+            console.log(`Brochure ${taille}: exemplaires=${nbExemplaires}, feuilles=${nbFeuilles}, rv=${rv}, nbPages=${nbPages}, feuillesPhysiques=${nbFeuillesReelles}, faces=${nbFaces}, prixPapier=${prixPapier}, prixEncre=${prixEncre}, coutBrochure=${coutBrochure}`);
             
             price += coutBrochure;
             
             totalExemplaires += nbExemplaires;
-            totalFeuilles += nbExemplaires * nbFeuilles;
+            totalFeuillesPhysiques += nbFeuillesReelles;
         });
         
         // Détail du calcul pour photocopieur
@@ -1860,8 +1864,8 @@ function calculateMachinePrice(machineIndex) {
             if (taille === 'A4') prixEncre = prixEncre / 2;
             
             var nbPages = nbExemplaires * nbFeuilles;
-            var nbPagesEncre = nbPages; // Pages pour l'encre
-            if (rv) nbPagesEncre = nbPages * 2; // Recto-verso = 2 fois plus de pages pour l'encre
+            var nbFeuillesReelles = rv ? Math.ceil(nbPages / 2) : nbPages;
+            var nbPagesEncre = rv ? nbPages * 2 : nbPages; // Faces imprimées
             
             var coutEncreBrochure = nbPagesEncre * prixEncre;
             
@@ -1872,7 +1876,7 @@ function calculateMachinePrice(machineIndex) {
             coutEncreTotal += coutEncreBrochure;
             
             // Calculer le coût papier pour cette brochure
-            var coutPapierBrochure = feuilles_payees ? 0 : (nbPages * prixPapier);
+            var coutPapierBrochure = feuilles_payees ? 0 : (nbFeuillesReelles * prixPapier);
             coutPapierTotal += coutPapierBrochure;
             
             if (detailEncreBrochure) {
@@ -1888,9 +1892,9 @@ function calculateMachinePrice(machineIndex) {
         detailCalcul = `
             <div class="price-detail" style="font-size: 0.9em; color: #666; margin-top: 5px;">
                 <strong>Détail du calcul :</strong><br>
-                • ${totalExemplaires} exemplaires × ${totalFeuilles} feuilles = ${totalPages} pages<br>
-                • Papier : ${totalPages} feuilles × ${prixPapierMoyen.toFixed(3)}€ = ${coutPapierTotal.toFixed(2)}€<br>
-                • Encre : ${totalPagesEncre} pages × ${prixEncreMoyen.toFixed(4)}€ = ${coutEncreTotal.toFixed(2)}€${detailEncre}<br>
+                • ${totalExemplaires} exemplaires ⇒ ${totalFeuillesPhysiques} feuilles physiques (${totalPages} feuilles théoriques)<br>
+                • Papier : ${totalFeuillesPhysiques} feuilles × ${prixPapierMoyen.toFixed(3)}€ = ${coutPapierTotal.toFixed(2)}€<br>
+                • Encre : ${totalPagesEncre} faces × ${prixEncreMoyen.toFixed(4)}€ = ${coutEncreTotal.toFixed(2)}€${detailEncre}<br>
                 <strong>Total : ${price.toFixed(2)}€</strong>
         </div>
     `;

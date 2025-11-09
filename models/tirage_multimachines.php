@@ -145,16 +145,19 @@ function getMachinePrices($db, $machine_name) {
 function calculateBrochurePriceOptimized($brochure, $prix_papier_a3, $prix_papier_a4, $machine_prices, $machine_type_detected, $machine_name, $fill_rate = 0.5) {
     $nb_exemplaires = intval($brochure['nb_exemplaires']);
     $nb_feuilles = intval($brochure['nb_feuilles']);
-    $nb_f_total = $nb_exemplaires * $nb_feuilles;
+    $nb_unites = $nb_exemplaires * $nb_feuilles;
     $taille = $brochure['taille'];
     $rv = isset($brochure['rv']) && $brochure['rv'] == 'oui';
     $couleur = isset($brochure['couleur']) && $brochure['couleur'] == 'oui';
     $feuilles_payees = isset($brochure['feuilles_payees']) && $brochure['feuilles_payees'] == 'oui';
     
+    // Calcul du nombre réel de feuilles consommées
+    $nb_feuilles_physiques = $rv ? (int)ceil($nb_unites / 2) : $nb_unites;
+    
     // Calcul rapide
-    $nb_p = $rv ? $nb_f_total * 2 : $nb_f_total;
+    $nb_p = $rv ? $nb_unites * 2 : $nb_unites;
     $prix_papier = ($taille == 'A4') ? $prix_papier_a4 : $prix_papier_a3;
-    $prix_papier_total = $feuilles_payees ? 0 : ($nb_f_total * $prix_papier);
+    $prix_papier_total = $feuilles_payees ? 0 : ($nb_feuilles_physiques * $prix_papier);
     
     // Calcul coût par page optimisé avec taux de remplissage
     try {
@@ -583,8 +586,9 @@ function Action($conf = null) {
                             
                             // Calculer le prix comme le JavaScript
                             $nbPages = $nb_exemplaires * $nb_feuilles;
+                            $nbFeuillesPhysiques = $rv ? (int)ceil($nbPages / 2) : $nbPages;
                             $prixPapier = $array['prix_data']['papier'][$taille] ?? 0;
-                            $coutPapier = $feuilles_payees ? 0 : ($nbPages * $prixPapier);
+                            $coutPapier = $feuilles_payees ? 0 : ($nbFeuillesPhysiques * $prixPapier);
                             
                             // Calculer le coût par page selon le type de machine et les couleurs (avec taux de remplissage)
                             $cost_per_page = calculatePageCost($machine['machine'], $machine_type_detected, $machine_prices, $couleur, $rv, $fill_rate);
@@ -593,15 +597,14 @@ function Action($conf = null) {
                             if ($taille === 'A4') $cost_per_page = $cost_per_page / 2;
                             
                             // Calculer le coût d'encre
-                            $nbPagesEncre = $nbPages; // Pages pour l'encre
-                            if ($rv) $nbPagesEncre = $nbPages * 2; // Recto-verso = 2 fois plus de pages pour l'encre
+                            $nbPagesEncre = $rv ? $nbPages * 2 : $nbPages; // Recto-verso = 2 faces imprimées par feuille
                             $prixEncre = $nbPagesEncre * $cost_per_page;
                             
                             $prixBrochure = $coutPapier + $prixEncre;
                             $prix_total += $prixBrochure;
                             
                             if (isset($_GET['debug'])) {
-                                $array['debug']['photocopieur_' . $index] .= " - Calcul détaillé: " . $nbPages . " pages, papier=" . $prixPapier . "€, encre=" . $prixEncre . "€, coutPapier=" . $coutPapier . "€, total=" . $prixBrochure . "€";
+                                $array['debug']['photocopieur_' . $index] .= " - Calcul détaillé: " . $nbPages . " pages, feuilles physiques=" . $nbFeuillesPhysiques . ", papier=" . $prixPapier . "€, encre=" . $prixEncre . "€, coutPapier=" . $coutPapier . "€, total=" . $prixBrochure . "€";
                             }
                         } else {
                             if (isset($_GET['debug'])) {
