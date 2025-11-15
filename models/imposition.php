@@ -421,8 +421,9 @@ function addPageNumbersToPdf($pdfFilePath) {
                 
                 // Position: bas à gauche, proche des bords mais dans la zone imprimable
                 // Position en bas à gauche avec un petit offset (3mm) pour être proche mais imprimable
-                $x = 3; // 3mm depuis le bord gauche
-                $y = $pageHeight - 8; // 8mm depuis le bas (pour avoir assez de place pour le texte)
+                // Décaler encore plus vers l'extérieur (≈1mm du bord gauche, 6mm du bas)
+                $x = max(1, 3 - 2); // 3mm - 2mm = 1mm
+                $y = $pageHeight - 6; // 6mm depuis le bas
                 
                 // Configurer la police : petit, noir
                 $pdf->SetFont('helvetica', '', 8); // Taille 8 = petit
