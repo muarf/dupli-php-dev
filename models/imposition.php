@@ -436,28 +436,28 @@ function addPageNumbersToPdf($pdfFilePath) {
 }
 
 function drawCropMarks($pdf, $x, $y, $width, $height, $bleed_size = 3) {
-    // Dessiner les traits de coupe aux 4 coins À L'INTÉRIEUR de la zone
+    // Dessiner les traits de coupe aux 4 coins vers l'extérieur de la zone
     // Ligne noire plus épaisse pour les traits de coupe (0.5mm)
     $pdf->SetLineWidth(0.5);
     $pdf->SetDrawColor(0, 0, 0); // Noir
     
     $mark_length = 10; // Longueur fixe de 10mm pour bien voir les marques
     
-    // Coin supérieur gauche - lignes À L'INTÉRIEUR
-    $pdf->Line($x, $y, $x + $mark_length, $y); // Horizontale vers la droite
-    $pdf->Line($x, $y, $x, $y + $mark_length); // Verticale vers le bas
+    // Coin supérieur gauche - lignes vers l'extérieur
+    $pdf->Line($x, $y, $x - $mark_length, $y); // Horizontale vers la gauche
+    $pdf->Line($x, $y, $x, $y - $mark_length); // Verticale vers le haut
     
-    // Coin supérieur droit - lignes À L'INTÉRIEUR
-    $pdf->Line($x + $width, $y, $x + $width - $mark_length, $y); // Horizontale vers la gauche
-    $pdf->Line($x + $width, $y, $x + $width, $y + $mark_length); // Verticale vers le bas
+    // Coin supérieur droit - lignes vers l'extérieur
+    $pdf->Line($x + $width, $y, $x + $width + $mark_length, $y); // Horizontale vers la droite
+    $pdf->Line($x + $width, $y, $x + $width, $y - $mark_length); // Verticale vers le haut
     
-    // Coin inférieur gauche - lignes À L'INTÉRIEUR
-    $pdf->Line($x, $y + $height, $x + $mark_length, $y + $height); // Horizontale vers la droite
-    $pdf->Line($x, $y + $height, $x, $y + $height - $mark_length); // Verticale vers le haut
+    // Coin inférieur gauche - lignes vers l'extérieur
+    $pdf->Line($x, $y + $height, $x - $mark_length, $y + $height); // Horizontale vers la gauche
+    $pdf->Line($x, $y + $height, $x, $y + $height + $mark_length); // Verticale vers le bas
     
-    // Coin inférieur droit - lignes À L'INTÉRIEUR
-    $pdf->Line($x + $width, $y + $height, $x + $width - $mark_length, $y + $height); // Horizontale vers la gauche
-    $pdf->Line($x + $width, $y + $height, $x + $width, $y + $height - $mark_length); // Verticale vers le haut
+    // Coin inférieur droit - lignes vers l'extérieur
+    $pdf->Line($x + $width, $y + $height, $x + $width + $mark_length, $y + $height); // Horizontale vers la droite
+    $pdf->Line($x + $width, $y + $height, $x + $width, $y + $height + $mark_length); // Verticale vers le bas
 }
 
 function drawCentralCropMarks($pdf, $x, $y, $width, $height) {
@@ -474,21 +474,21 @@ function drawCentralCropMarks($pdf, $x, $y, $width, $height) {
         $center_x = 210; // 21cm = 210mm
         $mark_length = 8; // Plus court
         
-        // Trait haut
-        $pdf->Line($center_x, 5, $center_x, 5 + $mark_length);
+        // Trait haut (vers l'extérieur)
+        $pdf->Line($center_x, 5, $center_x, max(0, 5 - $mark_length));
         
-        // Trait bas - utiliser la hauteur de la page
-        $pdf->Line($center_x, $page_height - 5 - $mark_length, $center_x, $page_height - 5);
+        // Trait bas (vers l'extérieur) - utiliser la hauteur de la page
+        $pdf->Line($center_x, $page_height - 5, $center_x, $page_height - 5 + $mark_length);
     } else {
         // Portrait : trait horizontal à 21cm (210mm) - gauche et droite
         $center_y = 210; // 21cm = 210mm
         $mark_length = 8; // Plus court
         
-        // Trait gauche
-        $pdf->Line(5, $center_y, 5 + $mark_length, $center_y);
+        // Trait gauche (vers l'extérieur)
+        $pdf->Line(5, $center_y, max(0, 5 - $mark_length), $center_y);
         
-        // Trait droite - utiliser la largeur de la page
-        $pdf->Line($page_width - 5 - $mark_length, $center_y, $page_width - 5, $center_y);
+        // Trait droite (vers l'extérieur) - utiliser la largeur de la page
+        $pdf->Line($page_width - 5, $center_y, $page_width - 5 + $mark_length, $center_y);
     }
 }
 
