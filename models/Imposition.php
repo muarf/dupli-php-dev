@@ -17,6 +17,7 @@ class Imposition
             'scale' => 100, // Pourcentage
             'gutter_x' => 0, // mm
             'gutter_y' => 0, // mm
+            'gutter_strategy' => 'reduce', // reduce, crop
             'crop_marks' => false,
             'crop_mark_len' => 2, // mm (Court pour style discret)
             'crop_mark_width' => 0.1, // mm
@@ -197,38 +198,92 @@ class Imposition
         
         $size = $this->pdf->getTemplateSize($tplIdx);
 
-        // Calcul des dimensions redimensionnées
+        // --- CALCUL DES MÉTRIQUES ---
+        // 1. Déterminer l'échelle de base
         $scaleFactor = 1;
-        
-        // Mode 1 : Dimensions cibles définies (prioritaire)
         if (!empty($this->settings['target_width']) && $this->settings['target_width'] > 0) {
              $scaleFactor = $this->settings['target_width'] / $size['width'];
-        } 
-        elseif (!empty($this->settings['target_height']) && $this->settings['target_height'] > 0) {
+        } elseif (!empty($this->settings['target_height']) && $this->settings['target_height'] > 0) {
              $scaleFactor = $this->settings['target_height'] / $size['height'];
-        }
-        // Mode 2 : Pourcentage
-        else {
+        } else {
             $scaleFactor = $this->settings['scale'] / 100;
         }
 
-        $finalW = $size['width'] * $scaleFactor;
-        $finalH = $size['height'] * $scaleFactor;
+        $rawW = $size['width'] * $scaleFactor;
+        $rawH = $size['height'] * $scaleFactor;
+        
+        $cutGx = floatval($this->settings['gutter_x']);
+        $cutGy = floatval($this->settings['gutter_y']);
+        
+        // 2. Appliquer la stratégie de gouttière
+        if ($this->settings['gutter_strategy'] === 'reduce') {
+            // Mode RÉDUIRE : On réduit l'échelle si ça ne rentre pas
+            // Espace nécessaire = (Cols * rawW) + ((Cols-1) * cutGx)
+            // Doit être <= sheetWidth
+            
+            $reqWidth = ($totalCols * $rawW) + (($totalCols - 1) * $cutGx);
+            $reqHeight = ($totalRows * $rawH) + (($totalRows - 1) * $cutGy);
+            
+            $scaleW = 1.0;
+            $scaleH = 1.0;
+            
+            if ($reqWidth > $sheetWidth) {
+                // Espace disponible pour le contenu (hors gouttières)
+                $availW = $sheetWidth - (($totalCols - 1) * $cutGx);
+                $scaleW = $availW / ($totalCols * $rawW);
+            }
+            
+            if ($reqHeight > $sheetHeight) {
+                $availH = $sheetHeight - (($totalRows - 1) * $cutGy);
+                $scaleH = $availH / ($totalRows * $rawH);
+            }
+            
+            $reductionFactor = min($scaleW, $scaleH);
+            
+            // Appliquer la réduction
+            $finalW = $rawW * $reductionFactor;
+            $finalH = $rawH * $reductionFactor;
+            $posGx = $cutGx; // La gouttière physique reste celle demandée
+            $posGy = $cutGy;
+            
+        } else {
+            // Mode ROGNER (Crop) : On garde l'échelle, on réduit l'espacement physique
+            $finalW = $rawW;
+            $finalH = $rawH;
+            
+            // Calcul espacement X
+            if ($totalCols > 1) {
+                $availW = $sheetWidth - ($totalCols * $finalW);
+                // Répartir l'espace disponible (qui peut être négatif)
+                $posGx = $availW / ($totalCols - 1);
+                // Ne pas écarter plus que demandé (si on a de la place)
+                if ($posGx > $cutGx) $posGx = $cutGx;
+            } else {
+                $posGx = 0;
+            }
+            
+            // Calcul espacement Y
+            if ($totalRows > 1) {
+                $availH = $sheetHeight - ($totalRows * $finalH);
+                $posGy = $availH / ($totalRows - 1);
+                if ($posGy > $cutGy) $posGy = $cutGy;
+            } else {
+                $posGy = 0;
+            }
+        }
 
-        $gutterX = floatval($this->settings['gutter_x']);
-        $gutterY = floatval($this->settings['gutter_y']);
+        // --- PLACEMENT ---
+        // Calcul du bloc total de contenu (avec espacement physique calculé)
+        $totalContentWidth = ($totalCols * $finalW) + (($totalCols - 1) * $posGx);
+        $totalContentHeight = ($totalRows * $finalH) + (($totalRows - 1) * $posGy);
 
-        // Calcul du bloc total de contenu (toutes les poses + gouttières INTERNES)
-        $totalContentWidth = ($totalCols * $finalW) + (($totalCols - 1) * $gutterX);
-        $totalContentHeight = ($totalRows * $finalH) + (($totalRows - 1) * $gutterY);
-
-        // Point de départ global pour centrer le bloc sur la feuille
+        // Centrage global
         $globalStartX = ($sheetWidth - $totalContentWidth) / 2;
         $globalStartY = ($sheetHeight - $totalContentHeight) / 2;
 
-        // Position X, Y de cette pose spécifique
-        $x = $globalStartX + ($colIndex * ($finalW + $gutterX));
-        $y = $globalStartY + ($rowIndex * ($finalH + $gutterY));
+        // Position de la page
+        $x = $globalStartX + ($colIndex * ($finalW + $posGx));
+        $y = $globalStartY + ($rowIndex * ($finalH + $posGy));
 
         // Ajout de la page dans le PDF final
         $this->pdf->useTemplate($tplIdx, $x, $y, $finalW, $finalH);
@@ -245,13 +300,68 @@ class Imposition
 
         // Numéros dans les gouttières (pour preview et final si activé)
         if ($this->settings['add_page_numbers_in_gutters']) {
-            $this->addPageNumberInGutter($pageNo, $x, $y, $finalW, $finalH, $colIndex, $rowIndex, $totalCols, $totalRows, $gutterX, $gutterY, $globalStartX, $globalStartY);
+            // On passe posGx/posGy pour savoir où est le "milieu" physique de la gouttière
+            // Mais le numéro doit-il être positionné par rapport à la coupe ou à la page ?
+            // L'utilisateur veut "a coté des crop mark". Donc par rapport à la coupe théorique.
+            // Le milieu de la gouttière est : x + finalW + posGx/2
+            // La coupe théorique est à : milieu - cutGx/2
+            // C'est complexe. Utilisons la position de la page pour l'instant.
+            $this->addPageNumberInGutter($pageNo, $x, $y, $finalW, $finalH, $colIndex, $rowIndex, $totalCols, $totalRows, $cutGx, $cutGy, $globalStartX, $globalStartY);
         }
 
         // Traits de coupe
         if ($this->settings['crop_marks']) {
-            $this->drawCropMarks($x, $y, $finalW, $finalH);
+            // On passe les dimensions réelles et les gouttières de COUPE (théoriques)
+            // Pour dessiner les traits au bon endroit
+            // Le centre de la gouttière physique est : x + finalW + posGx/2
+            // Le centre de la gouttière de coupe est le même (car on a centré le tout)
+            
+            // On doit calculer le décalage (bleed effectif) pour la fonction de dessin
+            // Bleed = (cutGx - posGx) / 2
+            // Si posGx < cutGx (mode rogner), bleed est positif (on coupe dans la page)
+            
+            $bleedX = ($cutGx - $posGx) / 2;
+            $bleedY = ($cutGy - $posGy) / 2;
+            
+            // On passe ces "bleeds" à une fonction de dessin adaptée
+            $this->drawSmartCropMarks($x, $y, $finalW, $finalH, $bleedX, $bleedY);
         }
+    }
+
+    private function drawSmartCropMarks($x, $y, $w, $h, $bleedX, $bleedY)
+    {
+        $len = $this->settings['crop_mark_len'];
+        $this->pdf->SetLineWidth($this->settings['crop_mark_width']);
+        $this->pdf->SetDrawColor(0, 0, 0); 
+
+        $visualOffset = 1; 
+
+        // Coordonnées de coupe (en rentrant dans la page de bleedX/Y)
+        // Si bleed est négatif (mode réduire avec marges), on sort de la page
+        // Mais ici bleedX = (cut - pos) / 2.
+        // Si cut > pos (rogner), bleed > 0 -> On coupe DANS la page.
+        // Si cut == pos (réduire), bleed = 0 -> On coupe au bord.
+        
+        $cutX1 = $x + $bleedX;
+        $cutX2 = $x + $w - $bleedX;
+        $cutY1 = $y + $bleedY;
+        $cutY2 = $y + $h - $bleedY;
+
+        // Haut-Gauche
+        $this->pdf->Line($cutX1 - $visualOffset - $len, $cutY1, $cutX1 - $visualOffset, $cutY1); 
+        $this->pdf->Line($cutX1, $cutY1 - $visualOffset - $len, $cutX1, $cutY1 - $visualOffset); 
+
+        // Haut-Droite
+        $this->pdf->Line($cutX2 + $visualOffset, $cutY1, $cutX2 + $visualOffset + $len, $cutY1); 
+        $this->pdf->Line($cutX2, $cutY1 - $visualOffset - $len, $cutX2, $cutY1 - $visualOffset); 
+
+        // Bas-Gauche
+        $this->pdf->Line($cutX1 - $visualOffset - $len, $cutY2, $cutX1 - $visualOffset, $cutY2); 
+        $this->pdf->Line($cutX1, $cutY2 + $visualOffset, $cutX1, $cutY2 + $visualOffset + $len); 
+
+        // Bas-Droite
+        $this->pdf->Line($cutX2 + $visualOffset, $cutY2, $cutX2 + $visualOffset + $len, $cutY2); 
+        $this->pdf->Line($cutX2, $cutY2 + $visualOffset, $cutX2, $cutY2 + $visualOffset + $len); 
     }
 
     private function addPageNumberInGutter($pageNo, $x, $y, $w, $h, $colIndex, $rowIndex, $totalCols, $totalRows, $gutterX, $gutterY, $globalStartX, $globalStartY)
@@ -293,29 +403,5 @@ class Imposition
         }
     }
 
-    private function drawCropMarks($x, $y, $w, $h)
-    {
-        $len = $this->settings['crop_mark_len'];
-        $this->pdf->SetLineWidth($this->settings['crop_mark_width']);
-        $this->pdf->SetDrawColor(0, 0, 0); 
-
-        $offset = 1; // mm d'espace vide avant le trait (Réduit pour style discret)
-
-        // Haut-Gauche
-        $this->pdf->Line($x - $offset - $len, $y, $x - $offset, $y); 
-        $this->pdf->Line($x, $y - $offset - $len, $x, $y - $offset); 
-
-        // Haut-Droite
-        $this->pdf->Line($x + $w + $offset, $y, $x + $w + $offset + $len, $y); 
-        $this->pdf->Line($x + $w, $y - $offset - $len, $x + $w, $y - $offset); 
-
-        // Bas-Gauche
-        $this->pdf->Line($x - $offset - $len, $y + $h, $x - $offset, $y + $h); 
-        $this->pdf->Line($x, $y + $h + $offset, $x, $y + $h + $offset + $len); 
-
-        // Bas-Droite
-        $this->pdf->Line($x + $w + $offset, $y + $h, $x + $w + $offset + $len, $y + $h); 
-        $this->pdf->Line($x + $w, $y + $h + $offset, $x + $w, $y + $h + $offset + $len); 
-    }
 }
 

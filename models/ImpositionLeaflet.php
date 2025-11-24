@@ -23,6 +23,7 @@ class ImpositionLeaflet
             'orientation' => 'L',
             'n_up' => 2, // 2, 4, 8
             'crop_style' => 'standard', // standard, spreads, booklet
+            'gutter_strategy' => 'reduce', // reduce, crop
             'preview_mode' => false,
             'addPageNumberCallback' => null // Callback pour ajouter les numéros de pages
         ], $settings);
@@ -188,7 +189,7 @@ class ImpositionLeaflet
         
         $size = $this->pdf->getTemplateSize($tplIdx);
         
-        // Calculate dimensions
+        // --- CALCUL DES MÉTRIQUES ---
         $scaleFactor = 1;
         if (!empty($this->settings['target_width']) && $this->settings['target_width'] > 0) {
              $scaleFactor = $this->settings['target_width'] / $size['width'];
@@ -198,20 +199,71 @@ class ImpositionLeaflet
             $scaleFactor = $this->settings['scale'] / 100;
         }
 
-        $finalW = $size['width'] * $scaleFactor;
-        $finalH = $size['height'] * $scaleFactor;
+        $rawW = $size['width'] * $scaleFactor;
+        $rawH = $size['height'] * $scaleFactor;
 
-        $gutterX = floatval($this->settings['gutter_x']);
-        $gutterY = floatval($this->settings['gutter_y']);
+        $cutGx = floatval($this->settings['gutter_x']);
+        $cutGy = floatval($this->settings['gutter_y']);
 
-        $totalContentWidth = ($totalCols * $finalW) + (($totalCols - 1) * $gutterX);
-        $totalContentHeight = ($totalRows * $finalH) + (($totalRows - 1) * $gutterY);
+        // Appliquer la stratégie de gouttière
+        if ($this->settings['gutter_strategy'] === 'reduce') {
+            // Mode RÉDUIRE
+            $reqWidth = ($totalCols * $rawW) + (($totalCols - 1) * $cutGx);
+            $reqHeight = ($totalRows * $rawH) + (($totalRows - 1) * $cutGy);
+            
+            $scaleW = 1.0;
+            $scaleH = 1.0;
+            
+            if ($reqWidth > $sheetWidth) {
+                $availW = $sheetWidth - (($totalCols - 1) * $cutGx);
+                $scaleW = $availW / ($totalCols * $rawW);
+            }
+            
+            if ($reqHeight > $sheetHeight) {
+                $availH = $sheetHeight - (($totalRows - 1) * $cutGy);
+                $scaleH = $availH / ($totalRows * $rawH);
+            }
+            
+            $reductionFactor = min($scaleW, $scaleH);
+            
+            $finalW = $rawW * $reductionFactor;
+            $finalH = $rawH * $reductionFactor;
+            $posGx = $cutGx;
+            $posGy = $cutGy;
+            
+        } else {
+            // Mode ROGNER (Crop)
+            $finalW = $rawW;
+            $finalH = $rawH;
+            
+            // Calcul espacement X
+            if ($totalCols > 1) {
+                $availW = $sheetWidth - ($totalCols * $finalW);
+                $posGx = $availW / ($totalCols - 1);
+                if ($posGx > $cutGx) $posGx = $cutGx;
+            } else {
+                $posGx = 0;
+            }
+            
+            // Calcul espacement Y
+            if ($totalRows > 1) {
+                $availH = $sheetHeight - ($totalRows * $finalH);
+                $posGy = $availH / ($totalRows - 1);
+                if ($posGy > $cutGy) $posGy = $cutGy;
+            } else {
+                $posGy = 0;
+            }
+        }
+
+        // --- PLACEMENT ---
+        $totalContentWidth = ($totalCols * $finalW) + (($totalCols - 1) * $posGx);
+        $totalContentHeight = ($totalRows * $finalH) + (($totalRows - 1) * $posGy);
 
         $globalStartX = ($sheetWidth - $totalContentWidth) / 2;
         $globalStartY = ($sheetHeight - $totalContentHeight) / 2;
 
-        $x = $globalStartX + ($colIndex * ($finalW + $gutterX));
-        $y = $globalStartY + ($rowIndex * ($finalH + $gutterY));
+        $x = $globalStartX + ($colIndex * ($finalW + $posGx));
+        $y = $globalStartY + ($rowIndex * ($finalH + $posGy));
 
         $rotation = $rotated ? 180 : 0;
 
@@ -250,7 +302,11 @@ class ImpositionLeaflet
 
         // Standard individual crop marks ONLY if crop_style is standard
         if ($this->settings['crop_marks'] && ($this->settings['crop_style'] === 'standard' || empty($this->settings['crop_style']))) {
-            $this->drawIndividualCropMarks($x, $y, $finalW, $finalH);
+            // Calculer le bleed (pour dessiner les traits au bon endroit)
+            $bleedX = ($cutGx - $posGx) / 2;
+            $bleedY = ($cutGy - $posGy) / 2;
+            
+            $this->drawIndividualCropMarks($x, $y, $finalW, $finalH, $bleedX, $bleedY);
         }
     }
     

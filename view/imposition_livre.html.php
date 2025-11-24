@@ -317,13 +317,20 @@
                     <div class="form-group">
                         <label><i class="fa fa-arrows-alt"></i> Gouttières :</label>
                         <div class="row">
-                            <div class="col-md-6">
-                                <label for="gutter_x">Gouttière Horizontale (X) (mm) :</label>
+                            <div class="col-md-4">
+                                <label for="gutter_x">Horizontale (X) (mm) :</label>
                                 <input type="number" class="form-control" id="gutter_x" name="gutter_x" value="0" min="0" step="0.5">
                             </div>
-                            <div class="col-md-6">
-                                <label for="gutter_y">Gouttière Verticale (Y) (mm) :</label>
+                            <div class="col-md-4">
+                                <label for="gutter_y">Verticale (Y) (mm) :</label>
                                 <input type="number" class="form-control" id="gutter_y" name="gutter_y" value="0" min="0" step="0.5">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="gutter_strategy">Si manque de place :</label>
+                                <select name="gutter_strategy" id="gutter_strategy" class="form-control">
+                                    <option value="reduce">Réduire (Scale)</option>
+                                    <option value="crop">Rogner (Crop)</option>
+                                </select>
                             </div>
                         </div>
                     </div>
