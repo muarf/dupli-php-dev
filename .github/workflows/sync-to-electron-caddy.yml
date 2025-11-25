@@ -78,7 +78,7 @@ jobs:
           BRANCH_NAME="${{ steps.branch.outputs.branch }}"
           
           # Récupérer toutes les branches
-          git fetch origin --all
+          git fetch --all
           
           # Vérifier si la branche existe déjà
           if git ls-remote --heads origin "$BRANCH_NAME" | grep -q "$BRANCH_NAME"; then
