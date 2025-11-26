@@ -25,6 +25,7 @@ class ImpositionLeaflet
             'crop_style' => 'standard', // standard, spreads, booklet
             'gutter_strategy' => 'reduce', // reduce, crop
             'preview_mode' => false,
+            'add_page_numbers_in_gutters' => false,
             'addPageNumberCallback' => null // Callback pour ajouter les numéros de pages
         ], $settings);
 
@@ -300,6 +301,11 @@ class ImpositionLeaflet
             }
         }
 
+        // Numéros dans les gouttières (pour preview et final si activé)
+        if ($this->settings['add_page_numbers_in_gutters']) {
+            $this->addPageNumberInGutter($pageNo, $x, $y, $finalW, $finalH, $colIndex, $rowIndex, $totalCols, $totalRows, $cutGx, $cutGy, $globalStartX, $globalStartY, $rotated);
+        }
+
         // Standard individual crop marks ONLY if crop_style is standard
         if ($this->settings['crop_marks'] && ($this->settings['crop_style'] === 'standard' || empty($this->settings['crop_style']))) {
             // Calculer le bleed (pour dessiner les traits au bon endroit)
@@ -344,6 +350,39 @@ class ImpositionLeaflet
             if ($c + 2 > $cols) $colsInBlock = 1; 
             
             $this->drawRectCropMarks($rowIndex, $c, $colsInBlock, $cols, $rows, $sheetWidth, $sheetHeight);
+        }
+    }
+
+    private function addPageNumberInGutter($pageNo, $x, $y, $w, $h, $colIndex, $rowIndex, $totalCols, $totalRows, $gutterX, $gutterY, $globalStartX, $globalStartY, $rotated)
+    {
+        // Utiliser le PDF preview si disponible, sinon le PDF final
+        $targetPdf = $this->previewPdf ? $this->previewPdf : $this->pdf;
+        
+        $targetPdf->setAutoPageBreak(false);
+        $targetPdf->SetFont('helvetica', '', 6); // Police petite (taille 6)
+        $targetPdf->SetTextColor(0, 0, 0); // Noir
+        
+        // Logique : Impaire (Recto) -> Bas Droite, Paire (Verso) -> Bas Gauche
+        // Positionnement : Dans la gouttière, juste à côté du trait de coupe vertical
+        
+        $isOdd = ($pageNo % 2 != 0);
+        
+        if ($isOdd) {
+            // Page Impaire : Bas Droite
+            // On place le numéro dans la gouttière à droite de la page, aligné en bas
+            $posX = $x + $w - 1; // 1mm à droite
+            $posY = $y + $h;     // Aligné en bas
+            
+            $targetPdf->SetXY($posX, $posY);
+            $targetPdf->Cell(10, 4, (string)$pageNo, 0, 0, 'L', false);
+        } else {
+            // Page Paire : Bas Gauche
+            // On place le numéro dans la gouttière à gauche de la page, aligné en bas
+            $posX = $x - 9; // 9mm à gauche
+            $posY = $y + $h;     // Aligné en bas
+            
+            $targetPdf->SetXY($posX, $posY);
+            $targetPdf->Cell(10, 4, (string)$pageNo, 0, 0, 'R', false);
         }
     }
 
