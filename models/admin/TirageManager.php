@@ -253,11 +253,63 @@ class TirageManager {
             $page_param = 'page_' . strtolower(str_replace(' ', '_', $machine));
             $current_page = isset($_GET[$page_param]) ? intval($_GET[$page_param]) : 1;
             
-            $data['last'][$machine] = $this->getLastTirages($machine, $sqlData['sql'], $current_page, 20);
+            $tirages = $this->getLastTirages($machine, $sqlData['sql'], $current_page, 20);
+            
+            // Regrouper les tirages par tirage_global_id
+            $data['last'][$machine] = $this->groupTiragesByGlobalId($tirages);
             $data['prix_du'][$machine] = $this->getPrixEnAttente($machine);
         }
         
         return $data;
+    }
+    
+    /**
+     * Regrouper les tirages par tirage_global_id
+     */
+    private function groupTiragesByGlobalId($tirages) {
+        // Extraire la pagination si elle existe
+        $pagination = null;
+        if (isset($tirages['pagination'])) {
+            $pagination = $tirages['pagination'];
+            unset($tirages['pagination']);
+        }
+        
+        $grouped = array();
+        $groups = array();
+        
+        // Grouper les tirages par tirage_global_id
+        foreach ($tirages as $tirage) {
+            $global_id = isset($tirage['tirage_global_id']) && !empty($tirage['tirage_global_id']) 
+                ? $tirage['tirage_global_id'] 
+                : 'single_' . $tirage['id']; // Tirages sans groupe
+            
+            if (!isset($groups[$global_id])) {
+                $groups[$global_id] = array(
+                    'tirage_global_id' => $global_id,
+                    'tirages' => array(),
+                    'prix_total' => 0,
+                    'count' => 0
+                );
+            }
+            
+            $groups[$global_id]['tirages'][] = $tirage;
+            $groups[$global_id]['prix_total'] += floatval($tirage['prix'] ?? 0);
+            $groups[$global_id]['count']++;
+        }
+        
+        // Convertir en tableau indexé pour l'affichage
+        $i = 0;
+        foreach ($groups as $group) {
+            $grouped[$i] = $group;
+            $i++;
+        }
+        
+        // Réajouter la pagination
+        if ($pagination !== null) {
+            $grouped['pagination'] = $pagination;
+        }
+        
+        return $grouped;
     }
 }
 ?>

@@ -80,19 +80,37 @@ function getTableForMachine($machine) {
                     }
                     
                     for($i=0; $i < count($tirages); $i++){
-                      //print_array($last[$machine][0]);?>
-                    <tr>
-                      <td class="col-md-4"><?= $tirages[$i]['contact'] ?></td>
-                      <td><?= $tirages[$i]['date'] ?></td>
-                      <td><?= $tirages[$i]['prix'] ?></td> 
+                      $group = $tirages[$i];
+                      $isGroup = isset($group['tirages']) && is_array($group['tirages']) && count($group['tirages']) > 1;
+                      
+                      // Afficher un en-tête de groupe si c'est un multi-tirage
+                      if ($isGroup) { ?>
+                        <tr class="info" style="background-color: #d9edf7;">
+                          <td colspan="6">
+                            <strong><i class="fa fa-link"></i> Multi-tirage (<?= $group['count'] ?> machines) - Total: <?= number_format($group['prix_total'], 2) ?>€</strong>
+                            <small class="text-muted">(<?= htmlspecialchars($group['tirage_global_id']) ?>)</small>
+                          </td>
+                        </tr>
+                      <?php }
+                      
+                      // Afficher chaque tirage du groupe
+                      $tiragesToShow = $isGroup ? $group['tirages'] : array($group);
+                      foreach ($tiragesToShow as $tirage) {
+                        if (!isset($tirage['id'])) {
+                          continue;
+                        }
+                      ?>
+                    <tr <?= $isGroup ? 'style="background-color: #f0f8ff;"' : '' ?>>
+                      <td class="col-md-4"><?= htmlspecialchars($tirage['contact']) ?></td>
+                      <td><?= htmlspecialchars($tirage['date']) ?></td>
+                      <td><?= number_format(floatval($tirage['prix'] ?? 0), 2) ?></td> 
 
-                      <td><?= $tirages[$i]['mot'] ?></td>  
-                      <td><a href="?admin&edit=<?= $tirages[$i]['id'] ?>&table=<?= $machine ?>">Edit</a></td>
-                       <!--<td><input type="checkbox" name="chkbox[]" value="<?= $last[$machine][$i]['prix'] ?>"></td>-->
-                       <td><input type="checkbox" name="chkbox[]" value="<?= $tirages[$i]['prix'] ?>" data-id="<?= $tirages[$i]['id'] ?>" data-machine="<?= $machine ?>" ></td>
-                     <!-- <input type="hidden" name="id[]" value="<?= $last[$machine][$i]['id'] ?>">-->
+                      <td><?= htmlspecialchars($tirage['mot'] ?? '') ?></td>  
+                      <td><a href="?admin&edit=<?= $tirage['id'] ?>&table=<?= $machine ?>">Edit</a></td>
+                       <td><input type="checkbox" name="chkbox[]" value="<?= $tirage['prix'] ?>" data-id="<?= $tirage['id'] ?>" data-machine="<?= $machine ?>" ></td>
 
                 </tr><?php
+                      }
             } ?></tbody>
             </table>
             

@@ -9,14 +9,43 @@
 /**
  * Insérer un tirage photocopieur
  */
-function insert_photocop($type, $marque, $contact, $nb_f, $rv, $prix, $paye, $cb, $mot, $date, $db = null)
+function insert_photocop($type, $marque, $contact, $nb_f, $rv, $prix, $paye, $cb, $mot, $date, $db = null, $tirage_global_id = null)
 {
     // CORRECTION DEADLOCK : Utiliser la connexion passée en paramètre si disponible (pour les transactions)
     if ($db === null) {
         $db = pdo_connect();
     }
     
-    $query = $db->prepare('INSERT into photocop (type, marque, contact, nb_f, rv, prix, paye, cb, mot, date) VALUES (:type,:marque,:contact,:nb_f,:rv,:prix,:paye,:cb,:mot,:date)');
+    // Vérifier si la colonne tirage_global_id existe
+    $hasTirageGlobalId = false;
+    try {
+        if (isset($GLOBALS['conf']['db_type']) && $GLOBALS['conf']['db_type'] === 'sqlite') {
+            $query_check = $db->prepare("PRAGMA table_info(photocop)");
+            $query_check->execute();
+            $columns = $query_check->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($columns as $col) {
+                if ($col['name'] === 'tirage_global_id') {
+                    $hasTirageGlobalId = true;
+                    break;
+                }
+            }
+        } else {
+            // MySQL - vérifier si la colonne existe
+            $query_check = $db->prepare("SHOW COLUMNS FROM `photocop` LIKE 'tirage_global_id'");
+            $query_check->execute();
+            $hasTirageGlobalId = $query_check->rowCount() > 0;
+        }
+    } catch (Exception $e) {
+        // Si erreur, on continue sans tirage_global_id
+        error_log("Erreur vérification colonne tirage_global_id: " . $e->getMessage());
+    }
+    
+    if ($hasTirageGlobalId) {
+        $query = $db->prepare('INSERT into photocop (type, marque, contact, nb_f, rv, prix, paye, cb, mot, date, tirage_global_id) VALUES (:type,:marque,:contact,:nb_f,:rv,:prix,:paye,:cb,:mot,:date,:tirage_global_id)');
+    } else {
+        $query = $db->prepare('INSERT into photocop (type, marque, contact, nb_f, rv, prix, paye, cb, mot, date) VALUES (:type,:marque,:contact,:nb_f,:rv,:prix,:paye,:cb,:mot,:date)');
+    }
+    
     $query->bindParam(':type', $type);
     $query->bindParam(':marque', $marque);
     $query->bindParam(':contact', $contact);
@@ -27,6 +56,10 @@ function insert_photocop($type, $marque, $contact, $nb_f, $rv, $prix, $paye, $cb
     $query->bindParam(':cb', $cb);
     $query->bindParam(':mot', $mot);
     $query->bindParam(':date', $date);
+    
+    if ($hasTirageGlobalId) {
+        $query->bindParam(':tirage_global_id', $tirage_global_id);
+    }
     
     if (!$query->execute()) {
         $errorInfo = $query->errorInfo();
@@ -110,6 +143,8 @@ function last($machine, $sql, $page = 1, $per_page = 20)
       $last[$i]['prix'] = round(floatval($result->prix ?? 0), 2);
       $last[$i]['id'] = $result->id;
       $last[$i]['mot'] = $result->mot;
+      // Ajouter tirage_global_id si disponible
+      $last[$i]['tirage_global_id'] = isset($result->tirage_global_id) ? $result->tirage_global_id : null;
       $i++;
     }
     
