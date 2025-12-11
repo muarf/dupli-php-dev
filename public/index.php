@@ -272,42 +272,6 @@ if ($page === 'upload_aide_pdf') {
     }
 }
 
-<<<<<<< HEAD
-if ($page === 'upload_bibliotheque') {
-    $api_file = __DIR__ . '/../api/upload_bibliotheque.php';
-    if (file_exists($api_file)) { require_once $api_file; exit; }
-    else { http_response_code(500); echo json_encode(['error' => 'API file not found']); exit; }
-}
-
-if ($page === 'search_bibliotheque') {
-    $api_file = __DIR__ . '/../api/search_bibliotheque.php';
-    if (file_exists($api_file)) { require_once $api_file; exit; }
-    else { http_response_code(500); echo json_encode(['error' => 'API file not found']); exit; }
-}
-
-if ($page === 'preview_directory') {
-    $api_file = __DIR__ . '/../api/preview_directory.php';
-    if (file_exists($api_file)) { require_once $api_file; exit; }
-    else { http_response_code(500); echo json_encode(['error' => 'API file not found']); exit; }
-}
-
-if ($page === 'index_file') {
-    $api_file = __DIR__ . '/../api/index_file.php';
-    if (file_exists($api_file)) { require_once $api_file; exit; }
-    else { http_response_code(500); echo json_encode(['error' => 'API file not found']); exit; }
-}
-
-if ($page === 'delete_bibliotheque_file') {
-    $api_file = __DIR__ . '/../api/delete_bibliotheque_file.php';
-    if (file_exists($api_file)) { require_once $api_file; exit; }
-    else { http_response_code(500); echo json_encode(['error' => 'API file not found']); exit; }
-}
-
-if ($page === 'get_bibliotheque_thumbnail') {
-    $api_file = __DIR__ . '/../api/get_bibliotheque_thumbnail.php';
-    if (file_exists($api_file)) { require_once $api_file; exit; }
-    else { http_response_code(500); echo json_encode(['error' => 'API file not found']); exit; }
-}
 
 if ($page === 'get_bibliotheque_file') {
     $api_file = __DIR__ . '/../api/get_bibliotheque_file.php';
@@ -347,7 +311,6 @@ if ($page === 'print_notification') {
         exit;
     }
 }
-
 if ($page === 'download_unimposed') {
     $file = $_GET['file'] ?? '';
     // Utiliser le répertoire temporaire système
