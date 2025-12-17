@@ -2456,7 +2456,7 @@ function updateFillRateDisplay(prefix, machineIndex) {
     if (slider && display && hidden) {
         var value = parseInt(slider.value);
         var percentage = value + '%';
-        var fillRate = (value / 100).toFixed(1);
+        var fillRate = (value / 100).toFixed(2);
         
         display.textContent = percentage;
         hidden.value = fillRate;
