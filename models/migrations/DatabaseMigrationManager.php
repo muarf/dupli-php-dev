@@ -25,20 +25,35 @@ class DatabaseMigrationManager {
             $this->db = pdo_connect();
             
             // Liste des migrations à vérifier/appliquer
+            require_once __DIR__ . '/add_multi_session_support.php';
+            require_once __DIR__ . '/allow_multiple_active_sessions.php';
+            
             $migrations = [
                 'tirage_global_id' => [$this, 'migrateTirageGlobalId'],
                 'bibliotheque_table' => [$this, 'createBibliothequeTable'],
                 'bibliotheque_fts' => [$this, 'createBibliothequeFTS'],
+                'multi_session_support' => function() {
+                    migrate_add_multi_session_support($this->db);
+                },
+                'allow_multiple_active_sessions' => function() {
+                    migrate_allow_multiple_active_sessions($this->db);
+                },
                 // Ajouter d'autres migrations ici à l'avenir
             ];
             
             foreach ($migrations as $migrationName => $migrationFunction) {
-                if (!$this->isMigrationApplied($migrationName)) {
-                    error_log("[MIGRATION] Début migration: $migrationName");
-                    $this->applyMigration($migrationName, $migrationFunction);
-                    error_log("[MIGRATION] Migration $migrationName terminée");
-                } else {
-                    error_log("[MIGRATION] Migration $migrationName déjà appliquée, ignorée");
+                try {
+                    if (!$this->isMigrationApplied($migrationName)) {
+                        error_log("[MIGRATION] Début migration: $migrationName");
+                        $this->applyMigration($migrationName, $migrationFunction);
+                        error_log("[MIGRATION] Migration $migrationName terminée");
+                    } else {
+                        error_log("[MIGRATION] Migration $migrationName déjà appliquée, ignorée");
+                    }
+                } catch (Exception $e) {
+                    error_log("[MIGRATION] ERREUR migration $migrationName: " . $e->getMessage());
+                    error_log("[MIGRATION] Continuer avec les migrations suivantes...");
+                    // Ne pas bloquer les autres migrations
                 }
             }
             
