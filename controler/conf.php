@@ -12,10 +12,10 @@ if (getenv('DUPLICATOR_DB_PATH')) {
     // Chemin fourni par Electron - Utiliser celui-ci en priorité
     $sqlite_db_path = getenv('DUPLICATOR_DB_PATH');
     
-    // Créer le répertoire s'il n'existe pas (seulement si on est en dehors de l'AppImage)
+    // Créer le répertoire s'il n'existe pas
     $db_dir = dirname($sqlite_db_path);
-    if (!is_dir($db_dir) && is_writable(dirname($db_dir))) {
-        mkdir($db_dir, 0755, true);
+    if (!is_dir($db_dir)) {
+        @mkdir($db_dir, 0755, true);
     }
 } else {
     // Fallback sur la détection automatique
@@ -28,7 +28,7 @@ if (getenv('DUPLICATOR_DB_PATH')) {
         // Créer le répertoire s'il n'existe pas
         $db_dir = dirname($sqlite_db_path);
         if (!is_dir($db_dir)) {
-            mkdir($db_dir, 0755, true);
+            @mkdir($db_dir, 0755, true);
         }
     } else {
         // Développement : utiliser le répertoire de l'app
