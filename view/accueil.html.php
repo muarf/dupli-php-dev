@@ -9,6 +9,21 @@
                 <div class="alert alert-danger" style="margin-top: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(220,53,69,0.2);">
                     <h4 style="margin-top: 0;"><i class="fa fa-exclamation-triangle"></i> <?php _e('accueil.health.critical_error_title', [], true); ?></h4>
                     <p><?php _e('accueil.health.critical_error_desc', [], true); ?></p>
+
+                    <?php if (isset($global_install_command)): ?>
+                        <div style="background: rgba(0,0,0,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed rgba(220,53,69,0.5);">
+                            <p style="margin-bottom: 8px; font-weight: bold;"><i class="fa fa-terminal"></i> Commande d'installation groupée :</p>
+                            <div class="input-group">
+                                <input type="text" class="form-control" value="<?= htmlspecialchars($global_install_command) ?>" readonly id="global-install-cmd">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button" onclick="navigator.clipboard.writeText('<?= addslashes($global_install_command) ?>'); alert('Copié !')">
+                                        <i class="fa fa-copy"></i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
                     <ul style="margin-bottom: 10px;">
                         <?php foreach ($health_check['dependencies'] as $dep): ?>
                             <?php if (!$dep['status'] && $dep['critical']): ?>

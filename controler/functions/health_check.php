@@ -62,6 +62,46 @@ function get_package_install_help(string $type, string $pkg_key, string $distro)
 }
 
 /**
+ * Retourne une commande d'installation groupée pour plusieurs paquets
+ */
+function get_aggregated_install_command(array $packages): string
+{
+    $distro = get_linux_distro_info();
+    $commands = [
+        'debian' => ['pref' => 'sudo apt-get install -y ', 'ext_prefix' => 'php-'],
+        'fedora' => ['pref' => 'sudo dnf install -y ', 'ext_prefix' => 'php-'],
+        'arch' => ['pref' => 'sudo pacman -S --noconfirm ', 'ext_prefix' => 'php-'],
+        'unknown' => ['pref' => 'sudo apt-get install ', 'ext_prefix' => 'php-']
+    ];
+
+    $d = $commands[$distro] ?? $commands['unknown'];
+    
+    $bins = [
+        'ghostscript' => 'ghostscript',
+        'imagemagick' => 'imagemagick'
+    ];
+    
+    $exts = [
+        'imagick' => ($distro === 'fedora' ? 'pecl-imagick' : 'imagick'),
+        'gd' => 'gd',
+        'sqlite3' => ($distro === 'arch' ? 'sqlite' : 'sqlite3'),
+        'mbstring' => 'mbstring',
+        'xml' => 'xml'
+    ];
+
+    $resolved_pkgs = [];
+    foreach ($packages as $pkg) {
+        if ($pkg['type'] === 'bin') {
+            $resolved_pkgs[] = $bins[$pkg['key']] ?? $pkg['key'];
+        } else {
+            $resolved_pkgs[] = $d['ext_prefix'] . ($exts[$pkg['key']] ?? $pkg['key']);
+        }
+    }
+
+    return $d['pref'] . implode(' ', array_unique($resolved_pkgs));
+}
+
+/**
  * Vérifie les dépendances critiques du système
  * 
  * @return array Résultats du diagnostic
@@ -165,4 +205,28 @@ function check_system_dependencies(): array
     }
 
     return $results;
+}
+
+/**
+ * Calculer la commande d'installation globale basée sur les résultats du diagnostic
+ */
+function get_global_install_command(array $health_check_results): ?string
+{
+    $missing_pkgs = [];
+    
+    foreach ($health_check_results['dependencies'] as $key => $dep) {
+        if (!$dep['status'] && $dep['critical']) {
+            $missing_pkgs[] = ['type' => 'bin', 'key' => $key];
+        }
+    }
+    
+    foreach ($health_check_results['php_extensions'] as $key => $ext) {
+        if (!$ext['status'] && $ext['critical']) {
+            $missing_pkgs[] = ['type' => 'ext', 'key' => $key];
+        }
+    }
+    
+    if (empty($missing_pkgs)) return null;
+    
+    return get_aggregated_install_command($missing_pkgs);
 }
