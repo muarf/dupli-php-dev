@@ -1,10 +1,33 @@
-
             <h1 class="text-center"><?php _e('accueil.welcome', [], true); ?></h1>
             <hr>
 
             <!-- Admin Warning Container -->
             <div id="admin-warning-container"></div>
-            <script src="/js/admin-warning.js"></script>
+            <script src="public/js/admin-warning.js"></script>
+
+            <?php if (isset($health_check) && $health_check['critical_missing']): ?>
+                <div class="alert alert-danger" style="margin-top: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(220,53,69,0.2);">
+                    <h4 style="margin-top: 0;"><i class="fa fa-exclamation-triangle"></i> <?php _e('accueil.health.critical_error_title', [], true); ?></h4>
+                    <p><?php _e('accueil.health.critical_error_desc', [], true); ?></p>
+                    <ul style="margin-bottom: 10px;">
+                        <?php foreach ($health_check['dependencies'] as $dep): ?>
+                            <?php if (!$dep['status'] && $dep['critical']): ?>
+                                <li><strong><?= $dep['name'] ?></strong>: <?= $dep['help'] ?></li>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                        <?php foreach ($health_check['php_extensions'] as $ext): ?>
+                            <?php if (!$ext['status'] && $ext['critical']): ?>
+                                <li> Extension PHP <strong><?= $ext['name'] ?></strong> manquante. : <code><?= $ext['help'] ?></code></li>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                        <?php foreach ($health_check['permissions'] as $perm): ?>
+                            <?php if (!$perm['status'] && $perm['critical']): ?>
+                                <li> Permission manquante : <strong><?= $perm['name'] ?></strong> (<?= $perm['path'] ?>) n'est pas accessible en écriture.</li>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
             <script>
                 // Afficher l'avertissement admin (dismissible sur la page d'accueil)
                 document.addEventListener('DOMContentLoaded', function() {
