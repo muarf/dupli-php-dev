@@ -1,0 +1,472 @@
+<?php
+require_once __DIR__ . '/../controler/functions/database.php';
+
+function Action($conf = null){
+    // Initialiser la configuration si elle n'est pas fournie
+    if ($conf === null) {
+        include(__DIR__ . '/../controler/conf.php');
+    } else {
+        // S'assurer que la conf passée est bien dans GLOBALS pour pdo_connect()
+        $GLOBALS['conf'] = $conf;
+    }
+    
+    // Vérifier si la base de données existe, sinon la créer
+    $fresh_created = false;
+    try {
+        $db = pdo_connect();
+        // Vérifier si les tables essentielles existent (cas fichier vide)
+        try {
+            $tables_check = $db->query("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='duplicopieurs'")->fetchColumn();
+            if ($tables_check == 0 && file_exists($conf['db_path']) && filesize($conf['db_path']) < 1000) {
+                // Fichier existe mais pas de tables, créer la structure
+                require_once __DIR__ . '/admin/SQLiteDatabaseManager.php';
+                $dbManager = new SQLiteDatabaseManager($conf);
+                $dbManager->createEssentialTables($db);
+                $fresh_created = true;
+            }
+        } catch (Exception $e) {
+            error_log("[SETUP] Erreur vérification tables: " . $e->getMessage());
+        }
+    } catch (PDOException $e) {
+        // Base de données n'existe pas, la créer
+        error_log("[SETUP] PDOException pdo_connect (première tentative): " . $e->getMessage());
+        require_once __DIR__ . '/admin/SQLiteDatabaseManager.php';
+        $dbManager = new SQLiteDatabaseManager($conf);
+        
+        // Si le fichier existe déjà mais est vide (cas test), utiliser ce fichier directement
+        if (file_exists($conf['db_path']) && filesize($conf['db_path']) === 0) {
+            error_log("[SETUP] Fichier vide détecté, création structure dans: " . $conf['db_path']);
+            $db = new PDO('sqlite:' . $conf['db_path']);
+            $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $dbManager->createEssentialTables($db);
+            $fresh_created = true;
+        } else {
+            // Sinon, créer duplinew.sqlite comme avant (comportement production)
+            $result = $dbManager->createDatabase('duplinew', 'sqlite', '');
+            
+            if (isset($result['error'])) {
+                error_log("[SETUP] Erreur création BDD via SQLiteDatabaseManager: " . $result['error']);
+                die('Erreur création BDD: ' . $result['error']);
+            }
+            
+            // Mettre à jour la configuration pour pointer sur la nouvelle base créée
+            $new_db_path = dirname($conf['db_path']) . DIRECTORY_SEPARATOR . 'duplinew.sqlite';
+            $conf['db_path'] = $new_db_path;
+            $conf['dsn'] = 'sqlite:' . $new_db_path;
+            $GLOBALS['conf'] = $conf;
+            error_log("[SETUP] Configuration DB mise à jour vers: " . $new_db_path);
+            
+            // Maintenant essayer de se connecter
+            try {
+                $db = pdo_connect();
+                $fresh_created = true;
+            } catch (PDOException $e2) {
+                error_log("[SETUP] PDOException pdo_connect (après création): " . $e2->getMessage());
+                die('Erreur connexion après création: ' . $e2->getMessage());
+            }
+        }
+    }
+    
+    // Vérifier si des machines ont déjà été enregistrées
+    $has_machines = check_machines_exist();
+    
+    if ($has_machines && $_SERVER['REQUEST_METHOD'] !== 'POST' && !$fresh_created) {
+        // Des machines existent déjà, rediriger vers l'accueil
+        error_log("[SETUP] Redirection: des machines existent déjà, setup ignoré");
+        if (PHP_SAPI === 'cli') {
+            return "machines_exist";
+        } else {
+            header('Location: ?accueil');
+            exit;
+        }
+    }
+    
+    // Traitement du formulaire POST
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        error_log("[SETUP] POST reçu: " . json_encode([
+            'has_admin_password' => isset($_POST['admin_password']),
+            'has_admin_password_confirm' => isset($_POST['admin_password_confirm']),
+            'has_machines' => isset($_POST['machines']),
+            'has_prix_papier_A3' => isset($_POST['prix_papier_A3']) && $_POST['prix_papier_A3'] !== '',
+        ], JSON_UNESCAPED_UNICODE));
+        $errors = array();
+        $success = true;
+        
+        // Validation du mot de passe administrateur
+        if (empty($_POST['admin_password'])) {
+            $errors[] = "Veuillez définir un mot de passe administrateur.";
+            $success = false;
+        } elseif ($_POST['admin_password'] !== $_POST['admin_password_confirm']) {
+            $errors[] = "Les mots de passe ne correspondent pas.";
+            $success = false;
+        } elseif (strlen($_POST['admin_password']) < 6) {
+            $errors[] = "Le mot de passe doit contenir au moins 6 caractères.";
+            $success = false;
+        }
+        
+        // Validation des données
+        if (empty($_POST['machines'])) {
+            $errors[] = "Veuillez sélectionner au moins une machine.";
+            $success = false;
+        }
+        
+        if (!$success) {
+            error_log("[SETUP] Validations échouées: " . json_encode($errors, JSON_UNESCAPED_UNICODE));
+        } else {
+            error_log("[SETUP] Validations OK");
+        }
+        
+        // Si pas d'erreurs, créer la structure de la base de données puis enregistrer les machines
+        if ($success) {
+            try {
+                // D'abord, créer la structure de la base de données
+                require_once __DIR__ . '/admin/SQLiteDatabaseManager.php';
+                $dbManager = new SQLiteDatabaseManager($conf);
+                
+                // Obtenir la connexion à la base de données
+                $db = pdo_connect();
+                $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                
+                // Créer les tables essentielles
+                $dbManager->createEssentialTables($db);
+                
+                // Inclure MachineManager
+                require_once __DIR__ . '/admin/MachineManager.php';
+                $machineManager = new AdminMachineManager($conf);
+                
+                $machines = $_POST['machines'];
+                $added_machines = 0;
+                error_log("[SETUP] Début ajout machines, nombre=" . count($machines));
+                
+                foreach ($machines as $machine_data) {
+                    // Préparer les données pour MachineManager
+                    $data = array(
+                        'machine_type' => $machine_data['type'],
+                        'machine_name' => $machine_data['name'],
+                        'master_counter' => intval($machine_data['master_counter'] ?? 0),
+                        'passage_counter' => intval($machine_data['passage_counter'] ?? 0),
+                        'tambours' => ['tambour_noir'] // Par défaut
+                    );
+                    
+                    // Ajouter les prix selon le type de machine
+                    if ($machine_data['type'] === 'duplicopieur') {
+                        $data['prix_master_unite'] = floatval($machine_data['prix_master_unite'] ?? 0.4);
+                        $data['prix_master_pack'] = floatval($machine_data['prix_master_pack'] ?? 0.4);
+                        
+                        // Gérer les tambours
+                        if (isset($machine_data['tambours']) && is_array($machine_data['tambours'])) {
+                            $tambours = [];
+                            $prix_tambour_unite = [];
+                            $prix_tambour_pack = [];
+                            
+                            foreach ($machine_data['tambours'] as $tambour) {
+                                $tambours[] = $tambour['name'];
+                                $prix_tambour_unite[] = floatval($tambour['unite'] ?? 0.002);
+                                $prix_tambour_pack[] = floatval($tambour['pack'] ?? 11);
+                            }
+                            
+                            $data['tambours'] = $tambours;
+                            $data['prix_tambour_unite'] = $prix_tambour_unite;
+                            $data['prix_tambour_pack'] = $prix_tambour_pack;
+                        } else {
+                            // Valeurs par défaut
+                            $data['tambours'] = ['tambour_noir'];
+                            $data['prix_tambour_unite'] = [0.002];
+                            $data['prix_tambour_pack'] = [11];
+                        }
+                    } else if ($machine_data['type'] === 'photocop_encre') {
+                        // Prix pour photocopieuse encre
+                        $data['noire_unite'] = floatval($machine_data['noire_unite'] ?? 0.015);
+                        $data['noire_pack'] = floatval($machine_data['noire_pack'] ?? 140);
+                        $data['bleue_unite'] = floatval($machine_data['bleue_unite'] ?? 0.005);
+                        $data['bleue_pack'] = floatval($machine_data['bleue_pack'] ?? 140);
+                        $data['rouge_unite'] = floatval($machine_data['rouge_unite'] ?? 0.005);
+                        $data['rouge_pack'] = floatval($machine_data['rouge_pack'] ?? 140);
+                        $data['jaune_unite'] = floatval($machine_data['jaune_unite'] ?? 0.005);
+                        $data['jaune_pack'] = floatval($machine_data['jaune_pack'] ?? 140);
+                    } else if ($machine_data['type'] === 'photocop_toner') {
+                        // Prix pour photocopieuse toner
+                        $data['toner_noir_prix'] = floatval($machine_data['toner_noir_prix'] ?? 80);
+                        $data['toner_noir_prix_copie'] = floatval($machine_data['toner_noir_prix_copie'] ?? 0.00348);
+                        $data['toner_cyan_prix'] = floatval($machine_data['toner_cyan_prix'] ?? 80);
+                        $data['toner_cyan_prix_copie'] = floatval($machine_data['toner_cyan_prix_copie'] ?? 0.00444);
+                        $data['toner_magenta_prix'] = floatval($machine_data['toner_magenta_prix'] ?? 80);
+                        $data['toner_magenta_prix_copie'] = floatval($machine_data['toner_magenta_prix_copie'] ?? 0.00444);
+                        $data['toner_jaune_prix'] = floatval($machine_data['toner_jaune_prix'] ?? 80);
+                        $data['toner_jaune_prix_copie'] = floatval($machine_data['toner_jaune_prix_copie'] ?? 0.00444);
+                        $data['tambour_prix'] = floatval($machine_data['tambour_prix'] ?? 200);
+                        $data['tambour_prix_copie'] = floatval($machine_data['tambour_prix_copie'] ?? 0.00167);
+                        $data['dev_prix'] = floatval($machine_data['dev_prix'] ?? 300);
+                        $data['dev_prix_copie'] = floatval($machine_data['dev_prix_copie'] ?? 0.00250);
+                    }
+                    
+                    // Ajouter la machine
+                    $result = $machineManager->addMachine($data);
+                    
+                    if (isset($result['error'])) {
+                        error_log("[SETUP] addMachine ERREUR: " . $result['error']);
+                        $errors[] = $result['error'];
+                        $success = false;
+                    } else {
+                        error_log("[SETUP] addMachine OK: " . ($data['machine_name'] ?? $data['machine_type']));
+                        $added_machines++;
+                        
+                        // Enregistrer le mapping de l'imprimante système si présent
+                        if (!empty($machine_data['system_printer_name'])) {
+                            try {
+                                $stmt = $db->prepare("INSERT OR REPLACE INTO printer_mappings (system_printer_name, machine_type, machine_id) VALUES (?, ?, ?)");
+                                $stmt->execute([
+                                    $machine_data['system_printer_name'],
+                                    $result['machine_type'],
+                                    $result['machine_id']
+                                ]);
+                                error_log("[SETUP] Mapping imprimante OK: " . $machine_data['system_printer_name'] . " -> " . $result['machine_id']);
+                            } catch (Exception $em) {
+                                error_log("[SETUP] Erreur enregistrement mapping: " . $em->getMessage());
+                                // On ne bloque pas le setup pour une erreur de mapping
+                            }
+                        }
+                    }
+                }
+                
+                if ($success && $added_machines > 0) {
+                    // Configuration des prix du papier
+                    if (isset($_POST['prix_papier_A3']) && !empty($_POST['prix_papier_A3'])) {
+                        $prix_A3 = floatval($_POST['prix_papier_A3']);
+                        $prix_A4 = $prix_A3 / 2;
+                        
+                        error_log("[SETUP] Insertion prix papier: A3={$prix_A3}, A4={$prix_A4}");
+                        try {
+                            $db = pdo_connect();
+                            $driver = $db->getAttribute(PDO::ATTR_DRIVER_NAME);
+                            if ($driver === 'sqlite') {
+                                // UPSERT compatible SQLite sur la clé primaire id=1
+                                $query = $db->prepare('INSERT INTO papier (id, prix) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET prix=excluded.prix');
+                                $query->execute([$prix_A4]);
+                            } else {
+                                // MySQL
+                                $query = $db->prepare('INSERT INTO papier (id, prix) VALUES (1, ?) ON DUPLICATE KEY UPDATE prix = VALUES(prix)');
+                                $query->execute([$prix_A4]);
+                            }
+                            error_log("[SETUP] Insertion prix papier OK");
+                        } catch (Throwable $t) {
+                            error_log("[SETUP] Insertion prix papier EXCEPTION: " . $t->getMessage());
+                            // On continue malgré tout pour observer la suite (password)
+                        }
+                    }
+                    
+                    // Créer le mot de passe administrateur
+                    $admin_password = $_POST['admin_password'];
+                    $password_hash = password_hash($admin_password, PASSWORD_DEFAULT);
+                    
+                    error_log("[SETUP] Insertion mot de passe admin (hashé)...");
+                    try {
+                        $db = pdo_connect();
+                        $query = $db->prepare('INSERT INTO admin_passwords (password_hash, is_active) VALUES (?, 1)');
+                        $query->execute(array($password_hash));
+                        error_log("[SETUP] Insertion mot de passe admin OK");
+                    } catch (Throwable $t) {
+                        error_log("[SETUP] Insertion mot de passe admin EXCEPTION: " . $t->getMessage());
+                        throw $t;
+                    }
+                    
+                    // Rediriger vers l'accueil avec un message de succès
+                    if (PHP_SAPI === 'cli') {
+                        return "setup_success";
+                    } else {
+                        header('Location: ?accueil&setup=success');
+                        exit;
+                    }
+                } else {
+                    error_log("[SETUP] Bloc final non atteint: success=" . ($success ? 'true' : 'false') . ", added_machines=" . $added_machines);
+                }
+                
+            } catch (Exception $e) {
+                error_log("[SETUP] Exception pendant setup (enregistrement): " . $e->getMessage());
+                $errors[] = "Erreur lors de l'enregistrement : " . $e->getMessage();
+                $success = false;
+            }
+        }
+    }
+    
+    // Si on arrive ici, il y a eu des erreurs ou ce n'est pas un POST
+    // Rediriger vers la page de setup avec les erreurs
+    if (!empty($errors)) {
+        $_SESSION['setup_errors'] = $errors;
+        // Tracer aussi la liste des erreurs utilisateur côté log
+        error_log("[SETUP] Erreurs setup: " . json_encode($errors, JSON_UNESCAPED_UNICODE));
+    }
+    
+    if (PHP_SAPI === 'cli') {
+        return "setup_error";
+    } else {
+        header('Location: ?setup');
+        exit;
+    }
+}
+
+/**
+ * Configure les prix des machines et consommables
+ */
+function configure_prices($db) {
+    // Prix des feuilles
+    if (isset($_POST['prix_papier_A3']) && !empty($_POST['prix_papier_A3'])) {
+        $prix_A3 = floatval($_POST['prix_papier_A3']);
+        $prix_A4 = $prix_A3 / 2;
+        
+        error_log("DEBUG: Tentative INSERT/UPDATE dans table papier");
+        // Insérer/MAJ prix papier
+        if ($db->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite') {
+            $query = $db->prepare('INSERT INTO papier (id, prix) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET prix=excluded.prix');
+            $query->execute([$prix_A4]); // On stocke le prix A4, A3 sera calculé
+        } else {
+            $query = $db->prepare('INSERT INTO papier (id, prix) VALUES (1, ?) ON DUPLICATE KEY UPDATE prix = VALUES(prix)');
+            $query->execute([$prix_A4]); // On stocke le prix A4, A3 sera calculé
+        }
+    }
+    
+    // Prix des consommables A3
+    if (isset($_POST['prix_encre_A3']) && !empty($_POST['prix_encre_A3'])) {
+        $prix_encre_A3_pack = isset($_POST['prix_encre_A3_pack']) ? $_POST['prix_encre_A3_pack'] : $_POST['prix_encre_A3'];
+        insert_prix_with_pack($db, 'A3', 'encre', $_POST['prix_encre_A3'], $prix_encre_A3_pack);
+    }
+    if (isset($_POST['prix_master_A3']) && !empty($_POST['prix_master_A3'])) {
+        $prix_master_A3_pack = isset($_POST['prix_master_A3_pack']) ? $_POST['prix_master_A3_pack'] : $_POST['prix_master_A3'];
+        insert_prix_with_pack($db, 'A3', 'master', $_POST['prix_master_A3'], $prix_master_A3_pack);
+    }
+    
+    // Prix des consommables A4 (automatiquement la moitié de A3)
+    if (isset($_POST['prix_encre_A3']) && !empty($_POST['prix_encre_A3'])) {
+        $prix_encre_A4 = floatval($_POST['prix_encre_A3']) / 2;
+        $prix_encre_A4_pack = isset($_POST['prix_encre_A3_pack']) ? floatval($_POST['prix_encre_A3_pack']) / 2 : $prix_encre_A4;
+        insert_prix_with_pack($db, 'A4', 'encre', $prix_encre_A4, $prix_encre_A4_pack);
+    }
+    if (isset($_POST['prix_master_A3']) && !empty($_POST['prix_master_A3'])) {
+        $prix_master_A4 = floatval($_POST['prix_master_A3']) / 2;
+        $prix_master_A4_pack = isset($_POST['prix_master_A3_pack']) ? floatval($_POST['prix_master_A3_pack']) / 2 : $prix_master_A4;
+        insert_prix_with_pack($db, 'A4', 'master', $prix_master_A4, $prix_master_A4_pack);
+    }
+    
+    // Prix des photocopieurs par couleur et par machine
+    if (isset($_POST['photocop_prix']) && is_array($_POST['photocop_prix'])) {
+        foreach ($_POST['photocop_prix'] as $index => $couleurs) {
+            $photocop_names = $_POST['photocop_names'];
+            $photocop_name = isset($photocop_names[$index]) ? $photocop_names[$index] : 'Photocopieuse ' . ($index + 1);
+            $machine_id = strtolower(str_replace(' ', '_', $photocop_name));
+            
+            $prix_total_unite = 0;
+            $prix_total_pack = 0;
+            
+            foreach ($couleurs as $couleur => $types) {
+                if (isset($types['unite']) && !empty($types['unite'])) {
+                    $prix_unite = $types['unite'];
+                    $prix_pack = isset($types['pack']) ? $types['pack'] : $prix_unite;
+                    
+                    insert_prix_with_pack($db, $machine_id, $couleur, $prix_unite, $prix_pack);
+                    
+                    // Accumuler pour calculer le prix "couleur"
+                    $prix_total_unite += $prix_unite;
+                    $prix_total_pack += $prix_pack;
+                }
+            }
+            
+            // Insérer le prix "couleur" (somme des 4 couleurs)
+            if ($prix_total_unite > 0) {
+                insert_prix_with_pack($db, $machine_id, 'couleur', $prix_total_unite, $prix_total_pack);
+            }
+        }
+    }
+}
+
+/**
+ * Insère ou met à jour un prix (fonction locale pour setup_save)
+ */
+function insert_prix_setup($db, $machine, $type, $prix_unite) {
+    // Vérifier si le prix existe déjà
+    $query = $db->prepare('SELECT COUNT(*) as count FROM prix WHERE machine = ? AND type = ?');
+    $query->execute(array($machine, $type));
+    $result = $query->fetch(PDO::FETCH_OBJ);
+    
+    if ($result->count > 0) {
+        // Mise à jour
+        $query = $db->prepare('UPDATE prix SET unite = ? WHERE machine = ? AND type = ?');
+        $query->execute(array($prix_unite, $machine, $type));
+    } else {
+        // Insertion
+        $query = $db->prepare('INSERT INTO prix (machine, type, unite, pack) VALUES (?, ?, ?, ?)');
+        $query->execute(array($machine, $type, $prix_unite, $prix_unite)); // pack = unite par défaut
+    }
+}
+
+/**
+ * Insère ou met à jour un prix avec prix unité et pack séparés
+ */
+function insert_prix_with_pack($db, $machine, $type, $prix_unite, $prix_pack) {
+    error_log("DEBUG: insert_prix_with_pack - machine: $machine, type: $type");
+    // Vérifier si le prix existe déjà
+    $query = $db->prepare('SELECT COUNT(*) as count FROM prix WHERE machine = ? AND type = ?');
+    $query->execute(array($machine, $type));
+    $result = $query->fetch(PDO::FETCH_OBJ);
+    
+    if ($result->count > 0) {
+        // Mise à jour
+        error_log("DEBUG: UPDATE prix pour $machine/$type");
+        $query = $db->prepare('UPDATE prix SET unite = ?, pack = ? WHERE machine = ? AND type = ?');
+        $query->execute(array($prix_unite, $prix_pack, $machine, $type));
+    } else {
+        // Insertion
+        error_log("DEBUG: INSERT prix pour $machine/$type");
+        $query = $db->prepare('INSERT INTO prix (machine, type, unite, pack) VALUES (?, ?, ?, ?)');
+        $query->execute(array($machine, $type, $prix_unite, $prix_pack));
+    }
+}
+
+/**
+ * Initialise la table cons avec les changements initiaux de consommables
+ */
+function initialize_cons_table($db) {
+    error_log("DEBUG: Début initialize_cons_table");
+    $current_time = time();
+    
+    // Initialiser les consommables pour A3 si sélectionné
+    if (isset($_POST['machines']) && in_array('a3', $_POST['machines'])) {
+        error_log("DEBUG: Initialisation consommables A3");
+        // Encre A3
+        $query = $db->prepare('INSERT INTO cons (date, machine, type, nb_p, nb_m) VALUES (?, ?, ?, ?, ?)');
+        $query->execute(array($current_time, 'a3', 'encre', 0, 0));
+        
+        // Master A3
+        $query = $db->prepare('INSERT INTO cons (date, machine, type, nb_p, nb_m) VALUES (?, ?, ?, ?, ?)');
+        $query->execute(array($current_time, 'a3', 'master', 0, 0));
+    }
+    
+    // Initialiser les consommables pour A4 si sélectionné
+    if (isset($_POST['machines']) && in_array('a4', $_POST['machines'])) {
+        error_log("DEBUG: Initialisation consommables A4");
+        // Encre A4
+        $query = $db->prepare('INSERT INTO cons (date, machine, type, nb_p, nb_m) VALUES (?, ?, ?, ?, ?)');
+        $query->execute(array($current_time, 'a4', 'encre', 0, 0));
+        
+        // Master A4
+        $query = $db->prepare('INSERT INTO cons (date, machine, type, nb_p, nb_m) VALUES (?, ?, ?, ?, ?)');
+        $query->execute(array($current_time, 'a4', 'master', 0, 0));
+    }
+    
+    // Initialiser les consommables pour les photocopieurs
+    if (isset($_POST['machines']) && in_array('photocop', $_POST['machines'])) {
+        $photocop_counters = $_POST['photocop_counters'];
+        $photocop_names = $_POST['photocop_names'];
+        
+        for ($i = 0; $i < count($photocop_counters); $i++) {
+            $photocop_name = isset($photocop_names[$i]) ? $photocop_names[$i] : 'Photocopieuse ' . ($i + 1);
+            $photocop_counter = isset($photocop_counters[$i]) ? $photocop_counters[$i] : 0;
+            
+            error_log("DEBUG: Initialisation consommables photocopieuse $photocop_name");
+            
+            // Créer une entrée initiale dans la table cons pour cette photocopieuse
+            $query = $db->prepare('INSERT INTO cons (date, machine, type, nb_p, nb_m) VALUES (?, ?, ?, ?, ?)');
+            $query->execute(array($current_time, $photocop_name, 'initialisation', $photocop_counter, 0));
+        }
+    }
+}
+?>

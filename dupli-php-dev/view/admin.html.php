@@ -1,0 +1,145 @@
+<div class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <h1 class="text-center"><?php _e('admin.title'); ?></h1>
+        <hr>
+        
+        <!-- Gestion des machines -->
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-cogs"></i> <?php _e('admin.machine_management'); ?></h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-3">
+                <a href="?admin&machines" class="btn btn-success btn-block">
+                  <i class="fa fa-print"></i> <?php _e('admin.machine_management_btn'); ?>
+                </a>
+                <small class="text-muted"><?php _e('admin.machine_management_desc'); ?></small>
+              </div>
+              <div class="col-md-3">
+                <a href="?admin&changes" class="btn btn-primary btn-block">
+                  <i class="fa fa-exchange"></i> <?php _e('admin.change_management_btn'); ?>
+                </a>
+                <small class="text-muted"><?php _e('admin.change_management_desc'); ?></small>
+              </div>
+              <div class="col-md-3">
+                <a href="?admin&prix" class="btn btn-info btn-block">
+                  <i class="fa fa-euro"></i> <?php _e('admin.price_management_btn'); ?>
+                </a>
+                <small class="text-muted"><?php _e('admin.price_management_desc'); ?></small>
+              </div>
+              <div class="col-md-3">
+                <a href="?admin&tirages" class="btn btn-warning btn-block">
+                  <i class="fa fa-list"></i> <?php _e('admin.print_management_btn'); ?>
+                </a>
+                <small class="text-muted"><?php _e('admin.print_management_desc'); ?></small>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Gestion du contenu -->
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-file-text"></i> <?php _e('admin.content_management'); ?></h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-3">
+                <a href="?admin&aide_machines" class="btn btn-primary btn-block">
+                  <i class="fa fa-question-circle"></i> <?php _e('admin.help_management_btn'); ?>
+                </a>
+                <small class="text-muted"><?php _e('admin.help_management_desc'); ?></small>
+              </div>
+              <div class="col-md-3">
+                <a href="?admin&news" class="btn btn-info btn-block">
+                  <i class="fa fa-newspaper-o"></i> <?php _e('admin.news_management_btn'); ?>
+                </a>
+                <small class="text-muted"><?php _e('admin.news_management_desc'); ?></small>
+              </div>
+              <div class="col-md-3">
+                <a href="?admin&stats" class="btn btn-default btn-block">
+                  <i class="fa fa-bar-chart"></i> <?php _e('admin.stats_management_btn'); ?>
+                </a>
+                <small class="text-muted"><?php _e('admin.stats_management_desc'); ?></small>
+              </div>
+              <div class="col-md-3">
+                <a href="?admin&imprimantes" class="btn btn-primary btn-block">
+                  <i class="fa fa-print"></i> <?php _e('admin.printer_monitor'); ?>
+                </a>
+                <small class="text-muted"><?php _e('admin.printer_monitor_desc'); ?></small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-cog"></i> <?php _e('admin.configuration'); ?></h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-3">
+                <a href="?admin&emails" class="btn btn-default btn-block">
+                  <i class="fa fa-envelope"></i> <?php _e('admin.email_management_btn'); ?>
+                </a>
+                <small class="text-muted"><?php _e('admin.email_management_desc'); ?></small>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Gestion des traductions -->
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-globe"></i> <?php _e('admin.translation_management'); ?></h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-12">
+                <a href="?admin_translations" class="btn btn-success btn-block btn-lg">
+                  <i class="fa fa-globe"></i> <?php _e('admin.translation_management_btn'); ?>
+                </a>
+                <small class="text-muted"><?php _e('admin.translation_management_desc'); ?></small>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Sécurité -->
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-shield"></i> <?php _e('admin.security'); ?></h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-6">
+                <a href="?admin&mots" class="btn btn-warning btn-block">
+                  <i class="fa fa-key"></i> <?php _e('admin.password_management_btn'); ?>
+                </a>
+                <small class="text-muted"><?php _e('admin.security_access'); ?></small>
+              </div>
+              <div class="col-md-6">
+                <a href="?admin&bdd" class="btn btn-danger btn-block">
+                  <i class="fa fa-database"></i> <?php _e('admin.database_management_btn'); ?>
+                </a>
+                <small class="text-muted"><?php _e('admin.creation_backup_restore'); ?></small>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Bouton retour -->
+        <div class="row">
+          <div class="col-md-12">
+            <a href="?accueil" class="btn btn-default btn-block">
+              <i class="fa fa-home"></i> <?php _e('accueil.back_to_home'); ?>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
